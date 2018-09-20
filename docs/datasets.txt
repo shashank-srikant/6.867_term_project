@@ -1,0 +1,16 @@
+http://web.cs.ucdavis.edu/~devanbu/odd-bugs.pdf
+
+https://arxiv.org/pdf/1801.06393.pdf
+
+http://oss.sys.wakayama-u.ac.jp/?p=1009
+("A Dataset of High Impact Bugs: Manually-Classified Issue Reports" -- related publication)
+
+http://web.cs.ucdavis.edu/~devanbu/odd-bugs.pdf
+
+http://odd-code.github.io/Data.html
+
+http://bug.inf.usi.ch/index.php
+
+https://github.com/ansymo/msr2013-bug_dataset
+
+http://groups.inf.ed.ac.uk/cup/semvec/#dataset

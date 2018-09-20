@@ -5,7 +5,7 @@
 ##### Conda
 ```
 conda env create -f ./env/environment.yml
-source activate lipizzaner
+source activate ml_project
 ```
 
 ##### Pip
