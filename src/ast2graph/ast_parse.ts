@@ -2,40 +2,41 @@ import * as fs from 'fs';
 import * as ts from 'typescript';
 import * as util from 'util';
 
-
-function visit(node: ts.Node) {
-    console.log(ts.SyntaxKind[node.kind])
-    console.log('--')
-    if (ts.isFunctionDeclaration(node)) {
-        for (const param of node.parameters) {
-          console.log(param.name.getText());
-        }
+// Base class to convert ASTs to graphs
+class Graph(){
+    constructor(ast_path:string){ 
+        this.ast_path = ast_path;
     }
-    node.forEachChild(visit);
+
+    function visit(node: ts.Node) {
+        console.log(ts.SyntaxKind[node.kind])
+        console.log('--')
+        if (ts.isFunctionDeclaration(node)) {
+            for (const param of node.parameters) {
+              console.log(param.name.getText());
+            }
+        }
+        node.forEachChild(visit);
+    }
+
+    function ast_parse(fileName: string, sourceCode: string) {
+        console.log("in ast_parse")
+        const sourceFile = ts.createSourceFile(fileName, sourceCode, ts.ScriptTarget.Latest, true);
+        //console.log(util.inspect(sourceFile,{compact:true, colors:true}));
+        visit(sourceFile);
+        // overload visit for getting different types of edges 
+        // the output of `visit` would be passed to to_graph() 
+        // to_graph() converts a dict to a graph, and shapes it in the format required for training
+        // the output of to_graph() will be pushed to write_graph() to store on disk
+    }
+          
+    function ast2graph(){
+        ast_parse(this.ast_path, fs.readFileSync(this.ast_path, 'utf-8'));
+    }
 }
 
-function instrument(source_obj: ts.Node) {
-  console.log("in instrument")
-  visit(source_obj);
-}
 
-
-function instrument1(fileName: string, sourceCode: string) {
-  console.log("in instrument1")
-  const sourceFile = ts.createSourceFile(fileName, sourceCode, ts.ScriptTarget.Latest, true);
-  console.log(util.inspect(sourceFile,{compact:true, colors:true}));
-  //visit(sourceFile);
-}
-
-/*
+// Unit-test
 const inputFile = process.argv[2];
-const ast_json = fs.readFileSync(inputFile);
-console.log("hey there");
-const ast_obj = <ts.Node> JSON.parse(ast_json.toString());
-instrument(ast_obj);
-*/
-
-const inputFile = process.argv[2];
-instrument1(inputFile, fs.readFileSync(inputFile, 'utf-8'));
-//console.log(ast_obj.constructor.name);
-//console.log(Object.getOwnPropertyNames(ast_obj.children));
+var graph_obj = new Graph(inputFile);
+graph_obj.ast2graph();
