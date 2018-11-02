@@ -12,7 +12,7 @@ Hellendoorn, Vincent J., et al. "Deep Learning Type Inference." (FSE 2018) is re
 
 The dataset is available at: https://github.com/DeepTyper/DeepTyper
 
-# Research questions
+## Research questions
 - RQ1; Predictive ability of graph-based models. Do graph-based neural networks help capture program properties in order to predict variable types.
 - RQ2; Value-addition of graph-based models. What do graph-based models capture which traditional machine learning models fail to when modeling source codes.
 - RQ3; Interpretability. Do graph-based networks allow for any rich interpretation on what features contributed to a prediction task.
