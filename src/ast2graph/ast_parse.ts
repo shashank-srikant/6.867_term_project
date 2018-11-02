@@ -23,8 +23,8 @@ function instrument(source_obj: ts.Node) {
 function instrument1(fileName: string, sourceCode: string) {
   console.log("in instrument1")
   const sourceFile = ts.createSourceFile(fileName, sourceCode, ts.ScriptTarget.Latest, true);
-  //console.log(util.inspect(sourceFile,{compact:true, colors:true}));
-  visit(sourceFile);
+  console.log(util.inspect(sourceFile,{compact:true, colors:true}));
+  //visit(sourceFile);
 }
 
 /*

@@ -2,6 +2,7 @@
 exports.__esModule = true;
 var fs = require("fs");
 var ts = require("typescript");
+var util = require("util");
 function visit(node) {
     console.log(ts.SyntaxKind[node.kind]);
     console.log('--');
@@ -20,8 +21,8 @@ function instrument(source_obj) {
 function instrument1(fileName, sourceCode) {
     console.log("in instrument1");
     var sourceFile = ts.createSourceFile(fileName, sourceCode, ts.ScriptTarget.Latest, true);
-    //console.log(util.inspect(sourceFile,{compact:true, colors:true}));
-    visit(sourceFile);
+    console.log(util.inspect(sourceFile, { compact: true, colors: true }));
+    //visit(sourceFile);
 }
 /*
 const inputFile = process.argv[2];
