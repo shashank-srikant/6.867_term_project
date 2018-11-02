@@ -3,16 +3,22 @@ import * as fs from 'fs';
 import * as ts from 'typescript';
 import { Graph } from "./graph";
 
-class GraphUseDef extends Graph{
-    visit(node: ts.Node): void{
-        console.log(ts.SyntaxKind[node.kind])
-        console.log('--')
+class GraphUseDef extends Graph {
+    constructor(ast_path:string){
+        super(ast_path);
+    } 
+
+    visit(node: ts.Node): (void) {
+        console.log('In visit..');
+        // console.log(node);
+        console.log(ts.SyntaxKind[node.kind]);
+        console.log('--');
         if (ts.isFunctionDeclaration(node)) {
             for (const param of node.parameters) {
-            console.log(param.name.getText());
+                console.log(param.name.getText());
             }
         }
-        node.forEachChild(this.visit);
+        node.forEachChild(n => (this.visit(n)));
     }
 }
 
