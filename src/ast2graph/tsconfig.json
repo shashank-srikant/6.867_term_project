@@ -40,6 +40,6 @@
     "emitDecoratorMetadata": true         
   },
   "files": [
-        "ast_parse.ts"
+        "*"
     ]
 }
