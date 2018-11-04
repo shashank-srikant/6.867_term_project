@@ -10,17 +10,40 @@ export abstract class Graph {
         this.ast_path = ast_path;
     }
 
-    abstract visit (node: ts.Node): void;
+    abstract visit (node: ts.Node, var_names: string[]): void;
+
+    public get_variable_names(node: ts.Node, pgm: ts.Program): void{
+        var nodes: ts.Node[] = [];
+        function getNodes(sf: ts.Node): ts.Node[] {
+            var nodes: ts.Node[] = [];
+            function allNodes(n: ts.Node) {
+                ts.forEachChild(n, n => { nodes.push(n); allNodes(n); return false; })
+            };
+            allNodes(sf);
+            return nodes;
+        }
+        var id_nodes = getNodes(node).filter(n => n.kind === ts.SyntaxKind.Identifier);
+        //var names = id_nodes.map(n => <string>((<ts.Identifier>n).escapedText));
+        var names = id_nodes.map(n => (checker.getSymbolAtLocation(n)));
+        const checker = pgm.getTypeChecker()
+        //var names = id_nodes.map(n => n.);
+        console.log(names);
+        //return names
+        //return node.forEachChild(n => (this.get_variable_names(n)));
+    }
 
     public ast2graph(){
         console.log("in ast_parse")
         // Currently, this is the source file's path, not AST's.
-        const source_code = fs.readFileSync(this.ast_path, 'utf-8')
+        const source_code = fs.readFileSync(this.ast_path, 'utf-8');
         const source_obj = ts.createSourceFile(this.ast_path, source_code, ts.ScriptTarget.Latest, true);
-        
+        const source_pgm = ts.createProgram((<ts.Program>source_obj));
+        console.log(source_obj)
+        const var_names = this.get_variable_names(source_obj, source_pgm);
+        console.log('finished var names')
         // util.inspect() allows to dump jsons with circular references in its objects
         // console.log(util.inspect(sourceFile,{compact:true, colors:true}));
-        this.visit(source_obj);
+        this.visit(source_obj, []);
         // overload visit for getting different types of edges 
         // the output of `visit` would be passed to to_graph() 
         // to_graph() converts a dict to a graph, and shapes it in the format required for training

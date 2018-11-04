@@ -1,4 +1,3 @@
-
 import * as fs from 'fs';
 import * as ts from 'typescript';
 import { Graph } from "./graph";
@@ -8,17 +7,14 @@ class GraphUseDef extends Graph {
         super(ast_path);
     } 
 
-    visit(node: ts.Node): (void) {
-        console.log('In visit..');
+    visit(node: ts.Node, var_names: string[]): (void) {
+        //console.log('In visit..');
         // console.log(node);
-        console.log(ts.SyntaxKind[node.kind]);
-        console.log('--');
-        if (ts.isFunctionDeclaration(node)) {
-            for (const param of node.parameters) {
-                console.log(param.name.getText());
-            }
-        }
-        node.forEachChild(n => (this.visit(n)));
+        //console.log(ts.SyntaxKind[node.kind]);
+        //console.log('--');
+
+        // Stupid typescript and its handling of this
+        node.forEachChild(n => (this.visit(n, var_names)));
     }
 }
 
