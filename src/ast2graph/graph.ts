@@ -14,29 +14,21 @@ export abstract class Graph {
 
 
     public get_variable_names(node: ts.Node, pgm: ts.Program): void{
-        function linearizeTree(n: ts.Node) {
-            var nodes: ts.Node[] = [n];
-            ts.forEachChild(n, child => {
-            nodes = nodes.concat(linearizeTree(child));
-            });
+        var nodes: ts.Node[] = [];
+        function getNodes(sf: ts.Node): ts.Node[] {
+            var nodes: ts.Node[] = [];
+            function allNodes(n: ts.Node) {
+                ts.forEachChild(n, n => { nodes.push(n); allNodes(n); return false; })
+            };
+            allNodes(sf);
             return nodes;
         }
-    
-        let nodes = linearizeTree(node);
-        function allNodes(n: ts.Node, acc: ts.Node[]) {
-            nodes.push(n);
-            ts.forEachChild(n, nod => { acc.push(nod); allNodes(nod, acc); })
-        };
-        allNodes(node, nodes);
-
-        var id_nodes = nodes.filter(n => n.kind === ts.SyntaxKind.Identifier);
-
+        var id_nodes = getNodes(node).filter(n => n.kind === ts.SyntaxKind.Identifier);
         //var names = id_nodes.map(n => <string>((<ts.Identifier>n).escapedText));
-        let checker = pgm.getTypeChecker();
+        const checker = pgm.getTypeChecker()
         var names = id_nodes.map(n => (checker.getSymbolAtLocation(n)));
+        var decls = names.map(n => n.getDeclarations());
         console.log(names);
-        //var decls = names.map(n => n.getDeclarations());
-        //console.log(decls);
         //return names
         //return node.forEachChild(n => (this.get_variable_names(n)));
     }
