@@ -9,6 +9,7 @@
   },
   "files": [
       "graph.ts",
-      "graph_use_def.ts"
+      "graph_use_def.ts",
+      "graph_naive.ts"
     ]
 }
