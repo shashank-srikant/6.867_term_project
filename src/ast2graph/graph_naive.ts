@@ -11,8 +11,22 @@ class GraphNaive extends Graph {
         this.edge_type = 1;
     } 
     
+    debug_info(...args: any[]){
+        args.forEach(element => {
+            console.log(element);
+            console.log('--')
+        });
+    }
+
     visit_tree(node: ts.Node, nodes: GraphNode[], edges: GraphEdge[], parent: number){
-        var curr_node_id = this.max_node_count+1;
+        this.max_node_count++;
+        var curr_node_id = this.max_node_count;
+        this.debug_info(curr_node_id, parent, nodes, edges)
+        
+        /*if(curr_node_id == 5){
+            process.exit(-1);
+        }*/
+
         var nodeobj:GraphNode = {'id': curr_node_id, 'ast_type':node.kind};
         var edgeobj:GraphEdge = {'src': parent, 'dst': curr_node_id, 'edge_type': this.edge_type}
         nodes.push(nodeobj)
@@ -30,7 +44,8 @@ class GraphNaive extends Graph {
         var node_list: GraphNode[] = [];
         var edge_list: GraphEdge[] = [];
         this.visit_tree(node, node_list, edge_list, -1)
-        console.log(node_list);
+        //this.print_obj(node_list);
+        // console.log(node_list);
         //node.forEachChild(n => (this.visit(n, adj_list)));
     }
 }

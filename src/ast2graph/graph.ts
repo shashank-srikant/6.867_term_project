@@ -72,6 +72,15 @@ export abstract class Graph {
         // to_graph() converts a dict to a graph, and shapes it in the format required for training
         // the output of to_graph() will be pushed to write_graph() to store on disk
     }
+
+
+    public print_obj(obj: any){
+        fs.writeFile("out.log", JSON.stringify(obj), function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+    }
 }
 
 
