@@ -1,45 +1,15 @@
 {
   "compilerOptions": {
-    "extendedDiagnostics":true,                    
-    "module": "commonjs",                  
-    "lib": [],                             
-    "allowJs": true,                       
-    "checkJs": true,                       
-    "jsx": "preserve",                     
-    "sourceMap": true,                     
-    "outDir": "./",                        
-    "rootDir": "./",                       
-    "removeComments": true,                
-    "noEmit": true,                        
-    "importHelpers": true,                 
-    "downlevelIteration": true,            
-    
-    "strict": true,                        
-    "noImplicitAny": true,                 
-    "strictNullChecks": true,              
-    "noImplicitThis": true,                
-    "alwaysStrict": true,                  
-   
-    "noUnusedLocals": true,                
-    "noUnusedParameters": true,           
-    "noImplicitReturns": true,             
-    "noFallthroughCasesInSwitch": true,    
-   
-    "moduleResolution": "node",            
-    "baseUrl": "./",                       
-    "paths": {},                           
-    "rootDirs": [],                        
-    "typeRoots": [],                       
-    "types": [],                           
-    "allowSyntheticDefaultImports": true,  
-    
-    "sourceRoot": "./",                   
-    "inlineSources": true,                
-
-    "experimentalDecorators": true,        
-    "emitDecoratorMetadata": true         
+    "module": "commonjs",
+    "target": "es2018",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true
   },
   "files": [
-        "*"
+      "graph.ts",
+      "graph_use_def.ts",
+      "graph_naive.ts"
     ]
 }
