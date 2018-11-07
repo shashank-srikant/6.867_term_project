@@ -14,6 +14,11 @@ export interface GraphEdge {
     "edge_type": number
 }
 
+export interface Label {
+    "node": GraphNode['id'],
+    "label": number
+}
+
 // Base class to convert ASTs to graphs
 export abstract class Graph {
     private ast_path: string;
@@ -21,10 +26,10 @@ export abstract class Graph {
         this.ast_path = ast_path;
     }
 
-    abstract visit (node: ts.Node, var_names: string[]): void;
+    abstract visit (node: ts.Node, pgm: ts.Program, checker: ts.TypeChecker): void;
 
 
-    public get_variable_names(node: ts.Node, pgm: ts.Program): void{
+    public get_variable_names(node: ts.Node, pgm: ts.Program, checker:ts.TypeChecker): void{
         var nodes: ts.Node[] = [];
         function getNodes(sf: ts.Node): ts.Node[] {
             var nodes: ts.Node[] = [];
@@ -34,15 +39,21 @@ export abstract class Graph {
             allNodes(sf);
             return nodes;
         }
-        var id_nodes = getNodes(node).filter(n => n.kind === ts.SyntaxKind.Identifier);
+        var id_nodes = getNodes(node).filter(n => 
+                                (n.kind === ts.SyntaxKind.VariableStatement 
+                                || n.kind === ts.SyntaxKind.VariableDeclaration
+                                ));
         //var names = id_nodes.map(n => <string>((<ts.Identifier>n).escapedText));
-        const checker = pgm.getTypeChecker()
         function decl_flags(n:ts.Identifier){
             return checker.getSymbolAtLocation(n).getDeclarations();
         }
-        var names = id_nodes.map(n => [(<ts.Identifier>n).flags, decl_flags]);
+        console.log("**")
+        console.log(util.inspect(id_nodes,{compact:true}));
+        console.log("&&")
+        //console.log(id_nodes_symbolobj)
+        //var names = id_nodes.map(n =>  decl_flags((<ts.Identifier>n)));
         //var decls = names.map(n => n.getDeclarations());
-        console.log(names);
+        //console.log(names);
         //return names
         //return node.forEachChild(n => (this.get_variable_names(n)));
     }
@@ -54,13 +65,14 @@ export abstract class Graph {
             options: {
             }
         });
+        const checker = source_pgm.getTypeChecker()
         let source_files = source_pgm.getSourceFiles();
         for (let source_file of source_files) {
             if (!source_file.fileName.endsWith(this.ast_path)) {
                 continue;
             }
-            //const var_names = this.get_variable_names(source_file, source_pgm);
-            this.visit(source_file, []);
+            // const var_names = this.get_variable_names((<ts.Node>source_file), source_pgm, checker);
+            this.visit(source_file, source_pgm, checker);
             console.log('finished var names')
         }
     
@@ -74,8 +86,8 @@ export abstract class Graph {
     }
 
 
-    public print_obj(obj: any){
-        fs.writeFile("out.log", JSON.stringify(obj), function(err) {
+    public print_obj(obj: any, filename = "out.log"){
+        fs.writeFile(filename , JSON.stringify(obj), function(err) {
             if (err) {
                 console.log(err);
             }
@@ -89,4 +101,12 @@ export abstract class Graph {
 const input_file_path = process.argv[2];
 var graph_obj = new Graph(input_file_path);
 graph_obj.ast2graph();
+
+const source_pgm = ts.createProgram(path)
+let source_files = source_pgm.getSourceFiles();
+for (let node of source_files){
+    if (!node.fileName.endsWith(path)) {
+        console.log(node)
+    }
+}
 */

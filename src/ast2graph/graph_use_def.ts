@@ -7,14 +7,14 @@ class GraphUseDef extends Graph {
         super(ast_path);
     } 
 
-    visit(node: ts.Node, var_names: string[]): (void) {
+    visit(node: ts.Node, pgm: ts.Program, checker: ts.TypeChecker): (void) {
         //console.log('In visit..');
         // console.log(node);
         //console.log(ts.SyntaxKind[node.kind]);
         //console.log('--');
 
         // Stupid typescript and its handling of this
-        node.forEachChild(n => (this.visit(n, var_names)));
+        node.forEachChild(n => (this.visit(n, pgm, checker)));
     }
 }
 
