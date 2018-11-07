@@ -109,10 +109,29 @@ def train(graph, labels, label_index_map, niter=10):
     for _ in range(niter):
         graph = latent_module(graph)
     graph = decoder_module(graph)
-    pred_nodes = tf.nn.softmax(graph.nodes, axis=1)
+
+    loss_idxs = []
+    labels_arr = np.zeros((len(labels), len(label_index_map)))
+    for i, (node_idx, label) in enumerate(labels.items()):
+        loss_idxs.append(node_idx)
+        labels_arr[i, label_index_map[label]] = 1
+
+    pred_nodes = tf.nn.softmax(graph.nodes)
+    loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits_v2(
+        logits=tf.gather(graph.nodes, loss_idxs),
+        labels=labels_arr,
+    ))
+
+    optimizer = tf.train.AdamOptimizer()
+    train_func = optimizer.minimize(loss)
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+        for i in range(100):
+            sess.run(train_func)
+            print('step: {}, loss: {}'.format(i, sess.run(loss)))
+
+
         pred_nodes = sess.run(pred_nodes)
 
         for (node_idx, label) in labels.items():
