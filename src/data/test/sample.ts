@@ -1,3 +1,7 @@
+function foo() {
+    return;
+}
+
 var x = foo();
 if(x > 5){
     var y = x;
