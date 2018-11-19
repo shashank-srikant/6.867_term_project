@@ -40,16 +40,16 @@ export abstract class Graph {
             return nodes;
         }
         var id_nodes = getNodes(node).filter(n => 
-                                (n.kind === ts.SyntaxKind.VariableStatement 
-                                || n.kind === ts.SyntaxKind.VariableDeclaration
+                                (n.kind === ts.SyntaxKind.Identifier
                                 ));
-        //var names = id_nodes.map(n => <string>((<ts.Identifier>n).escapedText));
+        var names = id_nodes.map(n => <string>((<ts.Identifier>n).escapedText));
         function decl_flags(n:ts.Identifier){
             return checker.getSymbolAtLocation(n).getDeclarations();
         }
         console.log("**")
         console.log(util.inspect(id_nodes,{compact:true}));
         console.log("&&")
+        console.log(names)
         //console.log(id_nodes_symbolobj)
         //var names = id_nodes.map(n =>  decl_flags((<ts.Identifier>n)));
         //var decls = names.map(n => n.getDeclarations());
@@ -71,8 +71,8 @@ export abstract class Graph {
             if (!source_file.fileName.endsWith(this.ast_path)) {
                 continue;
             }
-            // const var_names = this.get_variable_names((<ts.Node>source_file), source_pgm, checker);
-            this.visit(source_file, source_pgm, checker);
+            const var_names = this.get_variable_names((<ts.Node>source_file), source_pgm, checker);
+            //this.visit(source_file, source_pgm, checker);
             console.log('finished var names')
         }
     
@@ -106,7 +106,7 @@ const source_pgm = ts.createProgram(path)
 let source_files = source_pgm.getSourceFiles();
 for (let node of source_files){
     if (!node.fileName.endsWith(path)) {
-        console.log(node)
+        console.log(node.id)
     }
 }
 */

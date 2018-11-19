@@ -27,6 +27,8 @@ class GraphNaive extends Graph {
         // Need to distinguish between user defined and inferred types
         try {
             let ty_loc = checker.getTypeAtLocation(node);
+            console.log(ty_loc);
+            process.exit(0);
             console.log(":" + ty_loc['flags']);
             console.log(":" + ty_loc.symbol);
             console.log('--')
