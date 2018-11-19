@@ -5,6 +5,7 @@ import json
 import numpy as np
 import tensorflow as tf
 import sonnet as snt
+import pprint as pp
 
 IndexMaps = collections.namedtuple('IndexMaps', (
     'ast_type_index_map',
@@ -79,6 +80,12 @@ def graphs_json_to_graph_tuple_and_labels(graphs, index_maps=None):
         tf.constant(n_nodes, dtype=tf.int64),
         tf.constant(n_edges, dtype=tf.int64)
     )
+    print(nodes)
+    print(edges)
+    print(receivers)
+    print(senders)   
+    print(labels)
+    sys.exit(0)
 
     return gtuple, labels, index_maps
 
