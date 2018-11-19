@@ -1,3 +1,7 @@
+function foo(q) {
+    return;
+}
+
 var x = foo();
 if(x > 5){
     try{
@@ -10,6 +14,9 @@ if(x > 5){
 }
 let k = 5;
 test2(k);
+<<<<<<< HEAD
 function foo(){
     return k;
 }
+=======
+>>>>>>> origin/print-names

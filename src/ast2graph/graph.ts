@@ -4,7 +4,7 @@ import * as util from 'util';
 import { stringify } from 'querystring';
 
 export interface GraphNode {
-    "id": number, 
+    "id": number,
     "ast_type": number
 }
 
@@ -22,7 +22,7 @@ export interface Label {
 // Base class to convert ASTs to graphs
 export abstract class Graph {
     private ast_path: string;
-    constructor(ast_path:string){ 
+    constructor(ast_path:string){
         this.ast_path = ast_path;
     }
 
@@ -39,10 +39,13 @@ export abstract class Graph {
             allNodes(sf);
             return nodes;
         }
-        var id_nodes = getNodes(node).filter(n => 
-                                (n.kind === ts.SyntaxKind.Identifier
-                                ));
-        var names = id_nodes.map(n => <string>((<ts.Identifier>n).escapedText));
+        var id_nodes = getNodes(node).filter(n =>
+                                (//n.kind === ts.SyntaxKind.VariableStatement ||
+                                 n.kind === ts.SyntaxKind.VariableDeclaration
+                                )).filter(n =>
+					  (<ts.VariableDeclaration>n).name.kind === ts.SyntaxKind.Identifier
+					 );
+        var names = id_nodes.map(n => <string>((<ts.Identifier>(<ts.VariableDeclaration>n).name).text));
         function decl_flags(n:ts.Identifier){
             return checker.getSymbolAtLocation(n).getDeclarations();
         }
@@ -53,11 +56,13 @@ export abstract class Graph {
         //console.log(id_nodes_symbolobj)
         //var names = id_nodes.map(n =>  decl_flags((<ts.Identifier>n)));
         //var decls = names.map(n => n.getDeclarations());
-        //console.log(names);
+        console.log('BEGIN NAMES');
+        console.log(names);
+        console.log('END NAMES');
         //return names
         //return node.forEachChild(n => (this.get_variable_names(n)));
     }
-    
+
     public ast2graph(){
         // Currently, this is the source file's path, not AST's.
         const source_pgm = ts.createProgram({
@@ -72,10 +77,10 @@ export abstract class Graph {
                 continue;
             }
             const var_names = this.get_variable_names((<ts.Node>source_file), source_pgm, checker);
-            //this.visit(source_file, source_pgm, checker);
+            this.visit(source_file, source_pgm, checker);
             console.log('finished var names')
         }
-    
+
         // util.inspect() allows to dump jsons with circular references in its objects
         // console.log(util.inspect(sourceFile,{compact:true, colors:true}));
 
