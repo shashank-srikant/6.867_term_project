@@ -69,7 +69,7 @@ class GraphNaive extends Graph {
     visit(node: ts.Node, pgm: ts.Program, checker: ts.TypeChecker): (void) {
         console.log('In GraphNaive.visit ..');
         
-        var node_list: GraphNode[] = [];
+        var node_list: GraphNode[] = [{'id': -1, 'ast_type':-1}];
         var edge_list: GraphEdge[] = [];
         var labels_list: Label[] = [];
         this.visit_tree(node, node_list, edge_list, labels_list, -1, checker)
@@ -78,7 +78,7 @@ class GraphNaive extends Graph {
                          this.label_dict, this.symbol_type_map);
         
         this.print_obj({"nodes": node_list, 
-                        "edge_list": edge_list,
+                        "edges": edge_list,
                         "labels": labels_list,
                         "label_map": this.map2obj(this.label_dict)
                        },
