@@ -73,11 +73,10 @@ class GraphNaive extends Graph {
         var edge_list: GraphEdge[] = [];
         var labels_list: Label[] = [];
         this.visit_tree(node, node_list, edge_list, labels_list, -1, checker)
-        console.log(node_list);
-        console.log(edge_list);
-        console.log(labels_list);
-        console.log(this.label_dict);
-        console.log(this.symbol_type_map);
+        
+        this.debug_info(node_list, edge_list, labels_list,
+                         this.label_dict, this.symbol_type_map);
+        
         this.print_obj({"nodes": node_list, 
                         "edge_list": edge_list,
                         "labels": labels_list,
