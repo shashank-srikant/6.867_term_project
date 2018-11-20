@@ -91,6 +91,12 @@ def graphs_json_to_graph_tuple_and_labels(graphs, index_maps=None):
         tf.constant(n_nodes, dtype=tf.int32),
         tf.constant(n_edges, dtype=tf.int32)
     )
+    print(nodes)
+    print(edges)
+    print(receivers)
+    print(senders)   
+    print(labels)
+    sys.exit(0)
 
     return gtuple, labels, index_maps
 

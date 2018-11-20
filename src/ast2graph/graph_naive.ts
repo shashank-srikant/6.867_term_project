@@ -6,14 +6,12 @@ class GraphNaive extends Graph {
     private max_node_count: number;
     private max_label_count: number;
     private edge_type: number;
-    private label_dict: Map <string, number>;
-
+    
     constructor(ast_path: string){
         super(ast_path);
         this.max_node_count = 0;
         this.max_label_count = 1;
         this.edge_type = 1;
-        this.label_dict = new Map();
     } 
     
     debug_info(...args: any[]){
@@ -27,63 +25,65 @@ class GraphNaive extends Graph {
         // Need to distinguish between user defined and inferred types
         try {
             let ty_loc = checker.getTypeAtLocation(node);
-            console.log(":" + ty_loc['flags']);
-            console.log(":" + ty_loc.symbol);
-            console.log('--')
-        
+            console.log("node: " +  ts.SyntaxKind[node.kind] + 
+                        "; type: " + ts.TypeFlags[ty_loc.getFlags()] +
+                        "; basetype: " + ty_loc.getBaseTypes()
+                        );
+            if(node.kind == ts.SyntaxKind.Identifier){
+                console.log("----")
+            }
+            
         }
         catch(e) {
-            console.log("oops");
+            console.log("oops. No type for " + ts.SyntaxKind[node.kind]);
         }
         return false;
-    }
-
-    get_label(node: ts.Node): string {
-
-        return "asd"
     }
 
     visit_tree(node: ts.Node, nodes: GraphNode[], edges: GraphEdge[], labels: Label[], parent: number, checker: ts.TypeChecker){
         this.max_node_count++;
         var curr_node_id = this.max_node_count;
-        //this.debug_info(curr_node_id, parent, nodes, edges)
-        
-        /*if(curr_node_id == 5){
-            process.exit(-1);
-        }*/
+        var lbl = this.get_label(node, checker);
+
+        if(lbl[0] != "none"){
+            if(!this.label_dict.has(lbl[0])){
+                this.label_dict.set(lbl[0], this.max_label_count);
+                this.max_label_count++;
+            }
+            var labelObj:Label = {'node': curr_node_id, 
+                                  'label': this.label_dict.get(lbl[0]),
+                                  'label_type': lbl[1]
+                                };
+            labels.push(labelObj);
+        }
 
         var nodeobj:GraphNode = {'id': curr_node_id, 'ast_type':node.kind};
         var edgeobj:GraphEdge = {'src': parent, 'dst': curr_node_id, 'edge_type': this.edge_type}
+            
         nodes.push(nodeobj);
         edges.push(edgeobj);
-
-        if(this.has_label(node, checker)){
-            let lbl = this.get_label(node);
-            if(! this.label_dict.has(lbl)){
-                this.label_dict.set(lbl, this.max_label_count);
-                this.max_label_count++;
-            }
-            var labelObj:Label = {'node': curr_node_id, 'label': this.label_dict.get(lbl)}
-            labels.push(labelObj);
-        }
 
         node.forEachChild(n => (this.visit_tree(n, nodes, edges, labels, curr_node_id, checker)));
     }
 
     visit(node: ts.Node, pgm: ts.Program, checker: ts.TypeChecker): (void) {
         console.log('In GraphNaive.visit ..');
-        // console.log(node);
-        //console.log(ts.SyntaxKind[node.kind]);
-        //console.log('--');
         
         var node_list: GraphNode[] = [];
         var edge_list: GraphEdge[] = [];
         var labels_list: Label[] = [];
         this.visit_tree(node, node_list, edge_list, labels_list, -1, checker)
-        //this.print_obj(node_list);
-        //console.log(node_list);
-        //console.log(edge_list);
-        this.print_obj({"nodes": node_list, "edge_list": edge_list, "labels": labels_list}, "example2.json");
+        console.log(node_list);
+        console.log(edge_list);
+        console.log(labels_list);
+        console.log(this.label_dict);
+        console.log(this.symbol_type_map);
+        this.print_obj({"nodes": node_list, 
+                        "edge_list": edge_list,
+                        "labels": labels_list,
+                        "label_map": this.map2obj(this.label_dict)
+                       },
+                        "example2.json");
     }
 }
 
