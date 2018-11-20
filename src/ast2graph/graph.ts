@@ -16,7 +16,9 @@ export interface GraphEdge {
 
 export interface Label {
     "node": GraphNode['id'],
-    "label": number
+    "label": number,
+    "label_type": number 
+    //to signify whether a declaration stmnt type (0), or other (1)
 }
 
 // Base class to convert ASTs to graphs
