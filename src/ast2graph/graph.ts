@@ -22,12 +22,14 @@ export interface Label {
 // Base class to convert ASTs to graphs
 export abstract class Graph {
     private ast_path: string;
-    constructor(ast_path:string){
+    private out_path: string;
+    
+    constructor(ast_path:string, out_path="../data/"){
         this.ast_path = ast_path;
+        this.out_path = out_path;
     }
 
     abstract visit (node: ts.Node, pgm: ts.Program, checker: ts.TypeChecker): void;
-
 
     public get_variable_names(node: ts.Node, pgm: ts.Program, checker:ts.TypeChecker): void{
         var nodes: ts.Node[] = [];
@@ -40,19 +42,11 @@ export abstract class Graph {
             return nodes;
         }
         var id_nodes = getNodes(node).filter(n =>
-                                (//n.kind === ts.SyntaxKind.VariableStatement ||
-                                 n.kind === ts.SyntaxKind.VariableDeclaration
-                                )).filter(n =>
+                                (n.kind === ts.SyntaxKind.VariableDeclaration)).filter(n =>
 					  (<ts.VariableDeclaration>n).name.kind === ts.SyntaxKind.Identifier
 					 );
         var names = id_nodes.map(n => <string>((<ts.Identifier>(<ts.VariableDeclaration>n).name).text));
-        function decl_flags(n:ts.Identifier){
-            return checker.getSymbolAtLocation(n).getDeclarations();
-        }
-        console.log("**")
-        console.log(util.inspect(id_nodes,{compact:true}));
-        console.log("&&")
-        console.log(names)
+       
         //console.log(id_nodes_symbolobj)
         //var names = id_nodes.map(n =>  decl_flags((<ts.Identifier>n)));
         //var decls = names.map(n => n.getDeclarations());
@@ -90,28 +84,17 @@ export abstract class Graph {
         // the output of to_graph() will be pushed to write_graph() to store on disk
     }
 
-
     public print_obj(obj: any, filename = "out.log"){
-        fs.writeFile(filename , JSON.stringify(obj), function(err) {
+        fs.writeFile(this.out_path+filename , JSON.stringify(obj), function(err) {
             if (err) {
                 console.log(err);
             }
         });
     }
-}
 
-
-/*
-// Unit-test
-const input_file_path = process.argv[2];
-var graph_obj = new Graph(input_file_path);
-graph_obj.ast2graph();
-
-const source_pgm = ts.createProgram(path)
-let source_files = source_pgm.getSourceFiles();
-for (let node of source_files){
-    if (!node.fileName.endsWith(path)) {
-        console.log(node.id)
+    public map2obj(aMap:Map<string, number>){
+        const obj:{[key:string]: number} = {};
+        aMap.forEach ((v,k) => { obj[k] = v });
+        return obj;
     }
 }
-*/
