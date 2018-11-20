@@ -6,16 +6,12 @@ class GraphNaive extends Graph {
     private max_node_count: number;
     private max_label_count: number;
     private edge_type: number;
-    private label_dict: Map <string, number>;
-    private symbol_type_map:[string, string][];
     
     constructor(ast_path: string){
         super(ast_path);
         this.max_node_count = 0;
         this.max_label_count = 1;
         this.edge_type = 1;
-        this.label_dict = new Map();
-        this.symbol_type_map = [];
     } 
     
     debug_info(...args: any[]){
@@ -42,42 +38,6 @@ class GraphNaive extends Graph {
             console.log("oops. No type for " + ts.SyntaxKind[node.kind]);
         }
         return false;
-    }
-
-    get_type(node: ts.Node, checker: ts.TypeChecker): string {
-        let type: string;
-        let symbol = checker.getSymbolAtLocation(node);
-        if (!symbol) {
-            type = "$any$";
-        } 
-        else {
-            let mType = checker.typeToString(checker.getTypeOfSymbolAtLocation(symbol, node));
-            if (checker.isUnknownSymbol(symbol) || mType.startsWith('typeof ')) {
-                type = '$any$';
-            } else if (mType.startsWith('"') || mType.match('[0-9]+')) {
-                type = "none";
-            } else {
-                type = '$' + mType + '$';
-                this.symbol_type_map.push([type, symbol.escapedName.toString()])
-            }
-        }
-        return type;
-    }
-
-    get_label(node: ts.Node, checker: ts.TypeChecker): [string, number] {
-        let type: [string, number];
-        if(node.kind == ts.SyntaxKind.VariableDeclaration){
-            return [this.get_type((<ts.VariableDeclaration>node).name, checker), 1]
-        }
-
-        else if(!ts.isIdentifier(node)){
-            type = ["none", 1]
-            return type;
-        }
-
-        else {
-            return [this.get_type(node, checker), 1]
-        }
     }
 
     visit_tree(node: ts.Node, nodes: GraphNode[], edges: GraphEdge[], labels: Label[], parent: number, checker: ts.TypeChecker){

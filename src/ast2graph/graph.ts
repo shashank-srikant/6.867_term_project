@@ -25,10 +25,14 @@ export interface Label {
 export abstract class Graph {
     private ast_path: string;
     private out_path: string;
-    
+    protected label_dict: Map <string, number>;
+    protected symbol_type_map:[string, string][];
+
     constructor(ast_path:string, out_path="../data/"){
         this.ast_path = ast_path;
         this.out_path = out_path;
+        this.label_dict = new Map();
+        this.symbol_type_map = [];
     }
 
     abstract visit (node: ts.Node, pgm: ts.Program, checker: ts.TypeChecker): void;
@@ -86,6 +90,43 @@ export abstract class Graph {
         // the output of to_graph() will be pushed to write_graph() to store on disk
     }
 
+    
+    get_type(node: ts.Node, checker: ts.TypeChecker): string {
+        let type: string;
+        let symbol = checker.getSymbolAtLocation(node);
+        if (!symbol) {
+            type = "$any$";
+        } 
+        else {
+            let mType = checker.typeToString(checker.getTypeOfSymbolAtLocation(symbol, node));
+            if (checker.isUnknownSymbol(symbol) || mType.startsWith('typeof ')) {
+                console.log('in here');
+            } else if (mType.startsWith("\"") || mType.match('[0-9]+')) {
+                type = "none";
+            } else {
+                type = '$' + mType + '$';
+                this.symbol_type_map.push([type, symbol.escapedName.toString()])
+            }
+        }
+        return type;
+    }
+
+    get_label(node: ts.Node, checker: ts.TypeChecker): [string, number] {
+        let type: [string, number];
+        if(node.kind == ts.SyntaxKind.VariableDeclaration){
+            return [this.get_type((<ts.VariableDeclaration>node).name, checker), 1]
+        }
+
+        else if(!ts.isIdentifier(node)){
+            type = ["none", 1]
+            return type;
+        }
+
+        else {
+            return [this.get_type(node, checker), 1]
+        }
+    }
+    
     public print_obj(obj: any, filename = "out.log"){
         fs.writeFile(this.out_path+filename , JSON.stringify(obj), function(err) {
             if (err) {
