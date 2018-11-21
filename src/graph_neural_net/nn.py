@@ -87,7 +87,7 @@ def graphs_json_to_graph_tuple_and_labels(graphs, index_maps=None):
         tf.constant(edges, dtype=tf.float64),
         tf.constant(receivers, dtype=tf.int32),
         tf.constant(senders, dtype=tf.int32),
-        None,
+        tf.zeros([len(graphs), 0], dtype=np.float64),
         tf.constant(n_nodes, dtype=tf.int32),
         tf.constant(n_edges, dtype=tf.int32)
     )
@@ -101,7 +101,7 @@ def graphs_json_to_graph_tuple_and_labels(graphs, index_maps=None):
     return gtuple, labels, index_maps
 
 def train(train_graph, train_labels, test_graph, test_labels, num_labels,
-          nepoch=10, batch_size=16):
+          nepoch=1000, batch_size=16):
 
     NODE_LATENT_SIZE = 128
     NODE_HIDDEN_SIZE = 256
@@ -128,7 +128,30 @@ def train(train_graph, train_labels, test_graph, test_labels, num_labels,
 
     test_graph = gn.utils_tf.make_runnable_in_session(test_graph)
 
-    optimizer = tf.train.AdamOptimizer(1e-5)
+
+    def placeheld_loss():
+        g = gn.utils_tf._placeholders_from_graphs_tuple(train_graph, True)
+
+        weights = tf.placeholder(tf.float32, shape=[g.nodes.shape[0]])
+        labs = tf.placeholder(tf.int64, shape=[g.nodes.shape[0]])
+
+        subgraph = encoder_module(g)
+        for _ in range(N_ITER):
+            subgraph = latent_module(subgraph)
+        subgraph = decoder_module(subgraph)
+
+        corr = tf.reduce_sum(tf.cast(tf.equal(tf.argmax(subgraph.nodes, 1), labs),
+                                     tf.float32) * weights)
+
+        return g, weights, labs, corr, tf.losses.sparse_softmax_cross_entropy(
+            labs,
+            subgraph.nodes,
+            weights,
+        )
+
+    plh_g, plh_w, plh_l, corr, loss = placeheld_loss()
+    optimizer = tf.train.AdamOptimizer(1e-4)
+    train_fun = optimizer.minimize(loss)
 
     with tf.Session() as sess:
         try:
@@ -146,54 +169,58 @@ def train(train_graph, train_labels, test_graph, test_labels, num_labels,
                 total_corr = 0
                 n_preds = 0
 
-                for i in tqdm.trange(0, n_subgraphs, batch_size):
-                    subgraph = gn.utils_tf.concat(graphs[i:i + batch_size], 0)
-                    subgraph = gn.utils_tf.make_runnable_in_session(subgraph)
+                subgraphs = [
+                    gn.utils_tf.concat(graphs[i:i + batch_size], 0)
+                    for i in range(0, n_subgraphs, batch_size)
+                ]
+                subgraphs = [
+                    gn.graphs.GraphsTuple(*map(sess.run, subgraph))
+                    for subgraph in subgraphs
+                ]
 
+                for i, subgraph in zip(tqdm.trange(0, n_subgraphs, batch_size), subgraphs):
                     sublabels = labels[i:i+batch_size]
-                    loss_idxs = []
-                    labels_arr = []
+                    weights_arr = [0 for _ in range(subgraph.nodes.shape[0])]
+                    labels_arr = [0 for _ in range(subgraph.nodes.shape[0])]
 
                     offset = 0
                     for j, sublab in enumerate(sublabels):
-                        for node_idx, label in enumerate(sublab.items()):
-                            loss_idxs.append(node_idx + offset)
-                            labels_arr.append(1)
+                        for node_idx, label in sublab.items():
+                            n_preds += 1
+                            weights_arr[node_idx + offset] = 1
+                            labels_arr[node_idx + offset] = label
 
                         offset += subgraph.n_node[j]
 
-                    subgraph = encoder_module(subgraph)
-                    for _ in range(N_ITER):
-                        subgraph = latent_module(subgraph)
-                    subgraph = decoder_module(subgraph)
+                    feed_dict = gn.utils_tf.get_feed_dict(plh_g, subgraph)
+                    feed_dict[plh_w] = weights_arr
+                    feed_dict[plh_l] = labels_arr
 
-                    preds = tf.gather(subgraph.nodes, loss_idxs)
-                    loss = tf.losses.sparse_softmax_cross_entropy(
-                        labels_arr,
-                        preds,
+                    m_loss, m_corr, _ = sess.run([loss, corr, train_fun], feed_dict)
+
+                    total_loss += m_loss
+                    total_corr += m_corr
+
+                tqdm.tqdm.write(
+                    'Train: mean loss: {:.2f}, Mean accuracy: {:.2f} ({}/{})'.format(
+                        total_loss / n_preds,
+                        total_corr / n_preds,
+                        int(total_corr),
+                        n_preds,
                     )
-
-                    sess.run(optimizer.minimize(loss))
-
-                    total_loss += sess.run(loss)
-                    total_corr += sess.run(tf.reduce_sum(tf.equal(tf.argmax(preds, 1), labels_arr)))
-                    n_pred += len(loss_idxs)
-
-                tqdm.tqdm.twrite('Train: mean loss: {:.2f}, Mean accuracy: {:.2f}'.format(
-                    total_loss / n_preds,
-                    total_corr / n_preds,
-                ))
+                )
 
         except KeyboardInterrupt:
             print('Caught SIGINT!')
+        finally:
             dname = 'graph_{}'.format(time.strftime('%Y-%m-%d-%H:%M:%S'))
             dname = os.path.join(_DIRNAME, 'models', dname)
             os.makedirs(dname, exist_ok=True)
-            saver = tf.train.Saver([
-                encoder_module.trainable_variables,
-                latent_module.trainable_variables,
-                decoder_module.trainable_variables,
-            ])
+            saver = tf.train.Saver(
+                list(encoder_module.get_variables()) +
+                list(latent_module.get_variables()) +
+                list(decoder_module.get_variables())
+            )
             saver.save(sess, os.path.join(dname, 'model'))
             print('Saved model to {}'.format(dname))
 
