@@ -58,3 +58,25 @@ Graph-based NN related. We plan on using either the recently released DeepMind g
 - Katie: Initial architecture design+implementation on TensorFlow; graph-based NN experiments
 - Shashank: AST-processing to produce edge-information; graph-based NN experiments
 - Alex: frontend pipeline, including parsing TypeScript and outputting usable ASTs that conform to the data available in the baselines; graph-based NN experiments
+
+## Milestone 4
+We discuss our idea and demonstrate code-setup to the TA.
+
+## Milestone 5
+#### Progress
+We’re able to train a graph neural net on type data derived from the ASTs of programs! 
+
+#### Our results so far
+- On a relatively large example (`facebook.ts`, which connects to Facebook’s authentication API), we’re able to get a **training accuracy of 89%**. 
+- On two simple sample files (that we manually containing a relatively diverse distribution of rich types), we’re able to get up to about **76% training accuracy, and 43% test accuracy**, which seems to be an encouraging result.
+
+#### Baseline
+The hand crafted benchmarks from our reference paper report an **accuracy of 37.5%,  while their best result is 57% accuracy**. We believe there are tweaks we can make to significantly improve our performance.
+
+#### Shortcoming
+We are still having some issues with generalization, primarily due to the dataset distribution: the majority of types in a given file are either unique to that particular file (e.g. specialized Javascript objects are a common pattern), or are inferred as Any, the bottom type in Typescript.
+
+#### Next steps
+- Debug why our implementation is slow, so we can scale our experiments up to larger datasets
+- Continue to refine our neural network architecture, to hopefully get even better results
+- Try out some data augmentation approaches (or just take out the most common types), so that our neural network predictions are less generate w.r.t. the by far most frequent types.
