@@ -59,10 +59,10 @@ Graph-based NN related. We plan on using either the recently released DeepMind g
 - Shashank: AST-processing to produce edge-information; graph-based NN experiments
 - Alex: frontend pipeline, including parsing TypeScript and outputting usable ASTs that conform to the data available in the baselines; graph-based NN experiments
 
-## Milestone 4
+# Milestone 4
 We discuss our idea and demonstrate code-setup to the TA.
 
-## Milestone 5
+# Milestone 5
 #### Progress
 We’re able to train a graph neural net on type data derived from the ASTs of programs! 
 
