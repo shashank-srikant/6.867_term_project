@@ -254,7 +254,33 @@ def main():
 
     graph_tuple, labels, index_maps = graphs_json_to_graph_tuple_and_labels(graphs)
     n_labels = len(index_maps.label_index_map)
-    train(graph_tuple, labels, graph_tuple, labels, n_labels)
+
+    split_perc = 0.8
+    idxs = list(range(len(labels)))
+    random.shuffle(idxs)
+    n_train = math.floor(split_perc * len(idxs))
+
+    def graphs_labs_of_idxs(all_idxs):
+        graphs = [gn.utils_tf.get_graph(graph_tuple, i) for i in all_idxs]
+        labs = [labels[i] for i in all_idxs]
+        return gn.utils_tf.concat(graphs, 0), labs
+
+    train_graphs, train_labels = graphs_labs_of_idxs(idxs[:n_train])
+    test_graphs, test_labels = graphs_labs_of_idxs(idxs[n_train:])
+
+    print('train set ({} nodes, {} labels): =====\n{}\n====='.format(
+        train_graphs.nodes.shape[0],
+        sum(map(len, train_labels)),
+        '\n'.join(args.graphs[i] for i in idxs[:n_train])
+    ))
+
+    print('test set ({} nodes, {} labels): =====\n{}\n====='.format(
+        test_graphs.nodes.shape[0],
+        sum(map(len, test_labels)),
+        '\n'.join(args.graphs[i] for i in idxs[n_train:])
+    ))
+
+    train(train_graphs, train_labels, test_graphs, test_labels, n_labels)
 
 
 if __name__ == '__main__':
