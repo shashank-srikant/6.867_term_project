@@ -6,14 +6,16 @@ class GraphNaive extends Graph {
     private max_node_count: number;
     private max_label_count: number;
     private edge_type: number;
-    
-    constructor(ast_path: string){
+    private output_file: string;
+
+    constructor(ast_path: string, output_file: string){
         super(ast_path);
         this.max_node_count = 0;
         this.max_label_count = 1;
         this.edge_type = 1;
-    } 
-    
+	this.output_file = output_file;
+    }
+
     debug_info(...args: any[]){
         args.forEach(element => {
             console.log(element);
@@ -25,14 +27,14 @@ class GraphNaive extends Graph {
         // Need to distinguish between user defined and inferred types
         try {
             let ty_loc = checker.getTypeAtLocation(node);
-            console.log("node: " +  ts.SyntaxKind[node.kind] + 
+            console.log("node: " +  ts.SyntaxKind[node.kind] +
                         "; type: " + ts.TypeFlags[ty_loc.getFlags()] +
                         "; basetype: " + ty_loc.getBaseTypes()
                         );
             if(node.kind == ts.SyntaxKind.Identifier){
                 console.log("----")
             }
-            
+
         }
         catch(e) {
             console.log("oops. No type for " + ts.SyntaxKind[node.kind]);
@@ -50,7 +52,7 @@ class GraphNaive extends Graph {
                 this.label_dict.set(lbl[0], this.max_label_count);
                 this.max_label_count++;
             }
-            var labelObj:Label = {'node': curr_node_id, 
+            var labelObj:Label = {'node': curr_node_id,
                                   'label': this.label_dict.get(lbl[0]),
                                   'label_type': lbl[1]
                                 };
@@ -59,7 +61,7 @@ class GraphNaive extends Graph {
 
         var nodeobj:GraphNode = {'id': curr_node_id, 'ast_type':node.kind};
         var edgeobj:GraphEdge = {'src': parent, 'dst': curr_node_id, 'edge_type': this.edge_type}
-            
+
         nodes.push(nodeobj);
         edges.push(edgeobj);
 
@@ -68,25 +70,26 @@ class GraphNaive extends Graph {
 
     visit(node: ts.Node, pgm: ts.Program, checker: ts.TypeChecker): (void) {
         console.log('In GraphNaive.visit ..');
-        
+
         var node_list: GraphNode[] = [{'id': -1, 'ast_type':-1}];
         var edge_list: GraphEdge[] = [];
         var labels_list: Label[] = [];
         this.visit_tree(node, node_list, edge_list, labels_list, -1, checker)
-        
+
         this.debug_info(node_list, edge_list, labels_list,
                          this.label_dict, this.symbol_type_map);
-        
-        this.print_obj({"nodes": node_list, 
+
+        this.print_obj({"nodes": node_list,
                         "edges": edge_list,
                         "labels": labels_list,
                         "label_map": this.map2obj(this.label_dict)
                        },
-                        "example2.json");
+                        this.output_file);
     }
 }
 
 // Unit-test
 const inputFile = process.argv[2];
-var graph_obj = new GraphNaive(inputFile);
+const outputFile = process.argv[3] || 'example2.json';
+var graph_obj = new GraphNaive(inputFile, outputFile);
 graph_obj.ast2graph();
