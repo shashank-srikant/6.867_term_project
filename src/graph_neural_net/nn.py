@@ -91,17 +91,25 @@ def graphs_json_to_graph_tuple_and_labels(graphs, index_maps=None):
         tf.constant(n_nodes, dtype=tf.int32),
         tf.constant(n_edges, dtype=tf.int32)
     )
-    print(nodes)
-    print(edges)
-    print(receivers)
-    print(senders)   
-    print(labels)
-    sys.exit(0)
 
     return gtuple, labels, index_maps
 
+def weights_and_labels_arr(graph, labels):
+    weights_arr = np.zeros(graph.nodes.shape[0], dtype=np.float32)
+    labels_arr = np.zeros(graph.nodes.shape[0], dtype=np.int64)
+
+    offset = 0
+    for j, sublab in enumerate(labels):
+        for node_idx, label in sublab.items():
+            weights_arr[node_idx + offset] = 1
+            labels_arr[node_idx + offset] = label
+
+        offset += graph.n_node[j]
+
+    return weights_arr, labels_arr
+
 def train(train_graph, train_labels, test_graph, test_labels, num_labels,
-          nepoch=1000, batch_size=16):
+          nepoch=1000, batch_size=16, report_ep=10):
 
     NODE_LATENT_SIZE = 128
     NODE_HIDDEN_SIZE = 256
@@ -126,12 +134,8 @@ def train(train_graph, train_labels, test_graph, test_labels, num_labels,
         node_model_fn=lambda: snt.nets.MLP([NODE_LATENT_SIZE, num_labels]),
     )
 
-    test_graph = gn.utils_tf.make_runnable_in_session(test_graph)
-
-
     def placeheld_loss():
         g = gn.utils_tf._placeholders_from_graphs_tuple(train_graph, True)
-
         weights = tf.placeholder(tf.float32, shape=[g.nodes.shape[0]])
         labs = tf.placeholder(tf.int64, shape=[g.nodes.shape[0]])
 
@@ -157,6 +161,8 @@ def train(train_graph, train_labels, test_graph, test_labels, num_labels,
         try:
             sess.run(tf.global_variables_initializer())
 
+            test_graph = gn.graphs.GraphsTuple(*map(sess.run, test_graph))
+
             for epno in tqdm.trange(nepoch):
                 subgraphs_and_labels = [
                     (gn.utils_tf.get_graph(train_graph, i), train_labels[i])
@@ -166,7 +172,7 @@ def train(train_graph, train_labels, test_graph, test_labels, num_labels,
                 graphs, labels = zip(*subgraphs_and_labels)
 
                 total_loss = 0
-                total_corr = 0
+                total_correct = 0
                 n_preds = 0
 
                 subgraphs = [
@@ -180,35 +186,46 @@ def train(train_graph, train_labels, test_graph, test_labels, num_labels,
 
                 for i, subgraph in zip(tqdm.trange(0, n_subgraphs, batch_size), subgraphs):
                     sublabels = labels[i:i+batch_size]
-                    weights_arr = [0 for _ in range(subgraph.nodes.shape[0])]
-                    labels_arr = [0 for _ in range(subgraph.nodes.shape[0])]
 
-                    offset = 0
-                    for j, sublab in enumerate(sublabels):
-                        for node_idx, label in sublab.items():
-                            n_preds += 1
-                            weights_arr[node_idx + offset] = 1
-                            labels_arr[node_idx + offset] = label
-
-                        offset += subgraph.n_node[j]
-
+                    weights_arr, labels_arr = weights_and_labels_arr(subgraph, sublabels)
                     feed_dict = gn.utils_tf.get_feed_dict(plh_g, subgraph)
                     feed_dict[plh_w] = weights_arr
                     feed_dict[plh_l] = labels_arr
 
-                    m_loss, m_corr, _ = sess.run([loss, corr, train_fun], feed_dict)
 
-                    total_loss += m_loss
-                    total_corr += m_corr
+                    if epno % report_ep == 0:
+                        m_loss, m_correct, _ = sess.run([loss, corr, train_fun], feed_dict)
+                        n_preds += int(weights_arr.sum())
+                        total_loss += m_loss
+                        total_correct += m_correct
+                    else:
+                        sess.run(train_fun, feed_dict)
 
-                tqdm.tqdm.write(
-                    'Train: mean loss: {:.2f}, Mean accuracy: {:.2f} ({}/{})'.format(
-                        total_loss / n_preds,
-                        total_corr / n_preds,
-                        int(total_corr),
-                        n_preds,
+                if epno % report_ep == 0:
+                    tqdm.tqdm.write(
+                        'Train: mean loss: {:.2f}, Accuracy: {:.2f} ({}/{})'.format(
+                            total_loss / n_preds,
+                            total_correct / n_preds,
+                            int(total_correct), n_preds,
+                        )
                     )
-                )
+
+                    weights_arr, labels_arr = weights_and_labels_arr(test_graph, test_labels)
+                    feed_dict = gn.utils_tf.get_feed_dict(plh_g, test_graph)
+                    feed_dict[plh_w] = weights_arr
+                    feed_dict[plh_l] = labels_arr
+
+                    m_loss, m_correct = sess.run([loss, corr], feed_dict)
+                    m_n_preds = int(weights_arr.sum())
+
+                    tqdm.tqdm.write(
+                        'Test: mean loss: {:.2f}, Accuracy: {:.2f} ({}/{})'.format(
+                            m_loss / m_n_preds,
+                            m_correct / m_n_preds,
+                            int(m_correct), m_n_preds,
+                        )
+                    )
+
 
         except KeyboardInterrupt:
             print('Caught SIGINT!')
