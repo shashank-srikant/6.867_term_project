@@ -5,7 +5,7 @@ A recent direction of research has been to infer properties of source codes by l
 ## Problem statement
 We want to evaluate whether it is possible to infer the types of various variables in a program using machine learning. In order to answer this question, we want to use programs in a language which supports type inference, and use the inferred types as our gold standard to train a predictor. Important properties from programs like the inter-dependence of variables and the control-structures they are governed should inform such a type-prediction task.
 
-Specifically, we want to understand the difference between programs modeled using graph-neural networks, as against those modeled using more traditional machine learning models on source code, such as recurrent neural networks. 
+Specifically, we want to understand the difference between programs modeled using graph-neural networks, as against those modeled using more traditional machine learning models on source code, such as recurrent neural networks.
 
 ## Dataset
 Hellendoorn, Vincent J., et al. "Deep Learning Type Inference." (FSE 2018) is recent work by a group at Microsoft Research who inferred types using traditional neural-network based models. They have a publicly released dataset. This will help serve as our baseline to compare how graph-based neural networks perform on this task.
@@ -21,7 +21,7 @@ The dataset is available at: https://github.com/DeepTyper/DeepTyper
 # Milestone 2
 ## Machine learning approach
 
-We will model programs to predict type information in scripts written in TypeScript, a language similar to Javascript. 
+We will model programs to predict type information in scripts written in TypeScript, a language similar to Javascript.
 
 This is a supervised learning setup, where the ground truth types (labels) are obtained by running TypeScript’s internal type inference algorithm. The machine learning task is then to model each token/variable’s type information and evaluate it against what the compiler infers.
 
@@ -42,8 +42,8 @@ Typescript related. Our dataset is a large collection of TypeScript code, and it
 Graph-based NN related. We plan on using either the recently released DeepMind graph neural network library (https://github.com/deepmind/graph_nets), or the Google Brain version (https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/layers/common_message_passing_attention.py#L786). Both of these are implemented in Tensorflow.
 
 ### Code from scratch
-- Pipeline: We will write out the entire pipeline which comprise the following steps 
-    - processes Typescript codes to produce its ASTs, 
+- Pipeline: We will write out the entire pipeline which comprise the following steps
+    - processes Typescript codes to produce its ASTs,
     - process these ASTs to produce edge information for the graph-based NN, push this edge info through the graph-based NN to learn/train a model.
     - predict types on unseen programs validate results, checking train/test error in a way that matches the setup of our baseline (i.e. only on variable declarations)
 
@@ -52,7 +52,7 @@ Graph-based NN related. We plan on using either the recently released DeepMind g
 - What edges will we include in the graph we construct? Just AST edges, or will we add in control flow edges, use/def edges, or more?
 - What initial values will various nodes in the graph take on? For leaf nodes (i.e. AST tokens) this may just be a learnable embedding, but for nonterminals this is more of an open question.
 - How can we avoid choosing a hardcoded threshold for the number of iterations to train the graph-based NN on. Prior literature suffers from this problem, where a pre-decided number is not justified.
-- What improvements can we make to graph NNs? E.g. can we somehow restrict to functions that guarantee a fixpoint in the limit of infinite iterations? (is this property already satisfied? Who knows!) 
+- What improvements can we make to graph NNs? E.g. can we somehow restrict to functions that guarantee a fixpoint in the limit of infinite iterations? (is this property already satisfied? Who knows!)
 
 ## Initial division of work
 - Katie: Initial architecture design+implementation on TensorFlow; graph-based NN experiments
@@ -64,10 +64,10 @@ We discuss our idea and demonstrate code-setup to the TA.
 
 # Milestone 5
 ## Progress
-We’re able to train a graph neural net on type data derived from the ASTs of programs! 
+We’re able to train a graph neural net on type data derived from the ASTs of programs!
 
 ## Our results so far
-- On a relatively large example (`facebook.ts`, which connects to Facebook’s authentication API), we’re able to get a **training accuracy of 89%**. 
+- On a relatively large example (`facebook.ts`, which connects to Facebook’s authentication API), we’re able to get a **training accuracy of 89%**.
 - On two simple sample files (that we manually containing a relatively diverse distribution of rich types), we’re able to get up to about **76% training accuracy, and 43% test accuracy**, which seems to be an encouraging result.
 
 ## Baseline
@@ -79,4 +79,4 @@ We are still having some issues with generalization, primarily due to the datase
 ## Next steps
 - Debug why our implementation is slow, so we can scale our experiments up to larger datasets
 - Continue to refine our neural network architecture, to hopefully get even better results
-- Try out some data augmentation approaches (or just take out the most common types), so that our neural network predictions are less generate w.r.t. the by far most frequent types.
+- Try out some data augmentation approaches (or just take out the most common types), so that our neural network predictions are less degenerate with regard to the most frequent types.
