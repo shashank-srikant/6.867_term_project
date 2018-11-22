@@ -49,7 +49,6 @@ export class Graph {
             for(let i=0; i<edge_obj_list.length; i++){
                 let edge_list:GraphEdge[] = []
                 edge_obj_list[i].visit_tree(source_file, edge_list, -1, checker, this.node_id_to_nodeobj_map);
-                console.log(edge_list.length);
                 all_edges = all_edges.concat(edge_list);
             }
             // console.log("*****")
