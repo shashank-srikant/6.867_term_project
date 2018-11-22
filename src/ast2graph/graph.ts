@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import {GraphNode, Label, GraphEdge} from "./interfaces"
 import { get_all_labels } from "./label"
-import { ASTEdge } from "./edge_ast"
+import { Edge } from "./edge"
 
 // Base class to convert ASTs to graphs
 export class Graph {
@@ -19,8 +19,7 @@ export class Graph {
         this.max_node_count = 0;
     }
 
-    // ...args: (()=>GraphEdge[])[]
-    public ast2graph(){
+    public ast2graph(edge_obj_list:Edge[]):[GraphNode[], GraphEdge[], Label[], Map <string, number>]{
         // Currently, this is the source file's path, not AST's.
         const source_pgm = ts.createProgram({
             rootNames: [this.ast_path],
@@ -40,27 +39,26 @@ export class Graph {
             console.log(this.node_id_to_nodekind_list);
 
             // Populate label list for applicable node IDs
-            let label_dict = new Map();
-            let label_list:Label[] = []
-            get_all_labels(label_list, label_dict, 
+            let labels_dict = new Map();
+            let labels_list:Label[] = []
+            get_all_labels(labels_list, labels_dict, 
                             source_file, checker, this.node_id_to_nodeobj_map);
-            console.log(label_list);
-            console.log(label_dict);
+            console.log(labels_list);
+            console.log(labels_dict);
 
             // Populate multiple edge lists, one for every edge type.
-            let edge_list:GraphEdge[] = []
-            let edge_obj = new ASTEdge();
-            edge_obj.visit_tree(source_file, edge_list, -1, checker, this.node_id_to_nodeobj_map);
-            console.log(edge_list);
-            
-            /*
-            this.print_obj({"nodes": this.node_id_to_nodekind_map,
-                            "edges": edge_list,
-                            "labels": labels_list,
-                            "label_map": this.map2obj(this.label_dict)
-                            }, this.output_file);
-            */
+            let all_edges:GraphEdge[] = []
+            for(let i=0; i<edge_obj_list.length; i++){
+                let edge_list:GraphEdge[] = []
+                edge_obj_list[i].visit_tree(source_file, edge_list, -1, checker, this.node_id_to_nodeobj_map);
+                console.log(edge_list.length);
+                all_edges = all_edges.concat(edge_list);
+            }
+            console.log("*****")
+            console.log(all_edges)
+           
             console.log('done ast2graph')
+            return [this.node_id_to_nodekind_list, all_edges, labels_list, labels_dict]
         }
     }
 

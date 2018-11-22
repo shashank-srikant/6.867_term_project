@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import { GraphEdge } from "./interfaces";
 
-export abstract class Edge{
+export abstract class Edge {
     protected edge_type: number;
     protected edge_description: string;
 
