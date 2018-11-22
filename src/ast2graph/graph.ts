@@ -6,14 +6,12 @@ import { Edge } from "./edge"
 // Base class to convert ASTs to graphs
 export class Graph {
     private ast_path: string;
-    private out_path: string;
     protected node_id_to_nodekind_list: GraphNode[]
     protected node_id_to_nodeobj_map: Map<ts.Node, number>;
     private max_node_count: number;
 
-    constructor(ast_path:string, out_path="../data/"){
+    constructor(ast_path:string){
         this.ast_path = ast_path;
-        this.out_path = out_path;
         this.node_id_to_nodeobj_map = new Map();
         this.node_id_to_nodekind_list = [{'id': -1, 'ast_type':-1}];
         this.max_node_count = 0;
@@ -36,15 +34,15 @@ export class Graph {
             }
             // Populate node counters/IDs to every node in the AST            
             this.assign_node_counter(source_file);
-            console.log(this.node_id_to_nodekind_list);
+            // console.log(this.node_id_to_nodekind_list);
 
             // Populate label list for applicable node IDs
             let labels_dict = new Map();
             let labels_list:Label[] = []
             get_all_labels(labels_list, labels_dict, 
                             source_file, checker, this.node_id_to_nodeobj_map);
-            console.log(labels_list);
-            console.log(labels_dict);
+            // console.log(labels_list);
+            // console.log(labels_dict);
 
             // Populate multiple edge lists, one for every edge type.
             let all_edges:GraphEdge[] = []
@@ -54,8 +52,8 @@ export class Graph {
                 console.log(edge_list.length);
                 all_edges = all_edges.concat(edge_list);
             }
-            console.log("*****")
-            console.log(all_edges)
+            // console.log("*****")
+            // console.log(all_edges)
            
             console.log('done ast2graph')
             return [this.node_id_to_nodekind_list, all_edges, labels_list, labels_dict]

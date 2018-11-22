@@ -17,9 +17,7 @@ export function map2obj(aMap:Map<string, number>){
     return obj;
 }
 
-// Junk function. Will eventually be removed
-export function get_variable_names(node: ts.Node, pgm: ts.Program, checker:ts.TypeChecker): void{
-    var nodes: ts.Node[] = [];
+export function get_variable_names(node: ts.Node): string[]{
     function getNodes(sf: ts.Node): ts.Node[] {
         var nodes: ts.Node[] = [];
         function allNodes(n: ts.Node) {
@@ -28,18 +26,22 @@ export function get_variable_names(node: ts.Node, pgm: ts.Program, checker:ts.Ty
         allNodes(sf);
         return nodes;
     }
-    var id_nodes = getNodes(node).filter(n =>
+    let all_nodes = getNodes(node);
+    var id_nodes = all_nodes.filter(n =>
                             (n.kind === ts.SyntaxKind.VariableDeclaration)).filter(n =>
                     (<ts.VariableDeclaration>n).name.kind === ts.SyntaxKind.Identifier
                     );
-    var names = id_nodes.map(n => <string>((<ts.Identifier>(<ts.VariableDeclaration>n).name).text));
-    
-    //console.log(id_nodes_symbolobj)
-    //var names = id_nodes.map(n =>  decl_flags((<ts.Identifier>n)));
-    //var decls = names.map(n => n.getDeclarations());
-    console.log('BEGIN NAMES');
-    console.log(names);
-    console.log('END NAMES');
-    //return names
-    //return node.forEachChild(n => (this.get_variable_names(n)));
+    var names1 = id_nodes.map(n => <string>((<ts.Identifier>(<ts.VariableDeclaration>n).name).text));
+                                        
+    var fn_params = all_nodes.filter(n => (n.kind === ts.SyntaxKind.FunctionDeclaration))
+    let names2 = [];
+    for(let i = 0; i<fn_params.length; i++){
+        let li_param = (<ts.FunctionExpression>fn_params[i]).parameters;
+        for(let j = 0; j<li_param.length; j++){
+            names2.push((<ts.Identifier>li_param[j].name).escapedText.toString());
+        }
+    }    
+    let all_names = names1.concat(names2);
+    console.log(all_names);
+    return all_names;
 }
