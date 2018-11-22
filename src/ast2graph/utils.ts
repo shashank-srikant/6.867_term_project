@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as ts from 'typescript';
+import * as util from 'util';
+import { stringify } from 'querystring';
 
 export function print_obj(obj: any, out_path:string, filename = "out.log"){
     fs.writeFile(out_path+filename , JSON.stringify(obj), function(err) {
