@@ -1,4 +1,5 @@
 function foo(q) {
+    let j = 4;
     return q;
 }
 
@@ -16,6 +17,8 @@ let k = 5;
 test2(k);
 
 function test2(k){
-    return k;
+	let mmm = 212;
+	k = mmm;
+	return k;
 }
 
