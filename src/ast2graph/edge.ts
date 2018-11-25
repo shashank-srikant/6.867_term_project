@@ -2,10 +2,10 @@ import * as ts from 'typescript';
 import { GraphEdge } from "./interfaces";
 
 export abstract class Edge {
-    protected edge_type: number;
+    protected edge_type: number[];
     protected edge_description: string;
 
-    constructor(edge_type:number, edge_descrip:string){
+    constructor(edge_type:number[], edge_descrip:string){
         this.edge_type = edge_type;
         this.edge_description = edge_descrip;
     }

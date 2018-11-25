@@ -1,6 +1,6 @@
 function foo(q) {
     let j = 4;
-    return q;
+    return q + j * j;
 }
 
 var x = foo(4);
@@ -18,7 +18,7 @@ test2(k);
 
 function test2(k){
 	let mmm = 212;
-	k = mmm;
+	k = mmm + k;
 	return k;
 }
 

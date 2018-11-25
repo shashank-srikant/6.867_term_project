@@ -17,18 +17,20 @@ export function map2obj(aMap:Map<string, number>){
     return obj;
 }
 
-export function get_block_identifiers(node: ts.Node[]): string[]{
+export function get_block_identifiers(node: ts.Node[]): Set<string>{
     var id_nodes = node.filter(n => n.kind === ts.SyntaxKind.Identifier);
     var names = id_nodes.map(n => (<ts.Identifier>(n)).escapedText.toString());
-    return names;
+    let names_set = new Set(names);
+    return names_set;
 }
 
-export function get_block_variable_names_in_decl(node: ts.Node[]): string[]{
+export function get_block_variable_names_in_decl(node: ts.Node[]): Set<string>{
     var id_nodes = node.filter(n => (n.kind === ts.SyntaxKind.VariableDeclaration)).filter(
         n => (<ts.VariableDeclaration>n).name.kind === ts.SyntaxKind.Identifier
     );
     var names = id_nodes.map(n => <string>((<ts.Identifier>(<ts.VariableDeclaration>n).name).text));
-    return names;
+    let names_set = new Set(names);
+    return names_set;
 }
 
 export function getNodes(sf: ts.Node): ts.Node[] {
@@ -52,7 +54,8 @@ export function get_variable_names(node: ts.Node): Map<string, string[]>{
     let names1:string[] = [];
     for(let i = 0; i<body.length; i++){
         let all_nodes = getNodes(body[i]);
-        names1 = names1.concat(get_block_variable_names_in_decl(all_nodes));
+        let names_set = get_block_variable_names_in_decl(all_nodes);
+        names1 = names1.concat(Array.from(names_set));
     }
     all_names.set("body", names1);
     
@@ -67,7 +70,7 @@ export function get_variable_names(node: ts.Node): Map<string, string[]>{
         }
         let fn_nodes = getNodes(fn_params[i]);
         let names3 = get_block_variable_names_in_decl(fn_nodes);
-        let names_fn = names2.concat(names3);
+        let names_fn = names2.concat(Array.from(names3));
         console.log((<ts.FunctionDeclaration>fn_params[i]).name.escapedText.toString());
         all_names.set((<ts.FunctionDeclaration>fn_params[i]).name.escapedText.toString(), names_fn);
     }    
