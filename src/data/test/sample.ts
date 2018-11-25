@@ -19,7 +19,7 @@ test2(k);
 function test2(k){
 	let mmm = 212;
 	k = mmm + k;
-	k = mmm;
+	mmm = mmm + k;
 	return k;
 }
 

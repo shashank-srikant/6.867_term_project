@@ -46,6 +46,25 @@ export function get_block_variable_names_in_decl(node: ts.Node[]): Set<string>{
     return names_set;
 }
 
+export function get_block_variable_names_in_fn(node: ts.Node): Set<string>{
+    let names_fn:string[] = [];
+    let all_nodes = getNodes(node);
+    var fn_params = all_nodes.filter(n => (n.kind === ts.SyntaxKind.FunctionDeclaration));
+    for(let i = 0; i<fn_params.length; i++){
+        let names2 = [];
+        let li_param = (<ts.FunctionExpression>fn_params[i]).parameters;
+        for(let j = 0; j<li_param.length; j++){
+            names2.push((<ts.Identifier>li_param[j].name).escapedText.toString());
+        }
+        let fn_nodes = getNodes(fn_params[i]);
+        let names3 = get_block_variable_names_in_decl(fn_nodes);
+        names2 = names2.concat(Array.from(names3));
+        names_fn = names_fn.concat(names2);
+    }
+    let names_fn_set = new Set(names_fn);
+    return names_fn_set;
+}
+
 export function getNodes(sf: ts.Node): ts.Node[] {
     var nodes: ts.Node[] = [];
     function allNodes(n: ts.Node) {
@@ -60,6 +79,7 @@ export function getNodes(sf: ts.Node): ts.Node[] {
     return nodes;
 }
 
+// Junk function. Here to test out AST structure.
 export function get_variable_names(node: ts.Node): Map<string, string[]>{
     let all_names:Map<string, string[]> = new Map();
     // Get names of variables used in the script's body
