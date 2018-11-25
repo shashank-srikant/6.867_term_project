@@ -11,6 +11,10 @@ export function print_obj(obj: any, out_path:string, filename = "out.log"){
     });
 }
 
+export function pass_null_check<T>(value: T | undefined | null): value is T {
+    return <T>value !== undefined && <T>value !== null;
+}
+
 export function map2obj(aMap:Map<string, number>){
     const obj:{[key:string]: number} = {};
     aMap.forEach ((v,k) => { obj[k] = v });

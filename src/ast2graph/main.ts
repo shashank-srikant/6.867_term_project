@@ -10,7 +10,7 @@ var graph_obj = new Graph(input_file);
 
 let edge_obj_list = []
 edge_obj_list.push(new EdgeAST());
-//edge_obj_list.push(new EdgeUseDef());
+edge_obj_list.push(new EdgeUseDef());
 let [node_id_to_nodekind_map, edge_list, labels_list, label_dict] = graph_obj.ast2graph(edge_obj_list);
  
 print_obj({"nodes": node_id_to_nodekind_map,
