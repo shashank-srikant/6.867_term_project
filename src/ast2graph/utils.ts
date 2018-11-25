@@ -3,6 +3,15 @@ import * as ts from 'typescript';
 import * as util from 'util';
 import { stringify } from 'querystring';
 
+export function is_assign_op(op:ts.SyntaxKind){
+    if(op === ts.SyntaxKind.EqualsToken || op === ts.SyntaxKind.PlusEqualsToken || op ===  ts.SyntaxKind.MinusEqualsToken || op ===  ts.SyntaxKind.AsteriskAsteriskEqualsToken || op ===  ts.SyntaxKind.AsteriskEqualsToken || op ===  ts.SyntaxKind.SlashEqualsToken || op ===  ts.SyntaxKind.PercentEqualsToken || op ===  ts.SyntaxKind.AmpersandEqualsToken || op ===  ts.SyntaxKind.BarEqualsToken || op ===  ts.SyntaxKind.CaretEqualsToken || op ===  ts.SyntaxKind.LessThanLessThanEqualsToken || op ===  ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken || op ===  ts.SyntaxKind.GreaterThanGreaterThanEqualsToken){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 export function print_obj(obj: any, out_path:string, filename = "out.log"){
     fs.writeFile(out_path+filename , JSON.stringify(obj), function(err) {
         if (err) {

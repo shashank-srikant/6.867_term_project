@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 import { GraphEdge } from "./interfaces";
 import { Edge } from "./edge";
-import { get_variable_names, getNodes, get_block_identifiers, pass_null_check } from "./utils"
+import { get_variable_names, getNodes, get_block_identifiers, pass_null_check, is_assign_op} from "./utils"
 
 export class EdgeUseDef extends Edge {
     protected var_last_use: Map<string, number>;
@@ -34,45 +34,52 @@ export class EdgeUseDef extends Edge {
     private visit_block(node: ts.Node, node_map: Map<ts.Node, number>, 
                         use_use: GraphEdge[], use_def: GraphEdge[]){
         let visited_block = false;
-        console.log("***\n"+(node).getText()+"\n***");
+        console.log("***\n"+ts.SyntaxKind[node.kind]+"::"+(node).getText()+"\n***");
         switch(node.kind){
             case ts.SyntaxKind.VariableDeclaration: {
                 console.log('Declare');
                 break;
             }
             case ts.SyntaxKind.BinaryExpression: {
-                if  ((<ts.BinaryExpression> node).operatorToken.kind == ts.SyntaxKind.EqualsToken)
-                    {
-                    // Variable uses
-                    let curr_node_id = node_map.get(node);
-                    let right_node = (<ts.BinaryExpression>node).right;
-                    let node_use = getNodes(right_node);
-                    let var_names_use = Array.from(get_block_identifiers(node_use));
-                    console.log("\nBefore\n");
-                    console.log(var_names_use);
-                    console.log(this.var_last_use);
-                    console.log(use_use);
-                    for(let i = 0; i<var_names_use.length; i++){
-                        // Should check if var_names_use[i] is in the list of vars defined in fn body?
-                        if(pass_null_check(this.var_last_use.get(var_names_use[i]))){
-                            this.draw_use_use_edge(this.var_last_use.get(var_names_use[i]), curr_node_id, this.use_use_type, use_use);
-                        }
-                        this.var_last_use.set(var_names_use[i], curr_node_id);
-                    }
-                    console.log("\nAfter\n");
-                    console.log(var_names_use);
-                    console.log(this.var_last_use);
-                    console.log(use_use);
-                    console.log("================")
-                    // Variable defines
-                    let left_node = (<ts.BinaryExpression> node).left;
-                    let node_define = getNodes(left_node);
-                    let var_names_define = get_block_identifiers(node_define);
-                    visited_block = true;
-                }
-                else{
+                let is_assign = is_assign_op((<ts.BinaryExpression> node).operatorToken.kind);
 
+                let curr_node_id = node_map.get(node);
+                
+                let right_node = (<ts.BinaryExpression>node).right;
+                let right_node_arr = getNodes(right_node);
+                
+                let left_node = (<ts.BinaryExpression> node).left;
+                let left_node_arr = getNodes(left_node);
+                
+                // Variable use
+                let var_names_use = Array.from(get_block_identifiers(right_node_arr));
+                if(!is_assign){
+                    var_names_use.concat(Array.from(get_block_identifiers(left_node_arr)))
                 }
+
+                console.log("\nBefore\n");
+                console.log(var_names_use);
+                console.log(this.var_last_use);
+                console.log(use_use);
+                for(let i = 0; i<var_names_use.length; i++){
+                    // Should check if var_names_use[i] is in the list of vars defined in fn body?
+                    if(pass_null_check(this.var_last_use.get(var_names_use[i]))){
+                        this.draw_use_use_edge(this.var_last_use.get(var_names_use[i]), curr_node_id, this.use_use_type, use_use);
+                    }
+                    this.var_last_use.set(var_names_use[i], curr_node_id);
+                }
+                console.log("\nAfter\n");
+                console.log(var_names_use);
+                console.log(this.var_last_use);
+                console.log(use_use);
+                console.log("================")
+                
+                // Variable defines
+                if(is_assign){
+                    
+                }
+                visited_block = true;
+                
                 break;
             }
         }
