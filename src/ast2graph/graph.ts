@@ -47,8 +47,9 @@ export class Graph {
             // Populate multiple edge lists, one for every edge type.
             let all_edges:GraphEdge[] = []
             for(let i=0; i<edge_obj_list.length; i++){
-                let edge_list:GraphEdge[] = []
-                edge_obj_list[i].visit_tree(source_file, edge_list, -1, checker, this.node_id_to_nodeobj_map);
+                let edge_list:GraphEdge[] = [];
+                edge_list = edge_obj_list[i].visit_tree(source_file, edge_list, -1, checker, this.node_id_to_nodeobj_map);
+                console.log(edge_list);
                 all_edges = all_edges.concat(edge_list);
             }
             // console.log("*****")

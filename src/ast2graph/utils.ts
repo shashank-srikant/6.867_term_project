@@ -12,6 +12,17 @@ export function is_assign_op(op:ts.SyntaxKind){
     }
 }
 
+export function get_node(node:ts.Node[], varname:string):ts.Node[]{
+    let node_list:ts.Node[] = [];
+    var id_nodes = node.filter(n => n.kind === ts.SyntaxKind.Identifier);
+    for(let i = 0; i<id_nodes.length; i++){
+        if((<ts.Identifier>id_nodes[i]).escapedText.toString() == varname){
+            node_list.push(id_nodes[i]);
+        }
+    }
+    return node_list;
+}
+
 export function print_obj(obj: any, out_path:string, filename = "out.log"){
     fs.writeFile(out_path+filename , JSON.stringify(obj), function(err) {
         if (err) {
@@ -48,6 +59,8 @@ export function get_block_variable_names_in_decl(node: ts.Node[]): Set<string>{
 
 export function get_block_variable_names_in_fn(node: ts.Node): Set<string>{
     let names_fn:string[] = [];
+    console.log(node);
+    process.exit(0);
     let all_nodes = getNodes(node);
     var fn_params = all_nodes.filter(n => (n.kind === ts.SyntaxKind.FunctionDeclaration));
     for(let i = 0; i<fn_params.length; i++){
