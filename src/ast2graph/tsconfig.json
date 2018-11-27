@@ -9,6 +9,8 @@
   },
   "files": [
       "graph.ts",
+      "edge.ts",
+      "edge_ast.ts",
       "edge_use_def.ts",
       "interfaces.ts",
       "label.ts",
