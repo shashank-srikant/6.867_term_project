@@ -26,16 +26,25 @@ export class EdgeUseDef extends Edge {
         edge_list.push(edgeobj);
     }
 
-    private visit_block(node: ts.Node, node_map: Map<ts.Node, number>, 
+    private visit_block(node: ts.Node, node_map: Map<ts.Node, number>,
                         use_use: GraphEdge[], use_def: GraphEdge[]){
         let visited_block = false;
         //console.log("***\n"+ts.SyntaxKind[node.kind]+"::"+(node).getText()+"\n***");
         let curr_node_id = node_map.get(node);
         switch(node.kind){
             case ts.SyntaxKind.VariableDeclaration: {
-                this.var_last_define.set((<ts.Identifier>(<ts.VariableDeclaration>node).name).escapedText.toString(), curr_node_id);
-                //console.log(this.var_last_define);
-                visited_block = true;
+		let name = (<ts.VariableDeclaration> node).name;
+		switch (name.kind) {
+		    case ts.SyntaxKind.Identifier:
+			this.var_last_define.set((<ts.Identifier> name).escapedText.toString(), curr_node_id);
+			//console.log(this.var_last_define);
+			visited_block = true;
+			break;
+		    default:
+			// do nothing if this is a more complicated assignment, e.g:
+			// let [a, b] = c;
+			break;
+		}
                 break;
             }
             case ts.SyntaxKind.Parameter:{
@@ -49,10 +58,10 @@ export class EdgeUseDef extends Edge {
 
                 let right_node = (<ts.BinaryExpression>node).right;
                 let right_node_arr = getNodes(right_node);
-                
+
                 let left_node = (<ts.BinaryExpression> node).left;
                 let left_node_arr = getNodes(left_node);
-                
+
                 // Variable use
                 let var_names_use = Array.from(get_block_identifiers(right_node_arr));
                 if(!is_assign){
@@ -68,7 +77,7 @@ export class EdgeUseDef extends Edge {
                     if(pass_null_check(this.var_last_use.get(var_names_use[i]))){
                         this.draw_edge(this.var_last_use.get(var_names_use[i]), curr_node_id, this.use_use_type, use_use);
                     }
-                    
+
                     // Define-use edge
                     if(pass_null_check(this.var_last_define.get(var_names_use[i]))){
                         this.draw_edge(this.var_last_define.get(var_names_use[i]), curr_node_id, this.use_def_type, use_def);
@@ -104,13 +113,13 @@ export class EdgeUseDef extends Edge {
     public visit_tree(node: ts.Node, edges: GraphEdge[],
                         parent: number, checker: ts.TypeChecker,
                         node_map: Map<ts.Node, number>):GraphEdge[]{
-        
+
         let edges_all: GraphEdge[] = [];
         switch(node.kind){
             case ts.SyntaxKind.SourceFile: {
                 // All variables used in the program
                 //let var_map = get_variable_names(node);
-                
+
                 // Variables used in every function
                 for(let i = 0; i< (<ts.SourceFile>node).statements.length; i++){
                     if((<ts.SourceFile>node).statements[i].kind === ts.SyntaxKind.FunctionDeclaration){
