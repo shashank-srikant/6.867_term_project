@@ -11,8 +11,8 @@ export interface GraphEdge {
 
 export interface Label {
     "node": GraphNode['id'],
-    "label": number,
-    "label_type": number 
+    "label": string,
+    "label_type": number
     //to signify whether identifier is under a declaration stmnt type (0),
     // or any other node (1)
 }

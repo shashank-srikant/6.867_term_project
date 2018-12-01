@@ -1,6 +1,34 @@
 import * as ts from 'typescript';
 import {Label} from "./interfaces"
 
+function customTypeToString(checker: ts.TypeChecker, typ: ts.Type): string {
+    let node = checker.typeToTypeNode(typ);
+
+    if (ts.isFunctionOrConstructorTypeNode(node)) {
+	let n = node as (ts.FunctionTypeNode | ts.ConstructorTypeNode);
+
+	if (n.typeParameters) {
+	    n.typeParameters.forEach((p: ts.NamedDeclaration) => {p.name = ts.createIdentifier("_")});
+	}
+
+	if (n.parameters) {
+	    n.parameters.forEach((p: ts.NamedDeclaration) => {p.name = ts.createIdentifier("_")});
+	}
+
+	let options = { removeComments: true };
+        let printer = ts.createPrinter(options);
+        let res = printer.printNode(ts.EmitHint.Unspecified, n, undefined);
+
+	return res;
+    } else {
+	return checker.typeToString(
+	    typ,
+	    undefined,
+	    ts.TypeFormatFlags.NoTruncation
+	);
+    }
+}
+
 function get_type(node: ts.Node, checker: ts.TypeChecker): string {
     let type: string;
     let symbol = checker.getSymbolAtLocation(node);
@@ -8,7 +36,8 @@ function get_type(node: ts.Node, checker: ts.TypeChecker): string {
         type = "$any$";
     } 
     else {
-        let mType = checker.typeToString(checker.getTypeOfSymbolAtLocation(symbol, node));
+	let mType = customTypeToString(checker, checker.getTypeOfSymbolAtLocation(symbol, node));
+
         if (checker.isUnknownSymbol(symbol) || mType.startsWith('typeof ')) {
             console.log('in here');
         } else if (mType.startsWith("\"") || mType.match('[0-9]+')) {
@@ -56,7 +85,7 @@ export function get_all_labels(labels:Label[], label_dict:Map <string, number>,
             label_dict.set(lbl[0], max_label_count+1);
         }
         var labelObj:Label = {'node': curr_node_id,
-                                'label': label_dict.get(lbl[0]),
+                                'label': lbl[0],
                                 'label_type': lbl[1]
                             };
         labels.push(labelObj);

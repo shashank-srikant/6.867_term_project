@@ -31,26 +31,21 @@ export class EdgeUseDef extends Edge {
         let visited_block = false;
         //console.log("***\n"+ts.SyntaxKind[node.kind]+"::"+(node).getText()+"\n***");
         let curr_node_id = node_map.get(node);
+
+	let visitIdentifier = (name: ts.Node) => {
+	    if (name.kind === ts.SyntaxKind.Identifier) {
+		this.var_last_define.set((<ts.Identifier> name).escapedText.toString(), curr_node_id);
+		visited_block = true;
+	    }
+	};
+
         switch(node.kind){
             case ts.SyntaxKind.VariableDeclaration: {
-		let name = (<ts.VariableDeclaration> node).name;
-		switch (name.kind) {
-		    case ts.SyntaxKind.Identifier:
-			this.var_last_define.set((<ts.Identifier> name).escapedText.toString(), curr_node_id);
-			//console.log(this.var_last_define);
-			visited_block = true;
-			break;
-		    default:
-			// do nothing if this is a more complicated assignment, e.g:
-			// let [a, b] = c;
-			break;
-		}
+		visitIdentifier((<ts.VariableDeclaration> node).name);
                 break;
             }
             case ts.SyntaxKind.Parameter:{
-                this.var_last_define.set((<ts.Identifier>(<ts.ParameterDeclaration>node).name).escapedText.toString(), curr_node_id);
-                //console.log(this.var_last_define);
-                visited_block = true;
+		visitIdentifier((<ts.ParameterDeclaration> node).name);
                 break;
             }
             case ts.SyntaxKind.BinaryExpression: {
@@ -123,14 +118,17 @@ export class EdgeUseDef extends Edge {
                 // Variables used in every function
                 for(let i = 0; i< (<ts.SourceFile>node).statements.length; i++){
                     if((<ts.SourceFile>node).statements[i].kind === ts.SyntaxKind.FunctionDeclaration){
-                        let fn_name = (<ts.FunctionDeclaration>(<ts.SourceFile>node).statements[i]).name.escapedText.toString();
-                        console.log("in "+fn_name+" ..");
-                        //this.visit_block_variables((<ts.SourceFile>node).statements[i], edge_list, node_map, var_map.get(fn_name));
-                        let use_use: GraphEdge[] = [];
-                        let use_def: GraphEdge[] = [];
-                        this.visit_block((<ts.SourceFile>node).statements[i], node_map, use_use, use_def);
-                        edges = edges.concat(use_use);
-                        edges = edges.concat(use_def);
+			let name = (<ts.FunctionDeclaration>(<ts.SourceFile>node).statements[i]).name;
+			if (name !== undefined && name.kind === ts.SyntaxKind.Identifier) {
+                            let fn_name = name.escapedText.toString();
+                            // console.log("in "+fn_name+" ..");
+                            //this.visit_block_variables((<ts.SourceFile>node).statements[i], edge_list, node_map, var_map.get(fn_name));
+                            let use_use: GraphEdge[] = [];
+                            let use_def: GraphEdge[] = [];
+                            this.visit_block((<ts.SourceFile>node).statements[i], node_map, use_use, use_def);
+                            edges = edges.concat(use_use);
+                            edges = edges.concat(use_def);
+			}
                     }
                     else{
                         let use_use: GraphEdge[] = [];
