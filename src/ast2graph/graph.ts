@@ -26,20 +26,20 @@ export class Graph {
         });
         const checker = source_pgm.getTypeChecker()
         let source_files = source_pgm.getSourceFiles();
-        
+
         // For each source file provided
         for (let source_file of source_files) {
             if (!source_file.fileName.endsWith(this.ast_path)) {
                 continue;
             }
-            // Populate node counters/IDs to every node in the AST            
+            // Populate node counters/IDs to every node in the AST
             this.assign_node_counter(source_file);
             // console.log(this.node_id_to_nodekind_list);
 
             // Populate label list for applicable node IDs
             let labels_dict = new Map();
             let labels_list:Label[] = []
-            get_all_labels(labels_list, labels_dict, 
+            get_all_labels(labels_list, labels_dict,
                             source_file, checker, this.node_id_to_nodeobj_map);
             // console.log(labels_list);
             // console.log(labels_dict);
@@ -49,13 +49,13 @@ export class Graph {
             for(let i=0; i<edge_obj_list.length; i++){
                 let edge_list:GraphEdge[] = [];
                 edge_list = edge_obj_list[i].visit_tree(source_file, edge_list, -1, checker, this.node_id_to_nodeobj_map);
-                console.log(edge_list);
+                // console.log(edge_list);
                 all_edges = all_edges.concat(edge_list);
             }
             // console.log("*****")
             // console.log(all_edges)
-           
-            console.log('done ast2graph')
+
+            // console.log('done ast2graph')
             return [this.node_id_to_nodekind_list, all_edges, labels_list, labels_dict]
         }
     }

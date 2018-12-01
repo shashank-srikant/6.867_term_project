@@ -34,12 +34,12 @@ function get_type(node: ts.Node, checker: ts.TypeChecker): string {
     let symbol = checker.getSymbolAtLocation(node);
     if (!symbol) {
         type = "$any$";
-    } 
+    }
     else {
 	let mType = customTypeToString(checker, checker.getTypeOfSymbolAtLocation(symbol, node));
 
         if (checker.isUnknownSymbol(symbol) || mType.startsWith('typeof ')) {
-            console.log('in here');
+            // console.log('in here');
         } else if (mType.startsWith("\"") || mType.match('[0-9]+')) {
             type = "none";
         } else {
@@ -74,9 +74,9 @@ function get_max_count(label_dict: Map<string, number>):number{
 }
 
 export function get_all_labels(labels:Label[], label_dict:Map <string, number>,
-                                node: ts.Node, checker: ts.TypeChecker, 
+                                node: ts.Node, checker: ts.TypeChecker,
                                 node_map: Map<ts.Node, number>){
-    
+
     let lbl = get_label(node, checker);
     let curr_node_id = node_map.get(node);
     if(lbl[0] != "none"){

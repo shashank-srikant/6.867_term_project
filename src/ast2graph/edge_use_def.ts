@@ -29,7 +29,7 @@ export class EdgeUseDef extends Edge {
     private visit_block(node: ts.Node, node_map: Map<ts.Node, number>,
                         use_use: GraphEdge[], use_def: GraphEdge[]){
         let visited_block = false;
-        //console.log("***\n"+ts.SyntaxKind[node.kind]+"::"+(node).getText()+"\n***");
+        // console.log("***\n"+ts.SyntaxKind[node.kind]+"::"+(node).getText()+"\n***");
         let curr_node_id = node_map.get(node);
 
 	let visitIdentifier = (name: ts.Node) => {
@@ -88,13 +88,13 @@ export class EdgeUseDef extends Edge {
                     }
                 }
                 /*
-                console.log("\nAfter\n");
-                console.log(var_names_use);
-                console.log(this.var_last_use);
-                console.log(this.var_last_define);
-                console.log(use_use);
-                console.log(use_def);
-                console.log("================");
+                // console.log("\nAfter\n");
+                // console.log(var_names_use);
+                // console.log(this.var_last_use);
+                // console.log(this.var_last_define);
+                // console.log(use_use);
+                // console.log(use_def);
+                // console.log("================");
                 */
                 visited_block = true;
                 break;
@@ -136,14 +136,14 @@ export class EdgeUseDef extends Edge {
                         this.visit_block(node, node_map, use_use, use_def);
                         edges = edges.concat(use_use);
                         edges = edges.concat(use_def);
-                        //console.log(edges);
+                        // console.log(edges);
                     }
                 }
                 break;
             }
 
             default: {
-                console.log('in default')
+                // console.log('in default')
                 let use_use: GraphEdge[] = [];
                 let use_def: GraphEdge[] = [];
                 this.visit_block(node, node_map, use_use, use_def);

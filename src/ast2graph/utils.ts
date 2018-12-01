@@ -26,7 +26,7 @@ export function get_node(node:ts.Node[], varname:string):ts.Node[]{
 export function print_obj(obj: any, out_path:string, filename = "out.log"){
     fs.writeFile(out_path+filename , JSON.stringify(obj), function(err) {
         if (err) {
-            console.log(err);
+            // console.log(err);
         }
     });
 }
@@ -59,7 +59,7 @@ export function get_block_variable_names_in_decl(node: ts.Node[]): Set<string>{
 
 export function get_block_variable_names_in_fn(node: ts.Node): Set<string>{
     let names_fn:string[] = [];
-    console.log(node);
+    // console.log(node);
     process.exit(0);
     let all_nodes = getNodes(node);
     var fn_params = all_nodes.filter(n => (n.kind === ts.SyntaxKind.FunctionDeclaration));
@@ -104,7 +104,7 @@ export function get_variable_names(node: ts.Node): Map<string, string[]>{
         names1 = names1.concat(Array.from(names_set));
     }
     all_names.set("body", names1);
-    
+
     // Get per-function variable names
     let all_nodes = getNodes(node);
     var fn_params = all_nodes.filter(n => (n.kind === ts.SyntaxKind.FunctionDeclaration))
@@ -117,10 +117,10 @@ export function get_variable_names(node: ts.Node): Map<string, string[]>{
         let fn_nodes = getNodes(fn_params[i]);
         let names3 = get_block_variable_names_in_decl(fn_nodes);
         let names_fn = names2.concat(Array.from(names3));
-        console.log((<ts.FunctionDeclaration>fn_params[i]).name.escapedText.toString());
+        // console.log((<ts.FunctionDeclaration>fn_params[i]).name.escapedText.toString());
         all_names.set((<ts.FunctionDeclaration>fn_params[i]).name.escapedText.toString(), names_fn);
-    }    
+    }
     //let all_names = names1.concat(names2);
-    console.log(all_names);
+    // console.log(all_names);
     return all_names;
 }
