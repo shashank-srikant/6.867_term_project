@@ -3,16 +3,12 @@
 ## will recursively put all files from DIRECTORY into ../data/YYYY-MM-DD.HH-MM-SS/*, matching the directory structure
 
 import argparse
+import multiprocessing
 import os
 import subprocess
 import sys
-import multiprocessing
 import time
-
-try:
-    from tqdm import tqdm
-except:
-    tqdm = lambda x: x
+from tqdm import tqdm
 
 _DIRNAME = os.path.abspath(os.path.dirname(__file__))
 
@@ -44,20 +40,22 @@ def gen(directory, n_procs=8):
     if not os.path.isdir(directory):
         raise ValueError('{} is not a known directory!'.format(directory))
 
-    for (dirpath, dirnames, filenames) in tqdm(list(os.walk(directory))):
-        if '.git' in dirpath:
-            continue
-        for fname in filenames:
-            if not fname.endswith('.ts'):
+    with tqdm() as pbar:
+        for (dirpath, dirnames, filenames) in os.walk(directory):
+            if '.git' in dirpath:
                 continue
+            for fname in filenames:
+                if not fname.endswith('.ts'):
+                    continue
 
-            fname_with_json = fname[:-2] + 'json'
-            src = os.path.join(dirpath, fname)
-            dst_dir = os.path.join(rootdir, os.path.relpath(dirpath, directory))
-            dst = os.path.join(dst_dir, fname_with_json)
-            os.makedirs(os.path.join(_DIRNAME, os.pardir, 'data', dst_dir), exist_ok=True)
+                fname_with_json = fname[:-2] + 'json'
+                src = os.path.join(dirpath, fname)
+                dst_dir = os.path.join(rootdir, os.path.relpath(dirpath, directory))
+                dst = os.path.join(dst_dir, fname_with_json)
+                os.makedirs(os.path.join(_DIRNAME, os.pardir, 'data', dst_dir), exist_ok=True)
 
-            queue.put((src, dst))
+                queue.put((src, dst))
+                pbar.update(1)
 
     for proc in procs:
         queue.put(None)
