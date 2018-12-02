@@ -13,13 +13,6 @@ edge_obj_list.push(new EdgeAST());
 edge_obj_list.push(new EdgeUseDef());
 let [node_id_to_nodekind_map, edge_list, labels_list, label_dict] = graph_obj.ast2graph(edge_obj_list);
 
-var i = 0;
-for (let label of labels_list) {
-    if (label['label'] === undefined) {
-	throw new Error(`wtf bud: ${i}, ${labels_list}`);
-    }
-}
-
 print_obj({
     "nodes": node_id_to_nodekind_map,
     "edges": edge_list,
