@@ -31,7 +31,6 @@ def run_multiproc(q):
 def gen(directory, n_procs=8):
     rootdir = time.strftime('%Y-%m-%d.%H-%M-%S')
 
-
     queue = multiprocessing.Queue(n_procs + 2)
     procs = [multiprocessing.Process(target=run_multiproc, args=(queue,), daemon=True) for _ in range(n_procs)]
     for proc in procs:
@@ -40,22 +39,10 @@ def gen(directory, n_procs=8):
     if not os.path.isdir(directory):
         raise ValueError('{} is not a known directory!'.format(directory))
 
-    with tqdm() as pbar:
-        for (dirpath, dirnames, filenames) in os.walk(directory):
-            if '.git' in dirpath:
-                continue
-            for fname in filenames:
-                if not fname.endswith('.ts'):
-                    continue
-
-                fname_with_json = fname[:-2] + 'json'
-                src = os.path.join(dirpath, fname)
-                dst_dir = os.path.join(rootdir, os.path.relpath(dirpath, directory))
-                dst = os.path.join(dst_dir, fname_with_json)
-                os.makedirs(os.path.join(_DIRNAME, os.pardir, 'data', dst_dir), exist_ok=True)
-
-                queue.put((src, dst))
-                pbar.update(1)
+    for dname in tqdm(os.listdir(directory)):
+        src_dir = os.path.join(directory, dname)
+        dst_dir = os.path.join(_DIRNAME, os.pardir, 'data', rootdir, dname)
+        queue.put((src_dir, dst_dir))
 
     for proc in procs:
         queue.put(None)

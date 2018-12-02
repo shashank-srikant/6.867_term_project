@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as ts from 'typescript';
 import * as util from 'util';
+import * as path from 'path';
 import { stringify } from 'querystring';
 
 export function is_assign_op(op:ts.SyntaxKind){
@@ -24,11 +25,7 @@ export function get_node(node:ts.Node[], varname:string):ts.Node[]{
 }
 
 export function print_obj(obj: any, out_path:string, filename = "out.log"){
-    fs.writeFile(out_path+filename , JSON.stringify(obj), function(err) {
-        if (err) {
-            // console.log(err);
-        }
-    });
+    fs.writeFileSync(path.join(out_path,filename), JSON.stringify(obj));
 }
 
 export function pass_null_check<T>(value: T | undefined | null): value is T {
