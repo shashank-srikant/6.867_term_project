@@ -1,0 +1,17 @@
+{
+  "name": "ast2graph",
+  "version": "1.0.0",
+  "description": "- Preferably, install `nvm` to manage `npm` related tools (https://github.com/creationix/nvm) - `package-lock.json` lists out the dependencies.     - run `npm install typescript`     - run `npm install @types/node`",
+  "main": "build/main.js",
+  "dependencies": {
+    "@types/node": "^10.12.11",
+    "argparse": "^1.0.10",
+    "typescript": "^3.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
