@@ -39,9 +39,9 @@ function get_type(node: ts.Node, checker: ts.TypeChecker): string {
             // console.log('in here');
 	    return "none";
         } else if (mType.startsWith("\"")) {
-            return "string";
+            return "$string$";
         } else if (mType.match('[0-9]+')) {
-	    return "number";
+	    return "$number$";
 	} else {
             return '$' + mType + '$';
             //symbol_type_map.push([type, symbol.escapedName.toString()])
