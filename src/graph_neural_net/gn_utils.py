@@ -1,5 +1,6 @@
 import graph_nets as gn
 import numpy as np
+from tqdm import trange
 
 def weights_and_labels_arr(graph, labels):
     weights_arr = np.zeros(graph.nodes.shape[0], dtype=np.float32)
@@ -38,4 +39,4 @@ def concat_np(graphs):
 
 def split_np(graphs):
     n_graphs = graphs.n_node.shape[0]
-    return [gn.utils_np.get_graph(graphs, i) for i in range(n_graphs)]
+    return [gn.utils_np.get_graph(graphs, i) for i in trange(n_graphs, desc='Splitting data')]
