@@ -7,7 +7,7 @@ import math
 import nn
 import os
 import random
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import utils
 
 GraphJson = Dict[str, Any]
@@ -122,8 +122,12 @@ def main() -> None:
             for (key, count) in test_most_common:
                 f.write('{} {}\n'.format(count, label_name_map[key]))
 
+    report_params: Optional[nn.ReportParameters] = None
+    if args.report:
+        report_params = nn.ReportParameters(args.report_count, label_name_map)
+
     trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels)
-    trainer.train(report_distr=args.report, load_model=args.load_model, label_name_map=label_name_map)
+    trainer.train(load_model=args.load_model, report_params=report_params)
 
 if __name__ == '__main__':
     main()
