@@ -133,10 +133,11 @@ class Trainer:
                 correct, weight,
             )
 
-        last_report_time = 0
+        def report_test_loss():
+            test_weight, test_loss, test_correct = self._process_batches(sess, self.batched_test_graphs, self.batched_test_labels)
+            tqdm.write(fmt_report_str('Test', test_weight, test_loss, test_correct))
 
-        test_weight, test_loss, test_correct = self._process_batches(sess, self.batched_test_graphs, self.batched_test_labels)
-        tqdm.write(fmt_report_str('Test', test_weight, test_loss, test_correct))
+        last_report_time = 0
 
         for epno in trange(nepoch, desc='Epoch'):
             graphs_and_labels = list(zip(self.train_graphs, self.train_labels))
@@ -145,17 +146,14 @@ class Trainer:
             batched_train_graphs, batched_train_labels = self._batch_graphs(graphs, labels)
 
             train_weight, train_loss, train_correct = self._process_batches(sess, batched_train_graphs, batched_train_labels, train_function)
-            if (time.time() - last_report_time) > REPORT_FREQ_SECS == 0:
+            if (time.time() - last_report_time) > REPORT_FREQ_SECS:
                 last_report_time = time.time()
-
                 tqdm.write(fmt_report_str('Train', train_weight, train_loss, train_correct))
-
-                test_weight, test_loss, test_correct = self._process_batches(sess, self.batched_test_graphs, self.batched_test_labels)
-                tqdm.write(fmt_report_str('Test', test_weight, test_loss, test_correct))
+                report_test_loss()
 
                 self.save(sess)
-        test_weight, test_loss, test_correct = self._process_batches(sess, self.batched_test_graphs, self.batched_test_labels)
-        tqdm.write(fmt_report_str('Test', test_weight, test_loss, test_correct))
+
+        report_test_loss()
 
     def train(self,
               stepsize=1e-6, nepoch=1000,
