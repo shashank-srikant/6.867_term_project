@@ -97,18 +97,17 @@ def main() -> None:
     describe_dataset('train', train_names, train_graphs, train_labels)
     describe_dataset('test', test_names, test_graphs, test_labels)
 
-    def gen_report(all_labels):
+    def most_common_labels(all_labels):
         label_freq = collections.Counter()
         for label_dict in all_labels:
             label_freq.update(label_dict.values())
         return label_freq.most_common(args.report_count)
 
-
     label_name_map = utils.invert_bijective_dict(index_maps.label_index_map)
 
     if args.report:
-        train_most_common = gen_report(train_labels)
-        test_most_common = gen_report(test_labels)
+        train_most_common = most_common_labels(train_labels)
+        test_most_common = most_common_labels(test_labels)
 
         dirname = os.path.join(utils.DIRNAME, 'reports', utils.get_time_str())
         os.makedirs(dirname, exist_ok=True)
