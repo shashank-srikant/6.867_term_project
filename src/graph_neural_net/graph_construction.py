@@ -2,17 +2,17 @@ import collections
 import graph_nets as gn
 import numpy as np
 import utils
+from typing import Any, Counter, Dict, List, NamedTuple, Tuple
 
-IndexMaps = collections.namedtuple('IndexMaps', (
-    'ast_type_index_map',
-    'edge_type_index_map',
-    'label_index_map',
-))
+class IndexMaps(NamedTuple):
+    ast_type_index_map: Dict[str, int]
+    edge_type_index_map: Dict[str, int]
+    label_index_map: Dict[str, int]
 
-def construct_index_maps(graph_jsons, ast_type_unk_percent=0.1, edge_type_unk_percent=0, label_unk_percent=0.5):
-    ast_type_counter = collections.Counter()
-    edge_type_counter = collections.Counter()
-    label_counter = collections.Counter()
+def construct_index_maps(graph_jsons: List[Dict[str, Any]], ast_type_unk_percent:float=0.1, edge_type_unk_percent:float=0, label_unk_percent:float=0.5):
+    ast_type_counter = Counter[str]()
+    edge_type_counter = Counter[str]()
+    label_counter = Counter[str]()
 
     for g in graph_jsons:
         ast_type_counter.update(n['ast_type'] for n in g['nodes'])
@@ -33,13 +33,10 @@ def construct_index_maps(graph_jsons, ast_type_unk_percent=0.1, edge_type_unk_pe
 
     return IndexMaps(ast_type_index_map, edge_type_index_map, label_index_map)
 
-def graphs_json_to_graph_tuple_and_labels(graphs, index_maps=None):
-    if index_maps is None:
-        index_maps = construct_index_maps(graphs)
-
+def graphs_json_to_graph_tuple_and_labels(graphs: List[Dict[str, Any]], index_maps: IndexMaps) -> Tuple[gn.graphs.GraphsTuple, List[Dict[int, int]]]:
     ast_type_index_map, edge_type_index_map, label_index_map = index_maps
 
-    node_index_map = {}
+    node_index_map: Dict[Tuple[int, int], int] = {}
 
     n_nodes = np.array(list(len(g['nodes']) for g in graphs))
     nodes = np.zeros((sum(n_nodes), 1 + max(ast_type_index_map.values())))
@@ -86,4 +83,4 @@ def graphs_json_to_graph_tuple_and_labels(graphs, index_maps=None):
         n_edges,
     )
 
-    return gtuple, labels, index_maps
+    return gtuple, labels

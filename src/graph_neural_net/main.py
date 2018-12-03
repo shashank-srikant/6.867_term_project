@@ -6,8 +6,9 @@ import json
 import math
 import nn
 import os
+import pickle
 import random
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Counter, Dict, List, Optional, Tuple
 import utils
 
 GraphJson = Dict[str, Any]
@@ -63,6 +64,23 @@ def get_train_test_index_split(n: int, split_percent: float) -> Tuple[List[int],
     test_idxs = idxs[n_train:]
     return train_idxs, test_idxs
 
+
+def save_index_maps(index_maps: graph_construction.IndexMaps) -> None:
+    path = os.path.join(utils.DIRNAME, 'index_maps')
+    os.makedirs(path, exist_ok=True)
+    with open(os.path.join(path, utils.get_time_str()), 'wb') as f:
+        pickle.dump(index_maps, f)
+
+def report_label_distribution(name: str, labels: List[Dict[int, int]], label_name_map: Dict[int, str], report_count: int) -> None:
+    most_common = Counter[int](utils.flatten(l.values() for l in labels)).most_common(report_count)
+
+    dirname = os.path.join(utils.DIRNAME, 'reports', utils.get_time_str())
+    os.makedirs(dirname, exist_ok=True)
+    with open(os.path.join(dirname, 'distr_{}'.format(name)), 'w') as f:
+        print('total: {}'.format(sum(map(len, labels))), file=f)
+        for (key, count) in most_common:
+            print('{} {}'.format(count, label_name_map[key]), file=f)
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Train and test using the Deepmind GNN framework.')
     parser.add_argument('--file', '-f', nargs='+', help='Individual graph files to process', default=[])
@@ -89,41 +107,27 @@ def main() -> None:
     train_names, train_graph_jsons = get_split(train_idxs)
     test_names, test_graph_jsons = get_split(test_idxs)
 
-    train_graph_tuple, train_labels, index_maps = graph_construction.graphs_json_to_graph_tuple_and_labels(utils.flatten(train_graph_jsons))
+    if args.load_mappings:
+        with open(args.load_mappings, 'rb') as f:
+            index_maps = pickle.load(f)
+    else:
+        index_maps = graph_construction.construct_index_maps(utils.flatten(train_graph_jsons))
+    save_index_maps(index_maps)
+
+    train_graph_tuple, train_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(utils.flatten(train_graph_jsons), index_maps)
     train_graphs = gn_utils.split_np(train_graph_tuple)
-    test_graph_tuple, test_labels, _ = graph_construction.graphs_json_to_graph_tuple_and_labels(utils.flatten(test_graph_jsons), index_maps)
+    test_graph_tuple, test_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(utils.flatten(test_graph_jsons), index_maps)
     test_graphs = gn_utils.split_np(test_graph_tuple)
 
     describe_dataset('train', train_names, train_graphs, train_labels)
     describe_dataset('test', test_names, test_graphs, test_labels)
 
-    def most_common_labels(all_labels):
-        label_freq = collections.Counter()
-        for label_dict in all_labels:
-            label_freq.update(label_dict.values())
-        return label_freq.most_common(args.report_count)
-
-    label_name_map = utils.invert_bijective_dict(index_maps.label_index_map)
-
-    if args.report:
-        train_most_common = most_common_labels(train_labels)
-        test_most_common = most_common_labels(test_labels)
-
-        dirname = os.path.join(utils.DIRNAME, 'reports', utils.get_time_str())
-        os.makedirs(dirname, exist_ok=True)
-
-        with open(os.path.join(dirname, 'distr_train'), 'w') as f:
-            f.write('{} ~~total~~\n'.format(sum(map(len, train_labels))))
-            for (key, count) in train_most_common:
-                f.write('{} {}\n'.format(count, label_name_map[key]))
-
-        with open(os.path.join(dirname, 'distr_test'), 'w') as f:
-            f.write('{} ~~total~~\n'.format(sum(map(len, test_labels))))
-            for (key, count) in test_most_common:
-                f.write('{} {}\n'.format(count, label_name_map[key]))
-
     report_params: Optional[nn.ReportParameters] = None
+
     if args.report:
+        label_name_map = utils.invert_bijective_dict(index_maps.label_index_map)
+        report_label_distribution('train', train_labels, label_name_map, args.report_count)
+        report_label_distribution('test', test_labels, label_name_map, args.report_count)
         report_params = nn.ReportParameters(args.report_count, label_name_map)
 
     trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels)

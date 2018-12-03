@@ -1,7 +1,7 @@
 import os
 import random
 import time
-from typing import Dict, List, TypeVar
+from typing import Dict, Iterable, List, TypeVar
 
 DIRNAME = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,7 +24,7 @@ def set_random_seed(seed: int) -> None:
     else:
         random.seed(seed)
 
-def flatten(lst: List[List[V]]) -> List[V]:
+def flatten(lst: Iterable[Iterable[V]]) -> List[V]:
     return [i for l in lst for i in l]
 
 class defaultdict_nowrite(dict):

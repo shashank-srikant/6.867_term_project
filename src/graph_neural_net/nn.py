@@ -23,7 +23,9 @@ class LossPlaceholder(NamedTuple):
     placeholder_labels: tf.placeholder
 
 class BatchInput(NamedTuple):
+    output_vec: tf.Tensor
     prediction_vec: tf.Tensor
+    loss_vec: tf.Tensor
     weighted_correct: tf.Tensor
     weighted_loss: tf.Tensor
 
@@ -92,29 +94,35 @@ class Trainer:
         weights = tf.placeholder(tf.float32, shape=[n_nodes_placeholder])
         labels = tf.placeholder(tf.int64, shape=[n_nodes_placeholder])
 
+        loss_placeholder = LossPlaceholder(
+            placeholder_graph=placeholder_graph,
+            placeholder_weights=weights,
+            placeholder_labels=labels,
+         )
+
         graph = self.encoder_module(placeholder_graph)
         for _ in range(self.niter):
             graph = self.latent_module(graph)
         graph = self.decoder_module(graph)
 
         pred = tf.argmax(graph.nodes, 1)
-        pred_correct = tf.equal(pred, labels)
-        corr = tf.reduce_sum(weights * tf.cast(pred_correct, tf.float32))
-        loss = tf.losses.sparse_softmax_cross_entropy(
+
+        loss_vec = tf.losses.sparse_softmax_cross_entropy(
             labels,
             graph.nodes,
             weights,
+            reduction=tf.losses.Reduction.NONE,
         )
+        loss = tf.reduce_sum(loss_vec)
 
-        loss_placeholder= LossPlaceholder(
-            placeholder_graph=placeholder_graph,
-            placeholder_weights=weights,
-            placeholder_labels=labels,
-         )
+        correct_vec = tf.equal(pred, labels)
+        correct = tf.reduce_sum(weights * tf.cast(correct_vec, tf.float32))
 
         batch_input = BatchInput(
+            output_vec=tf.nn.softmax(graph.nodes),
             prediction_vec=pred,
-            weighted_correct=corr,
+            loss_vec=loss_vec,
+            weighted_correct=correct,
             weighted_loss=loss,
         )
 
@@ -141,8 +149,9 @@ class Trainer:
             weighted_n_preds=np.zeros(self.num_labels),
         )
 
-        for graph, labels in zip(batched_graphs, batched_labels):
+        for graph, labels in tqdm(list(zip(batched_graphs, batched_labels)), desc='Batches'):
             weights_arr, labels_arr = gn_utils.weights_and_labels_arr(graph, labels)
+
             feed_dict = gn.utils_tf.get_feed_dict(self.loss_placeholder.placeholder_graph, graph)
             feed_dict[self.loss_placeholder.placeholder_weights] = weights_arr
             feed_dict[self.loss_placeholder.placeholder_labels] = labels_arr
@@ -218,7 +227,7 @@ class Trainer:
 
         last_report_time: float = 0
 
-        for epno in trange(nepoch, desc='Epoch'):
+        for epno in trange(nepoch, desc='Epochs'):
             graphs_and_labels = list(zip(self.train_graphs, self.train_labels))
             random.shuffle(graphs_and_labels)
             graphs, labels = zip(*graphs_and_labels)
@@ -237,7 +246,7 @@ class Trainer:
         report_test_loss(nepoch)
 
     def train(self,
-              stepsize: float=1e-5, nepoch: int=1000,
+              stepsize: float=5e-3, nepoch: int=1000,
               load_model: Optional[str]=None,
               report_params:Optional[ReportParameters]=None,
     ):
