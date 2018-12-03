@@ -1,7 +1,8 @@
 import os
 import random
 import time
-from typing import Dict, Iterable, List, TypeVar
+from tqdm import tqdm
+from typing import Any, Dict, Iterable, List, Optional, TypeVar
 
 DIRNAME = os.path.abspath(os.path.dirname(__file__))
 
@@ -34,3 +35,24 @@ class defaultdict_nowrite(dict):
 
     def __missing__(self, key):
         return self.default_factory()
+
+def write(obj: Any, fname:Optional[str]=None, fappend:bool=False, nolog:bool=False) -> None:
+    to_write = str(obj)
+    if fname:
+        full_fname = os.path.join(DIRNAME, fname)
+        dirname = os.path.dirname(full_fname)
+        os.makedirs(dirname, exist_ok=True)
+        if fappend:
+            flags = 'a'
+        else:
+            flags = 'w'
+        with open(full_fname, flags) as f:
+            print(to_write, file=f)
+
+    if nolog:
+        tqdm.write(to_write)
+    else:
+        log(obj)
+
+def log(obj: Any) -> None:
+    return write(obj, os.path.join('logs', get_time_str()), True, True)

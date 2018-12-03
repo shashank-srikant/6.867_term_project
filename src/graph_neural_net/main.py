@@ -49,7 +49,7 @@ def collect_graph_jsons(files: List[str], dirs: List[str], projects: List[str]) 
     return project_names, project_graph_json
 
 def describe_dataset(dataset, names, graphs, labels):
-    print('{} set ({} nodes, {} labels): =====\n{}\n====='.format(
+    utils.log('====={} set ({} nodes, {} labels): =====\n{}\n'.format(
         dataset,
         sum(sum(g.n_node) for g in graphs),
         sum(map(len, labels)),
@@ -64,6 +64,27 @@ def get_train_test_index_split(n: int, split_percent: float) -> Tuple[List[int],
     test_idxs = idxs[n_train:]
     return train_idxs, test_idxs
 
+def load_index_maps(args: Any, graph_jsons: List[Dict[str, Any]]) -> graph_construction.IndexMaps:
+    params = {}
+    def add_arg_to_params(arg):
+        value = getattr(args, arg)
+        if value is not None:
+            params[arg] = value
+
+    for arg in ['ast_nonunk_percent', 'ast_nonunk_count',
+                'edge_nonunk_percent', 'edge_nonunk_count',
+                'label_nonunk_percent', 'label_nonunk_count',
+                ]:
+        add_arg_to_params(arg)
+
+    if args.load_mappings:
+        if params:
+            raise ValueError('Cannot modify loaded index map!')
+
+        with open(args.load_mappings, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return graph_construction.construct_index_maps(graph_jsons, **params)
 
 def save_index_maps(index_maps: graph_construction.IndexMaps) -> None:
     path = os.path.join(utils.DIRNAME, 'index_maps')
@@ -71,15 +92,22 @@ def save_index_maps(index_maps: graph_construction.IndexMaps) -> None:
     with open(os.path.join(path, utils.get_time_str()), 'wb') as f:
         pickle.dump(index_maps, f)
 
+def describe_index_maps(index_maps: graph_construction.IndexMaps) -> None:
+    utils.log('{} AST types, {} Edge types, {} labels'.format(
+        len(index_maps.ast_type_index_map),
+        len(index_maps.edge_type_index_map),
+        len(index_maps.label_index_map),
+    ))
+
 def report_label_distribution(name: str, labels: List[Dict[int, int]], label_name_map: Dict[int, str], report_count: int) -> None:
     most_common = Counter[int](utils.flatten(l.values() for l in labels)).most_common(report_count)
 
-    dirname = os.path.join(utils.DIRNAME, 'reports', utils.get_time_str())
-    os.makedirs(dirname, exist_ok=True)
-    with open(os.path.join(dirname, 'distr_{}'.format(name)), 'w') as f:
-        print('total: {}'.format(sum(map(len, labels))), file=f)
-        for (key, count) in most_common:
-            print('{} {}'.format(count, label_name_map[key]), file=f)
+    logname = os.path.join('reports', utils.get_time_str(), 'distr_{}'.format(name))
+    report = '{} set label distribution:\n\ntotal: {}\n'.format(name, sum(map(len, labels)))
+    for (key, count) in most_common:
+        report += '{} {}\n'.format(count, label_name_map[key])
+
+    utils.write(report, logname)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description='Train and test using the Deepmind GNN framework.')
@@ -92,6 +120,19 @@ def main() -> None:
     parser.add_argument('--load-mappings', nargs=1, help='File to load mappings from')
     parser.add_argument('--train-split-ratio', nargs=1, type=float, help='Train/test split ratio (default=0.8)', default=0.8)
     parser.add_argument('--random-seed', nargs=1, type=int, help='Random seed to use. Default=100, negative number = random', default=100)
+
+    ast_type_unk_group = parser.add_mutually_exclusive_group()
+    ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
+    ast_type_unk_group.add_argument('--ast-nonunk-count', type=int, help='The number of AST types to explicitly encode (i.e. not UNK)')
+
+    edge_type_unk_group = parser.add_mutually_exclusive_group()
+    edge_type_unk_group.add_argument('--edge-nonunk-percent', type=float, help='The percentage of edge types to explicitly encode (i.e. not UNK)')
+    edge_type_unk_group.add_argument('--edge-nonunk-count', type=int, help='The number of edge types to explicitly encode (i.e. not UNK)')
+
+    label_unk_group = parser.add_mutually_exclusive_group()
+    label_unk_group.add_argument('--label-nonunk-percent', type=float, help='The percentage of labels to explicitly encode (i.e. not UNK)')
+    label_unk_group.add_argument('--label-nonunk-count', type=int, help='The number of labels to explicitly encode (i.e. not UNK)')
+
     args = parser.parse_args()
 
     utils.set_random_seed(args.random_seed)
@@ -107,12 +148,9 @@ def main() -> None:
     train_names, train_graph_jsons = get_split(train_idxs)
     test_names, test_graph_jsons = get_split(test_idxs)
 
-    if args.load_mappings:
-        with open(args.load_mappings, 'rb') as f:
-            index_maps = pickle.load(f)
-    else:
-        index_maps = graph_construction.construct_index_maps(utils.flatten(train_graph_jsons))
+    index_maps = load_index_maps(args, utils.flatten(train_graph_jsons))
     save_index_maps(index_maps)
+    describe_index_maps(index_maps)
 
     train_graph_tuple, train_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(utils.flatten(train_graph_jsons), index_maps)
     train_graphs = gn_utils.split_np(train_graph_tuple)

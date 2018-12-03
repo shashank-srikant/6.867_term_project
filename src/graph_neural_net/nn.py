@@ -185,26 +185,28 @@ class Trainer:
         return batch_result_acc
 
     def report_rates_on_epoch(self, label: str, epno: int, batch_results: BatchResult, report_params: ReportParameters) -> None:
-        with open(os.path.join(utils.DIRNAME, 'reports', utils.get_time_str(), 'epoch_{}_{}'.format(epno, label)), 'w') as f:
-            f.write('Total #preds: {}\n'.format(batch_results.total_weight))
+        report_str = 'Total #preds: {}\n'.format(batch_results.total_weight)
 
-            true_pred = batch_results.weighted_true_preds
-            false_miss = batch_results.weighted_n_labs - batch_results.weighted_true_preds
-            false_pred = batch_results.weighted_n_preds - batch_results.weighted_true_preds
-            true_miss = (batch_results.total_weight - batch_results.weighted_n_labs) - false_pred
+        true_pred = batch_results.weighted_true_preds
+        false_miss = batch_results.weighted_n_labs - batch_results.weighted_true_preds
+        false_pred = batch_results.weighted_n_preds - batch_results.weighted_true_preds
+        true_miss = (batch_results.total_weight - batch_results.weighted_n_labs) - false_pred
 
-            for i in range(report_params.top_k):
-                f.write('{} -- True pred: {}, False miss: {}, False pred: {}, True Miss: {}\n'.format(
-                    *map(lambda x: x[i], (report_params.label_name_map, true_pred, false_miss, false_pred, true_miss))
-                ))
+        report_for_i = lambda i: '{} -- True pred: {}, False miss: {}, False pred: {}, True Miss: {}'.format(
+            *map(lambda x: x[i], (report_params.label_name_map, true_pred, false_miss, false_pred, true_miss))
+        )
+
+        report_str += '\n'.join(map(report_for_i, range(report_params.top_k))) + '\n'
+
+        utils.write(report_str, os.path.join('reports', utils.get_time_str(), 'epoch_{}_{}'.format(epno, label)))
 
     def save(self, sess: tf.Session) -> None:
-        tqdm.write('Saving model...')
+        utils.log('Saving model...')
         dname = 'graph_{}'.format(utils.get_time_str())
         dname = os.path.join(utils.DIRNAME, 'models', dname)
         os.makedirs(dname, exist_ok=True)
         self.saver.save(sess, os.path.join(dname, 'model'))
-        tqdm.write('Saved model to {}'.format(dname))
+        utils.log('Saved model to {}'.format(dname))
 
     def _train(self,
                sess: tf.Session, train_function: Any,
@@ -221,7 +223,7 @@ class Trainer:
 
         def report_test_loss(epno: int) -> None:
             test_batch_result = self._process_batches(sess, self.batched_test_graphs, self.batched_test_labels)
-            tqdm.write(fmt_report_str('Test', test_batch_result))
+            utils.log(fmt_report_str('Test', test_batch_result))
             if report_params:
                 self.report_rates_on_epoch('Test', epno, test_batch_result, report_params)
 
@@ -235,7 +237,7 @@ class Trainer:
 
             train_batch_result = self._process_batches(sess, batched_train_graphs, batched_train_labels, train_function)
             if (time.time() - last_report_time) > REPORT_FREQ_SECS:
-                tqdm.write(fmt_report_str('Train', train_batch_result))
+                utils.log(fmt_report_str('Train', train_batch_result))
                 if report_params:
                     self.report_rates_on_epoch('Train', epno, train_batch_result, report_params)
                 report_test_loss(epno)
@@ -266,6 +268,6 @@ class Trainer:
                     report_params=report_params,
                 )
             except KeyboardInterrupt:
-                print('Caught SIGINT!')
+                utils.log('Caught SIGINT!')
             finally:
                 self.save(sess)

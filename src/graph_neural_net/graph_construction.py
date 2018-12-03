@@ -2,14 +2,18 @@ import collections
 import graph_nets as gn
 import numpy as np
 import utils
-from typing import Any, Counter, Dict, List, NamedTuple, Tuple
+from typing import Any, Counter, Dict, List, NamedTuple, Optional, Tuple
 
 class IndexMaps(NamedTuple):
     ast_type_index_map: Dict[str, int]
     edge_type_index_map: Dict[str, int]
     label_index_map: Dict[str, int]
 
-def construct_index_maps(graph_jsons: List[Dict[str, Any]], ast_type_unk_percent:float=0.1, edge_type_unk_percent:float=0, label_unk_percent:float=0.5):
+def construct_index_maps(graph_jsons: List[Dict[str, Any]],
+                         ast_nonunk_percent:Optional[float]=None, ast_nonunk_count:Optional[int]=None,
+                         edge_nonunk_percent:Optional[float]=None, edge_nonunk_count:Optional[int]=None,
+                         label_nonunk_percent:Optional[float]=None, label_nonunk_count:Optional[int]=None,
+):
     ast_type_counter = Counter[str]()
     edge_type_counter = Counter[str]()
     label_counter = Counter[str]()
@@ -19,17 +23,29 @@ def construct_index_maps(graph_jsons: List[Dict[str, Any]], ast_type_unk_percent
         edge_type_counter.update(n['edge_type'] for n in g['edges'])
         label_counter.update(l['label'] for l in g['labels'])
 
-    def unked_index_map(counter, percent):
+    def count(counter: Counter[str], percent: Optional[float], raw_count: Optional[int]) -> int:
+        if percent is not None and raw_count is not None:
+            raise ValueError('[nonunk_percent] and [nonunk_count] cannot both be provided')
+        elif percent is not None:
+            if percent < 0 or percent > 1:
+                raise ValueError('Percent [{}] is invalid'.format(percent))
+            return int(len(counter) * percent)
+        elif raw_count is not None:
+            return min(max(raw_count, 0), len(counter))
+        else:
+            return len(counter)
+
+    def unked_index_map(counter: Counter[str], percent: Optional[float], raw_count: Optional[int]) -> Dict[str, int]:
         # default to 0
         m = utils.defaultdict_nowrite(int)
         m['__UNK__'] = 0
-        k = int(len(counter) * (1 - percent))
+        k = count(counter, percent, raw_count)
         m.update({n: i + 1 for (i, (n, _)) in enumerate(counter.most_common(k))})
         return m
 
-    ast_type_index_map = unked_index_map(ast_type_counter, ast_type_unk_percent)
-    edge_type_index_map = unked_index_map(edge_type_counter, edge_type_unk_percent)
-    label_index_map = unked_index_map(label_counter, label_unk_percent)
+    ast_type_index_map = unked_index_map(ast_type_counter, ast_nonunk_percent, ast_nonunk_count)
+    edge_type_index_map = unked_index_map(edge_type_counter, edge_nonunk_percent, edge_nonunk_count)
+    label_index_map = unked_index_map(label_counter, label_nonunk_percent, label_nonunk_count)
 
     return IndexMaps(ast_type_index_map, edge_type_index_map, label_index_map)
 
