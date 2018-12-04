@@ -137,6 +137,7 @@ def main() -> None:
     parser.add_argument('--node-hidden-size', type=int, help='Hidden state vector size for nodes (in 1-layer net)', default=256)
     parser.add_argument('--edge-latent-size', type=int, help='Latent state vector size for edges', default=128)
     parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=256)
+    parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=False, action='store_true')
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
     ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
@@ -174,6 +175,13 @@ def main() -> None:
         index_maps,
         ignore_edge_types=args.ignore_edge_type,
     )
+
+    if args.train_without_unk:
+        for labels in train_labels:
+            for (k, v) in list(labels.items()):
+                if v == 0:
+                    del labels[k]
+
     train_graphs = gn_utils.split_np(train_graph_tuple)
     test_graph_tuple, test_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(
         utils.flatten(test_graph_jsons),
@@ -193,7 +201,7 @@ def main() -> None:
         report_label_distribution('test', test_labels, label_name_map, args.report_count)
         report_params = nn.ReportParameters(args.report_count, label_name_map)
 
-    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels,
+    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels, index_maps.label_index_map,
                          niter=args.niter, iteration_ensemble=args.iteration_ensemble,
                          batch_size=args.batch_size, top_k_report=args.top_k_accuracy,
                          node_latent_size=args.node_latent_size, node_hidden_size=args.node_hidden_size,

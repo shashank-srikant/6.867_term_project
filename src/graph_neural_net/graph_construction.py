@@ -4,6 +4,8 @@ import numpy as np
 import utils
 from typing import Any, Counter, Dict, List, NamedTuple, Optional, Tuple
 
+UNK = 'UNK'
+
 class IndexMaps(NamedTuple):
     ast_type_index_map: Dict[str, int]
     edge_type_index_map: Dict[str, int]
@@ -45,7 +47,7 @@ def construct_index_maps(graph_jsons: List[Dict[str, Any]],
     def unked_index_map(counter: Counter[str], percent: Optional[float], raw_count: Optional[int]) -> Dict[str, int]:
         # default to 0
         m = utils.defaultdict_nowrite(int)
-        m['__UNK__'] = 0
+        m[UNK] = 0
         k = count(counter, percent, raw_count)
         m.update({n: i + 1 for (i, (n, _)) in enumerate(counter.most_common(k))})
         return m

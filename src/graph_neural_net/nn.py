@@ -1,3 +1,4 @@
+import graph_construction
 import graph_nets as gn
 import gn_utils
 import numpy as np
@@ -45,6 +46,7 @@ class Trainer:
                  train_labels: List[Dict[int, int]],
                  test_graphs: List[gn.graphs.GraphsTuple],
                  test_labels: List[Dict[int, int]],
+                 label_index_map: Dict[str, int],
                  *,
                  niter: int=10, iteration_ensemble: bool = False, batch_size: int=16,
                  top_k_report: Sequence[int]=[1],
@@ -55,6 +57,7 @@ class Trainer:
         self.train_labels = train_labels
         self.test_graphs = test_graphs
         self.test_labels = test_labels
+        self.label_index_map = label_index_map
 
         self.niter = niter
         self.batch_size = batch_size
@@ -137,7 +140,7 @@ class Trainer:
             top_k_corr.append(sum_in_top_k)
 
             unkless_in_top_k = tf.nn.in_top_k(tf.cast(nodes, tf.float32), labels, k)
-            unkless_sum_in_top_k = tf.reduce_sum(weights * tf.cast((~tf.equal(labels, 0)) & unkless_in_top_k, tf.float32))
+            unkless_sum_in_top_k = tf.reduce_sum(weights * tf.cast((~tf.equal(labels, self.label_index_map[graph_construction.UNK])) & unkless_in_top_k, tf.float32))
             unkless_top_k_corr.append(unkless_sum_in_top_k)
 
         top_k_corr = tf.stack(top_k_corr, axis=0)
@@ -243,7 +246,7 @@ class Trainer:
             report = '{}: {} Predictions\n'.format(name, batch_result.total_weight)
             report += 'Loss: {:.2f}\n'.format(batch_result.sum_loss / batch_result.total_weight)
 
-            unkless_weight = batch_result.total_weight - batch_result.weighted_n_labs[0]
+            unkless_weight = batch_result.total_weight - batch_result.weighted_n_labs[self.label_index_map[graph_construction.UNK]]
 
             for (k, corr, unkless_corr) in zip(self.top_k_report, batch_result.sum_weighted_correct, batch_result.sum_unkless_weighted_correct):
                 report += 'Top {} accuracy: {:.2f} ({:.2f} w/out UNK)\n'.format(
