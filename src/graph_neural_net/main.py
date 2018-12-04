@@ -121,18 +121,22 @@ def main() -> None:
     parser.add_argument('--dir', '--directory', '-d', nargs='+', help='Individual project directories to process', default=[])
     parser.add_argument('--project', '-p', nargs='+', help='Directories containing a list of directories (equivalent to --dir PROJECT/*)', default=[])
     parser.add_argument('--report', help='Report data item frequencies', action='store_true', default=False)
-    parser.add_argument('--report-count', nargs=1, type=int, help='Count of items to report. Default 10', default=10)
+    parser.add_argument('--report-count', type=int, help='Count of items to report. Default 10', default=10)
     parser.add_argument('--load-model', help='File to load model from')
-    parser.add_argument('--load-mappings', nargs=1, help='File to load mappings from')
-    parser.add_argument('--train-split-ratio', nargs=1, type=float, help='Train/test split ratio (default=0.8)', default=0.8)
-    parser.add_argument('--step-size', nargs=1, type=float, help='Step size (default=1e-3)', default=1e-3)
-    parser.add_argument('--random-seed', nargs=1, type=int, help='Random seed to use. Default=100, negative number = random', default=100)
-    parser.add_argument('--niter', nargs=1, type=int, help='Number of iterations to run the GNN for.', default=10)
+    parser.add_argument('--load-mappings', help='File to load mappings from')
+    parser.add_argument('--train-split-ratio', type=float, help='Train/test split ratio (default=0.8)', default=0.8)
+    parser.add_argument('--step-size', type=float, help='Step size (default=1e-3)', default=1e-3)
+    parser.add_argument('--random-seed', type=int, help='Random seed to use. Default=100, negative number = random', default=100)
+    parser.add_argument('--niter', type=int, help='Number of iterations to run the GNN for.', default=10)
     parser.add_argument('--ignore-edge-type', nargs='+', type=int, help='Whether to completely ignore the given edge type', default=[])
     parser.add_argument('--no-collapse-any-unk', help='Don\'t collapse the $any$ and UNK tokens.', default=False, action='store_true')
     parser.add_argument('--batch-size', type=int, help='File batch size for training and testing', default=16)
     parser.add_argument('--iteration-ensemble', help='Whether to run the "iteration ensemble" experiment.', default=False, action='store_true')
     parser.add_argument('--top-k-accuracy', nargs='+', type=int, help='How many accuracies to report. Default 1.', default=[1])
+    parser.add_argument('--node-latent-size', type=int, help='Latent state vector size for nodes', default=128)
+    parser.add_argument('--node-hidden-size', type=int, help='Hidden state vector size for nodes (in 1-layer net)', default=256)
+    parser.add_argument('--edge-latent-size', type=int, help='Latent state vector size for edges', default=128)
+    parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=256)
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
     ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
@@ -189,7 +193,12 @@ def main() -> None:
         report_label_distribution('test', test_labels, label_name_map, args.report_count)
         report_params = nn.ReportParameters(args.report_count, label_name_map)
 
-    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels, niter=args.niter, iteration_ensemble=args.iteration_ensemble, batch_size=args.batch_size, top_k_report=args.top_k_accuracy)
+    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels,
+                         niter=args.niter, iteration_ensemble=args.iteration_ensemble,
+                         batch_size=args.batch_size, top_k_report=args.top_k_accuracy,
+                         node_latent_size=args.node_latent_size, node_hidden_size=args.node_hidden_size,
+                         edge_latent_size=args.edge_latent_size, edge_hidden_size=args.edge_hidden_size,
+    )
     trainer.train(stepsize=args.step_size, load_model=args.load_model, report_params=report_params)
 
 if __name__ == '__main__':

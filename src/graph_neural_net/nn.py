@@ -11,11 +11,6 @@ from tqdm import tqdm, trange
 from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Tuple
 import utils
 
-NODE_LATENT_SIZE = 128
-NODE_HIDDEN_SIZE = 256
-EDGE_LATENT_SIZE = 128
-EDGE_HIDDEN_SIZE = 256
-
 REPORT_FREQ_SECS = 600
 
 class LossPlaceholder(NamedTuple):
@@ -51,6 +46,8 @@ class Trainer:
                  *,
                  niter: int=10, iteration_ensemble: bool = False, batch_size: int=16,
                  top_k_report: Sequence[int]=[1],
+                 node_latent_size:int=128, node_hidden_size:int=256,
+                 edge_latent_size:int=128, edge_hidden_size:int=256,
     ) -> None:
         self.train_graphs = train_graphs
         self.train_labels = train_labels
@@ -69,16 +66,16 @@ class Trainer:
         self.num_labels = 1 + max(l for lab_dict in train_labels for l in lab_dict.values())
 
         self.encoder_module = gn.modules.InteractionNetwork(
-            edge_model_fn=lambda: snt.nets.MLP([edge_features_len, EDGE_LATENT_SIZE]),
-            node_model_fn=lambda: snt.nets.MLP([node_features_len, NODE_LATENT_SIZE]),
+            edge_model_fn=lambda: snt.nets.MLP([edge_features_len, edge_latent_size]),
+            node_model_fn=lambda: snt.nets.MLP([node_features_len, node_latent_size]),
         )
         self.latent_module = gn.modules.InteractionNetwork(
-            edge_model_fn=lambda: snt.nets.MLP([EDGE_LATENT_SIZE, EDGE_HIDDEN_SIZE, EDGE_LATENT_SIZE]),
-            node_model_fn=lambda: snt.nets.MLP([NODE_LATENT_SIZE, NODE_HIDDEN_SIZE, NODE_LATENT_SIZE]),
+            edge_model_fn=lambda: snt.nets.MLP([edge_latent_size, edge_hidden_size, edge_latent_size]),
+            node_model_fn=lambda: snt.nets.MLP([node_latent_size, node_hidden_size, node_latent_size]),
         )
         self.decoder_module = gn.modules.InteractionNetwork(
-            edge_model_fn=lambda: snt.nets.MLP([EDGE_LATENT_SIZE, EDGE_LATENT_SIZE]),
-            node_model_fn=lambda: snt.nets.MLP([NODE_LATENT_SIZE, self.num_labels]),
+            edge_model_fn=lambda: snt.nets.MLP([edge_latent_size, edge_latent_size]),
+            node_model_fn=lambda: snt.nets.MLP([node_latent_size, self.num_labels]),
         )
         self.using_iteration_ensemble = iteration_ensemble
         self.iteration_ensemble_weights = tf.get_variable('iteration_ensemble_weights', [niter + 1], trainable=True, dtype=tf.float64)
@@ -168,7 +165,7 @@ class Trainer:
             weighted_n_preds=np.zeros(self.num_labels),
         )
 
-        for graph, labels in tqdm(list(zip(batched_graphs, batched_labels)), desc='Batches'):
+        for graph, labels in tqdm(list(zip(batched_graphs, batched_labels)), desc='Batches', leave=False):
             weights_arr, labels_arr = gn_utils.weights_and_labels_arr(graph, labels)
 
             feed_dict = gn.utils_tf.get_feed_dict(self.loss_placeholder.placeholder_graph, graph)
