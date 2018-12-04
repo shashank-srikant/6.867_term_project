@@ -3,8 +3,10 @@ import random
 import time
 from tqdm import tqdm
 from typing import Any, Dict, Iterable, List, Optional, TypeVar
+import pickle as pkl
 
-DIRNAME = os.path.abspath(os.path.dirname(__file__))
+#DIRNAME = os.path.abspath(os.path.dirname(__file__))
+DIRNAME = '../data/'
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -56,3 +58,11 @@ def write(obj: Any, fname:Optional[str]=None, fappend:bool=False, nolog:bool=Fal
 
 def log(obj: Any) -> None:
     return write(obj, os.path.join('logs', get_time_str()), True, True)
+
+def save_data(directory: str, **kwrgs):
+    for k, v in kwargs.items():
+        with open(os.path.join([DIR, directory, k]), 'wb') as fp:
+            pkl.dump(v)
+            fp.close()
+
+
