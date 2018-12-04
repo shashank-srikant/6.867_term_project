@@ -33,6 +33,8 @@ def collect_graph_jsons(files: List[str], dirs: List[str], projects: List[str]) 
         project_graph_files.append(collect_jsons_in_directory(directory))
 
     for project in projects:
+        if not os.path.exists(project):
+            raise ValueError('{} does not exist')
         for directory in os.listdir(project):
             path = os.path.join(project, directory)
             project_names.append(path)
@@ -42,6 +44,8 @@ def collect_graph_jsons(files: List[str], dirs: List[str], projects: List[str]) 
     for files in project_graph_files:
         jsons = []
         for fname in files:
+            if not os.path.exists(fname):
+                raise ValueError('{} does not exist')
             with open(fname) as f:
                 jsons.append(json.load(f))
         project_graph_json.append(jsons)
@@ -84,7 +88,7 @@ def load_index_maps(args: Any, graph_jsons: List[Dict[str, Any]]) -> graph_const
         with open(args.load_mappings, 'rb') as f:
             return pickle.load(f)
     else:
-        return graph_construction.construct_index_maps(graph_jsons, **params)
+        return graph_construction.construct_index_maps(graph_jsons, not args.no_collapse_any_unk, **params)
 
 def save_index_maps(index_maps: graph_construction.IndexMaps) -> None:
     path = os.path.join(utils.DIRNAME, 'index_maps')
@@ -119,7 +123,13 @@ def main() -> None:
     parser.add_argument('--load-model', help='File to load model from')
     parser.add_argument('--load-mappings', nargs=1, help='File to load mappings from')
     parser.add_argument('--train-split-ratio', nargs=1, type=float, help='Train/test split ratio (default=0.8)', default=0.8)
+    parser.add_argument('--step-size', nargs=1, type=float, help='Step size (default=1e-3)', default=1e-3)
     parser.add_argument('--random-seed', nargs=1, type=int, help='Random seed to use. Default=100, negative number = random', default=100)
+    parser.add_argument('--niter', nargs=1, type=int, help='Number of iterations to run the GNN for.', default=10)
+    parser.add_argument('--ignore-edge-type', type=int, help='Whether to completely ignore the given edge type', action='append', default=[])
+    parser.add_argument('--no-collapse-any-unk', help='Don\'t collapse the $any$ and UNK tokens.', default=False, action='store_true')
+    parser.add_argument('--batch-size', type=int, help='File batch size for training and testing', default=16)
+    parser.add_argument('--iteration-ensemble', help='Whether to run the "iteration ensemble" experiment.', default=False, action='store_true')
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
     ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
@@ -152,9 +162,17 @@ def main() -> None:
     save_index_maps(index_maps)
     describe_index_maps(index_maps)
 
-    train_graph_tuple, train_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(utils.flatten(train_graph_jsons), index_maps)
+    train_graph_tuple, train_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(
+        utils.flatten(train_graph_jsons),
+        index_maps,
+        ignore_edge_types=args.ignore_edge_type,
+    )
     train_graphs = gn_utils.split_np(train_graph_tuple)
-    test_graph_tuple, test_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(utils.flatten(test_graph_jsons), index_maps)
+    test_graph_tuple, test_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(
+        utils.flatten(test_graph_jsons),
+        index_maps,
+        ignore_edge_types=args.ignore_edge_type,
+    )
     test_graphs = gn_utils.split_np(test_graph_tuple)
 
     describe_dataset('train', train_names, train_graphs, train_labels)
@@ -168,8 +186,8 @@ def main() -> None:
         report_label_distribution('test', test_labels, label_name_map, args.report_count)
         report_params = nn.ReportParameters(args.report_count, label_name_map)
 
-    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels)
-    trainer.train(load_model=args.load_model, report_params=report_params)
+    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels, niter=args.niter, iteration_ensemble=args.iteration_ensemble, batch_size=args.batch_size)
+    trainer.train(stepsize=args.step_size, load_model=args.load_model, report_params=report_params)
 
 if __name__ == '__main__':
     main()

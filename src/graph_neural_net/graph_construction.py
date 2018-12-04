@@ -10,6 +10,7 @@ class IndexMaps(NamedTuple):
     label_index_map: Dict[str, int]
 
 def construct_index_maps(graph_jsons: List[Dict[str, Any]],
+                         collapse_any_unk:bool,
                          ast_nonunk_percent:Optional[float]=None, ast_nonunk_count:Optional[int]=None,
                          edge_nonunk_percent:Optional[float]=None, edge_nonunk_count:Optional[int]=None,
                          label_nonunk_percent:Optional[float]=None, label_nonunk_count:Optional[int]=None,
@@ -18,10 +19,16 @@ def construct_index_maps(graph_jsons: List[Dict[str, Any]],
     edge_type_counter = Counter[str]()
     label_counter = Counter[str]()
 
+    def should_keep_label(l: str) -> bool:
+        if collapse_any_unk:
+            return l != '$any$'
+        else:
+            return True
+
     for g in graph_jsons:
         ast_type_counter.update(n['ast_type'] for n in g['nodes'])
         edge_type_counter.update(n['edge_type'] for n in g['edges'])
-        label_counter.update(l['label'] for l in g['labels'])
+        label_counter.update(filter(should_keep_label, (l['label'] for l in g['labels'])))
 
     def count(counter: Counter[str], percent: Optional[float], raw_count: Optional[int]) -> int:
         if percent is not None and raw_count is not None:
@@ -49,7 +56,11 @@ def construct_index_maps(graph_jsons: List[Dict[str, Any]],
 
     return IndexMaps(ast_type_index_map, edge_type_index_map, label_index_map)
 
-def graphs_json_to_graph_tuple_and_labels(graphs: List[Dict[str, Any]], index_maps: IndexMaps) -> Tuple[gn.graphs.GraphsTuple, List[Dict[int, int]]]:
+def graphs_json_to_graph_tuple_and_labels(
+        graphs: List[Dict[str, Any]],
+        index_maps: IndexMaps,
+        ignore_edge_types:Optional[List[int]],
+) -> Tuple[gn.graphs.GraphsTuple, List[Dict[int, int]]]:
     ast_type_index_map, edge_type_index_map, label_index_map = index_maps
 
     node_index_map: Dict[Tuple[int, int], int] = {}
@@ -66,14 +77,17 @@ def graphs_json_to_graph_tuple_and_labels(graphs: List[Dict[str, Any]], index_ma
             node_index_map[(g_idx, nid)] = nidx
             nodes[nidx, ast_type_index_map[n['ast_type']]] = 1
 
-    n_edges = np.array(list(len(g['edges']) for g in graphs))
+    ignore_edge_types_set = set(ignore_edge_types or [])
+    legal_edges_of = lambda es: [e for e in es if e['edge_type'] not in ignore_edge_types_set]
+
+    n_edges = np.array(list(len(legal_edges_of(g['edges'])) for g in graphs))
     senders = np.empty(sum(n_edges), dtype=np.int64)
     receivers = np.empty(sum(n_edges), dtype=np.int64)
     edges = np.zeros((sum(n_edges), 1 + max(edge_type_index_map.values())))
 
     i = 0
     for g_idx, g in enumerate(graphs):
-        for e in g['edges']:
+        for e in legal_edges_of(g['edges']):
             edges[i, edge_type_index_map[e['edge_type']]] = 1
             senders[i] = node_index_map[(g_idx, e['src'])]
             receivers[i] = node_index_map[(g_idx, e['dst'])]

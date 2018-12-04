@@ -48,7 +48,7 @@ class Trainer:
                  test_graphs: List[gn.graphs.GraphsTuple],
                  test_labels: List[Dict[int, int]],
                  *,
-                 niter: int=10, batch_size: int=16,
+                 niter: int=10, iteration_ensemble: bool = False, batch_size: int=16,
     ) -> None:
         self.train_graphs = train_graphs
         self.train_labels = train_labels
@@ -77,6 +77,8 @@ class Trainer:
             edge_model_fn=lambda: snt.nets.MLP([EDGE_LATENT_SIZE, EDGE_LATENT_SIZE]),
             node_model_fn=lambda: snt.nets.MLP([NODE_LATENT_SIZE, self.num_labels]),
         )
+        self.using_iteration_ensemble = iteration_ensemble
+        self.iteration_ensemble_weights = tf.get_variable('iteration_ensemble_weights', [niter + 1], trainable=True, dtype=tf.float64)
 
         self.loss_placeholder, self.batch_input = self._construct_loss_placeholder_and_batch_input()
         self.batched_test_graphs, self.batched_test_labels = self._batch_graphs(test_graphs, test_labels)
@@ -84,7 +86,8 @@ class Trainer:
         self.saver = tf.train.Saver(
             list(self.encoder_module.get_variables()) +
             list(self.latent_module.get_variables()) +
-            list(self.decoder_module.get_variables())
+            list(self.decoder_module.get_variables()) +
+            [self.iteration_ensemble_weights]
         )
 
     def _construct_loss_placeholder_and_batch_input(self) -> Tuple[LossPlaceholder, BatchInput]:
@@ -100,16 +103,25 @@ class Trainer:
             placeholder_labels=labels,
          )
 
-        graph = self.encoder_module(placeholder_graph)
+        init_graph = self.encoder_module(placeholder_graph)
+        iter_graphs = [init_graph]
         for _ in range(self.niter):
-            graph = self.latent_module(graph)
-        graph = self.decoder_module(graph)
+            iter_graphs.append(self.latent_module(iter_graphs[-1]))
+        decoded_graphs = list(map(self.decoder_module, iter_graphs))
 
-        pred = tf.argmax(graph.nodes, 1)
+        if self.using_iteration_ensemble:
+            ensemble_probs = tf.nn.softmax(self.iteration_ensemble_weights)
+            nodes = ensemble_probs[0] * decoded_graphs[0].nodes
+            for i in range(1, self.niter + 1):
+                nodes += ensemble_probs[i] * decoded_graphs[i].nodes
+        else:
+            nodes = decoded_graphs[-1].nodes
+
+        pred = tf.argmax(nodes, 1)
 
         loss_vec = tf.losses.sparse_softmax_cross_entropy(
             labels,
-            graph.nodes,
+            nodes,
             weights,
             reduction=tf.losses.Reduction.NONE,
         )
@@ -119,7 +131,7 @@ class Trainer:
         correct = tf.reduce_sum(weights * tf.cast(correct_vec, tf.float32))
 
         batch_input = BatchInput(
-            output_vec=tf.nn.softmax(graph.nodes),
+            output_vec=tf.nn.softmax(nodes),
             prediction_vec=pred,
             loss_vec=loss_vec,
             weighted_correct=correct,
@@ -237,6 +249,7 @@ class Trainer:
 
             train_batch_result = self._process_batches(sess, batched_train_graphs, batched_train_labels, train_function)
             if (time.time() - last_report_time) > REPORT_FREQ_SECS:
+                utils.log('Iteration ensemble weights: {}'.format(sess.run(tf.nn.softmax(self.iteration_ensemble_weights))))
                 utils.log(fmt_report_str('Train', train_batch_result))
                 if report_params:
                     self.report_rates_on_epoch('Train', epno, train_batch_result, report_params)
