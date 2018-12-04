@@ -8,7 +8,7 @@ from tabulate import tabulate
 import tensorflow as tf
 import time
 from tqdm import tqdm, trange
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Tuple
 import utils
 
 NODE_LATENT_SIZE = 128
@@ -33,7 +33,7 @@ class BatchInput(NamedTuple):
 class BatchResult(NamedTuple):
     total_weight: float
     sum_loss: float
-    sum_weighted_correct: float
+    sum_weighted_correct: np.array
     weighted_true_preds: np.array
     weighted_n_labs: np.array
     weighted_n_preds: np.array
@@ -50,6 +50,7 @@ class Trainer:
                  test_labels: List[Dict[int, int]],
                  *,
                  niter: int=10, iteration_ensemble: bool = False, batch_size: int=16,
+                 top_k_report: Sequence[int]=[1],
     ) -> None:
         self.train_graphs = train_graphs
         self.train_labels = train_labels
@@ -58,6 +59,7 @@ class Trainer:
 
         self.niter = niter
         self.batch_size = batch_size
+        self.top_k_report = top_k_report
 
         # grab a random representative graph of the node/edge feature lengths
         rep_graph = train_graphs[0]
@@ -128,14 +130,18 @@ class Trainer:
         )
         loss = tf.reduce_sum(loss_vec)
 
-        correct_vec = tf.equal(pred, labels)
-        correct = tf.reduce_sum(weights * tf.cast(correct_vec, tf.float32))
+        top_k_corr = []
+        for k in self.top_k_report:
+            in_top_k = tf.nn.in_top_k(tf.cast(nodes, tf.float32), labels, k)
+            sum_in_top_k = tf.reduce_sum(weights * tf.cast(in_top_k, tf.float32))
+            top_k_corr.append(sum_in_top_k)
+        top_k_corr = tf.stack(top_k_corr, axis=0)
 
         batch_input = BatchInput(
             output_vec=tf.nn.softmax(nodes),
             prediction_vec=pred,
             loss_vec=loss_vec,
-            weighted_correct=correct,
+            weighted_correct=top_k_corr,
             weighted_loss=loss,
         )
 
@@ -156,7 +162,7 @@ class Trainer:
         batch_result_acc = BatchResult(
             total_weight=0,
             sum_loss=0,
-            sum_weighted_correct=0,
+            sum_weighted_correct=np.zeros(len(self.top_k_report)),
             weighted_true_preds=np.zeros(self.num_labels),
             weighted_n_labs=np.zeros(self.num_labels),
             weighted_n_preds=np.zeros(self.num_labels),
@@ -212,7 +218,6 @@ class Trainer:
         utils.write(report_str, os.path.join('reports', utils.get_time_str(), 'epoch_{}_{}'.format(epno, label)))
 
     def save(self, sess: tf.Session) -> None:
-        utils.log('Saving model...')
         dname = 'graph_{}'.format(utils.get_time_str())
         dname = os.path.join(utils.DIRNAME, 'models', dname)
         os.makedirs(dname, exist_ok=True)
@@ -225,12 +230,14 @@ class Trainer:
                report_params:Optional[ReportParameters]=None,
     ) -> None:
         def fmt_report_str(name, batch_result):
-            return '{}: loss: {:.2f}, Accuracy: {:.2f} ({}/{})'.format(
-                name,
-                batch_result.sum_loss,
-                batch_result.sum_weighted_correct / batch_result.total_weight,
-                batch_result.sum_weighted_correct, batch_result.total_weight,
-            )
+            report = '{}: {} Predictions\n'.format(name, batch_result.total_weight)
+            report += 'Loss: {:.2f}\n'.format(batch_result.sum_loss / batch_result.total_weight)
+            for (k, corr) in zip(self.top_k_report, batch_result.sum_weighted_correct):
+                report += 'Top {} accuracy: {:.2f}\n'.format(
+                    k,
+                    corr / batch_result.total_weight
+                )
+            return report
 
         def report_test_loss(epno: int) -> None:
             test_batch_result = self._process_batches(sess, self.batched_test_graphs, self.batched_test_labels)

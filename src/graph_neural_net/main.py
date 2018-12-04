@@ -128,10 +128,11 @@ def main() -> None:
     parser.add_argument('--step-size', nargs=1, type=float, help='Step size (default=1e-3)', default=1e-3)
     parser.add_argument('--random-seed', nargs=1, type=int, help='Random seed to use. Default=100, negative number = random', default=100)
     parser.add_argument('--niter', nargs=1, type=int, help='Number of iterations to run the GNN for.', default=10)
-    parser.add_argument('--ignore-edge-type', type=int, help='Whether to completely ignore the given edge type', action='append', default=[])
+    parser.add_argument('--ignore-edge-type', nargs='+', type=int, help='Whether to completely ignore the given edge type', default=[])
     parser.add_argument('--no-collapse-any-unk', help='Don\'t collapse the $any$ and UNK tokens.', default=False, action='store_true')
     parser.add_argument('--batch-size', type=int, help='File batch size for training and testing', default=16)
     parser.add_argument('--iteration-ensemble', help='Whether to run the "iteration ensemble" experiment.', default=False, action='store_true')
+    parser.add_argument('--top-k-accuracy', nargs='+', type=int, help='How many accuracies to report. Default 1.', default=[1])
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
     ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
@@ -188,7 +189,7 @@ def main() -> None:
         report_label_distribution('test', test_labels, label_name_map, args.report_count)
         report_params = nn.ReportParameters(args.report_count, label_name_map)
 
-    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels, niter=args.niter, iteration_ensemble=args.iteration_ensemble, batch_size=args.batch_size)
+    trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels, niter=args.niter, iteration_ensemble=args.iteration_ensemble, batch_size=args.batch_size, top_k_report=args.top_k_accuracy)
     trainer.train(stepsize=args.step_size, load_model=args.load_model, report_params=report_params)
 
 if __name__ == '__main__':
