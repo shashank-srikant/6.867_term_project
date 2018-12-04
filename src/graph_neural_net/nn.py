@@ -23,12 +23,14 @@ class BatchInput(NamedTuple):
     prediction_vec: tf.Tensor
     loss_vec: tf.Tensor
     weighted_correct: tf.Tensor
+    unkless_weighted_correct: tf.Tensor
     weighted_loss: tf.Tensor
 
 class BatchResult(NamedTuple):
     total_weight: float
     sum_loss: float
     sum_weighted_correct: np.array
+    sum_unkless_weighted_correct: np.array
     weighted_true_preds: np.array
     weighted_n_labs: np.array
     weighted_n_preds: np.array
@@ -128,17 +130,25 @@ class Trainer:
         loss = tf.reduce_sum(loss_vec)
 
         top_k_corr = []
+        unkless_top_k_corr = []
         for k in self.top_k_report:
             in_top_k = tf.nn.in_top_k(tf.cast(nodes, tf.float32), labels, k)
             sum_in_top_k = tf.reduce_sum(weights * tf.cast(in_top_k, tf.float32))
             top_k_corr.append(sum_in_top_k)
+
+            unkless_in_top_k = tf.nn.in_top_k(tf.cast(nodes, tf.float32), labels, k)
+            unkless_sum_in_top_k = tf.reduce_sum(weights * tf.cast((~tf.equal(labels, 0)) & unkless_in_top_k, tf.float32))
+            unkless_top_k_corr.append(unkless_sum_in_top_k)
+
         top_k_corr = tf.stack(top_k_corr, axis=0)
+        unkless_top_k_corr = tf.stack(unkless_top_k_corr, axis=0)
 
         batch_input = BatchInput(
             output_vec=tf.nn.softmax(nodes),
             prediction_vec=pred,
             loss_vec=loss_vec,
             weighted_correct=top_k_corr,
+            unkless_weighted_correct=unkless_top_k_corr,
             weighted_loss=loss,
         )
 
@@ -160,6 +170,7 @@ class Trainer:
             total_weight=0,
             sum_loss=0,
             sum_weighted_correct=np.zeros(len(self.top_k_report)),
+            sum_unkless_weighted_correct=np.zeros(len(self.top_k_report)),
             weighted_true_preds=np.zeros(self.num_labels),
             weighted_n_labs=np.zeros(self.num_labels),
             weighted_n_preds=np.zeros(self.num_labels),
@@ -180,6 +191,7 @@ class Trainer:
             total_weight = batch_result_acc.total_weight + weights_arr.sum()
             sum_loss = batch_result_acc.sum_loss + batch_result.weighted_loss
             sum_weighted_correct = batch_result_acc.sum_weighted_correct + batch_result.weighted_correct
+            sum_unkless_weighted_correct = batch_result_acc.sum_unkless_weighted_correct + batch_result.unkless_weighted_correct
             weighted_true_preds = batch_result_acc.weighted_true_preds
             weighted_n_labs = batch_result_acc.weighted_n_labs
             weighted_n_preds = batch_result_acc.weighted_n_preds
@@ -193,6 +205,7 @@ class Trainer:
                 total_weight=total_weight,
                 sum_loss=sum_loss,
                 sum_weighted_correct=sum_weighted_correct,
+                sum_unkless_weighted_correct=sum_unkless_weighted_correct,
                 weighted_true_preds=weighted_true_preds,
                 weighted_n_labs=weighted_n_labs,
 
@@ -229,10 +242,14 @@ class Trainer:
         def fmt_report_str(name, batch_result):
             report = '{}: {} Predictions\n'.format(name, batch_result.total_weight)
             report += 'Loss: {:.2f}\n'.format(batch_result.sum_loss / batch_result.total_weight)
-            for (k, corr) in zip(self.top_k_report, batch_result.sum_weighted_correct):
-                report += 'Top {} accuracy: {:.2f}\n'.format(
+
+            unkless_weight = batch_result.total_weight - batch_result.weighted_n_labs[0]
+
+            for (k, corr, unkless_corr) in zip(self.top_k_report, batch_result.sum_weighted_correct, batch_result.sum_unkless_weighted_correct):
+                report += 'Top {} accuracy: {:.2f} ({:.2f} w/out UNK)\n'.format(
                     k,
-                    corr / batch_result.total_weight
+                    corr / batch_result.total_weight,
+                    unkless_corr / unkless_weight,
                 )
             return report
 
