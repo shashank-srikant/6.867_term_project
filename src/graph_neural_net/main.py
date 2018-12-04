@@ -120,7 +120,6 @@ def main() -> None:
     parser.add_argument('--file', '-f', nargs='+', help='Individual graph files to process', default=[])
     parser.add_argument('--dir', '--directory', '-d', nargs='+', help='Individual project directories to process', default=[])
     parser.add_argument('--project', '-p', nargs='+', help='Directories containing a list of directories (equivalent to --dir PROJECT/*)', default=[])
-    parser.add_argument('--report', help='Report data item frequencies', action='store_true', default=False)
     parser.add_argument('--report-count', type=int, help='Count of items to report. Default 10', default=10)
     parser.add_argument('--load-model', help='File to load model from')
     parser.add_argument('--load-mappings', help='File to load mappings from')
@@ -193,13 +192,10 @@ def main() -> None:
     describe_dataset('train', train_names, train_graphs, train_labels)
     describe_dataset('test', test_names, test_graphs, test_labels)
 
-    report_params: Optional[nn.ReportParameters] = None
-
-    if args.report:
-        label_name_map = utils.invert_bijective_dict(index_maps.label_index_map)
-        report_label_distribution('train', train_labels, label_name_map, args.report_count)
-        report_label_distribution('test', test_labels, label_name_map, args.report_count)
-        report_params = nn.ReportParameters(args.report_count, label_name_map)
+    label_name_map = utils.invert_bijective_dict(index_maps.label_index_map)
+    report_label_distribution('train', train_labels, label_name_map, args.report_count)
+    report_label_distribution('test', test_labels, label_name_map, args.report_count)
+    report_params = nn.ReportParameters(args.report_count, label_name_map)
 
     trainer = nn.Trainer(train_graphs, train_labels, test_graphs, test_labels, index_maps.label_index_map,
                          niter=args.niter, iteration_ensemble=args.iteration_ensemble,
