@@ -4,6 +4,7 @@ import numpy as np
 import os
 import random
 import sonnet as snt
+from tabulate import tabulate
 import tensorflow as tf
 import time
 from tqdm import tqdm, trange
@@ -202,13 +203,11 @@ class Trainer:
         true_pred = batch_results.weighted_true_preds
         false_miss = batch_results.weighted_n_labs - batch_results.weighted_true_preds
         false_pred = batch_results.weighted_n_preds - batch_results.weighted_true_preds
-        true_miss = (batch_results.total_weight - batch_results.weighted_n_labs) - false_pred
+        # true_miss = (batch_results.total_weight - batch_results.weighted_n_labs) - false_pred
 
-        report_for_i = lambda i: '{} -- True pred: {}, False miss: {}, False pred: {}, True Miss: {}'.format(
-            *map(lambda x: x[i], (report_params.label_name_map, true_pred, false_miss, false_pred, true_miss))
-        )
-
-        report_str += '\n'.join(map(report_for_i, range(report_params.top_k))) + '\n'
+        report_for_i = lambda i: list(map(lambda x: x[i], (report_params.label_name_map, true_pred, false_miss, false_pred)))
+        report_str += tabulate(list(map(report_for_i, range(report_params.top_k))), headers=['Label', '#Correct', '#Missed', '#Falsely Predicted'])
+        report_str += '\n'
 
         utils.write(report_str, os.path.join('reports', utils.get_time_str(), 'epoch_{}_{}'.format(epno, label)))
 
@@ -249,7 +248,8 @@ class Trainer:
 
             train_batch_result = self._process_batches(sess, batched_train_graphs, batched_train_labels, train_function)
             if (time.time() - last_report_time) > REPORT_FREQ_SECS:
-                utils.log('Iteration ensemble weights: {}'.format(sess.run(tf.nn.softmax(self.iteration_ensemble_weights))))
+                ensemble_weights = sess.run(tf.nn.softmax(self.iteration_ensemble_weights))
+                utils.log('Iteration ensemble weights:\n{}\n'.format(' '.join(map('{:.2f}'.format, ensemble_weights))))
                 utils.log(fmt_report_str('Train', train_batch_result))
                 if report_params:
                     self.report_rates_on_epoch('Train', epno, train_batch_result, report_params)

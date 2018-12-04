@@ -8,6 +8,7 @@ import nn
 import os
 import pickle
 import random
+from tabulate import tabulate
 from typing import Any, Counter, Dict, List, Optional, Tuple
 import utils
 
@@ -104,12 +105,13 @@ def describe_index_maps(index_maps: graph_construction.IndexMaps) -> None:
     ))
 
 def report_label_distribution(name: str, labels: List[Dict[int, int]], label_name_map: Dict[int, str], report_count: int) -> None:
-    most_common = Counter[int](utils.flatten(l.values() for l in labels)).most_common(report_count)
-
     logname = os.path.join('reports', utils.get_time_str(), 'distr_{}'.format(name))
     report = '{} set label distribution:\n\ntotal: {}\n'.format(name, sum(map(len, labels)))
-    for (key, count) in most_common:
-        report += '{} {}\n'.format(count, label_name_map[key])
+
+    counter = Counter[int](utils.flatten(l.values() for l in labels))
+    most_common = counter.most_common(report_count)
+    table_entries = [(count, label_name_map[key]) for (key, count) in most_common]
+    report += tabulate(table_entries, headers=['Count', 'Label']) + '\n'
 
     utils.write(report, logname)
 
