@@ -10,11 +10,11 @@ import {map2obj, print_obj} from "./utils";
 
 function processDir(dir: string, common_prefix_dir: string, dest: string) {
     for (let entry of fs.readdirSync(dir, {withFileTypes: true})) {
-	if (entry.isDirectory()) {
-	    processDir(path.join(dir, entry.name), common_prefix_dir, dest);
-	} else {
-	    processFile(path.join(dir, entry.name), common_prefix_dir, dest);
-	}
+        if (entry.isDirectory()) {
+            processDir(path.join(dir, entry.name), common_prefix_dir, dest);
+        } else {
+            processFile(path.join(dir, entry.name), common_prefix_dir, dest);
+        }
     }
 }
 
@@ -26,7 +26,6 @@ function processFile(file: string, common_prefix_dir: string, dest: string) {
     let output_file_path = path.join(file_path.dir, file_path.name + '.json');
 
     var graph_obj = new Graph(file);
-
     let edge_obj_list = []
     edge_obj_list.push(new EdgeAST());
     edge_obj_list.push(new EdgeUseDef());

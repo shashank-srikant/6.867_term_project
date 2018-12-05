@@ -179,9 +179,12 @@ def main() -> None:
                     index_maps = index_maps
                     )
     else:
-        kargv = utils.load_data(train_test)
-        for k, v in kargv:
-            vars()[k] = v
+        [train_names, train_graph_jsons, test_names, test_graph_jsons, index_maps] = utils.load_train_test_data('train_test')
+
+        # Can't generate variable names on the fly apparently
+        #print(list(kargv.keys()))
+        #for k, v in kargv.items():
+        #    locals()[k] = v
 
     train_graph_tuple, train_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(
         utils.flatten(train_graph_jsons),

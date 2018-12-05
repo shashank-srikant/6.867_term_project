@@ -2,7 +2,8 @@ data/repo/
 data/logs/
 data/reports/
 data/models/
-data/idnex_maps/
+data/index_maps/
+data/train_test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -107,8 +108,8 @@ ENV/
 .mypy_cache/
 
 # vscode
-.vscode/
+*.vscode/
 
 # idea
-.idea/
+*.idea/
 
