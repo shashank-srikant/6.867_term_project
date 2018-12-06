@@ -208,9 +208,6 @@ def main() -> None:
 
     describe_dataset('train', train_names, train_graphs, train_labels)
     describe_dataset('test', test_names, test_graphs, test_labels)
-
-    sys.exit()
-
     report_params: Optional[nn.ReportParameters] = None
 
     if args.report:
