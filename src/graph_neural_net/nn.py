@@ -95,6 +95,16 @@ class Trainer:
             [self.iteration_ensemble_weights]
         )
 
+        self.hyperparams = list(self.encoder_module.get_variables()) +\
+                             list(self.latent_module.get_variables()) +\
+                             list(self.decoder_module.get_variables()) +\
+                             [self.iteration_ensemble_weights]
+        
+        self.n_hyperparams = 0
+        for v in self.hyperparams:
+            self.n_hyperparams += np.prod(v.get_shape().as_list())
+        print("{} parameters initialized in this graph network..".format(self.n_hyperparams))
+
     def _construct_loss_placeholder_and_batch_input(self) -> Tuple[LossPlaceholder, BatchInput]:
         # construct placeholder from an arbitrary graph in the dataset to get correct shapes
         placeholder_graph = gn.utils_tf._placeholders_from_graphs_tuple(self.train_graphs[0], True)

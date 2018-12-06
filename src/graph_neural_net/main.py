@@ -179,7 +179,7 @@ def main() -> None:
                     index_maps = index_maps
                     )
     else:
-        [train_names, train_graph_jsons, test_names, test_graph_jsons, index_maps] = utils.load_train_test_data('train_test')
+        [train_names, train_graph_jsons, test_names, test_graph_jsons, index_maps] = utils.load_train_test_data('train_test_full')
 
         # Can't generate variable names on the fly apparently
         #print(list(kargv.keys()))
