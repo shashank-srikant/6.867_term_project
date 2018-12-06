@@ -3,7 +3,7 @@ data/logs/
 data/reports/
 data/models/
 data/index_maps/
-data/train_test/
+data/train_test*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
