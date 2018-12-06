@@ -138,6 +138,7 @@ def main() -> None:
     parser.add_argument('--edge-latent-size', type=int, help='Latent state vector size for edges', default=128)
     parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=256)
     parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=False, action='store_true')
+    parser.add_argument('--load-train-test', help='Use train-test data from a file. Calculate split otherwise.', default=False, action='store_true')
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
     ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
@@ -155,20 +156,35 @@ def main() -> None:
 
     utils.set_random_seed(args.random_seed)
 
-    project_names, project_graph_jsons = collect_graph_jsons(args.file, args.dir, args.project)
-    train_idxs, test_idxs = get_train_test_index_split(len(project_names), args.train_split_ratio)
+    if not args.load_train_test:
+        project_names, project_graph_jsons = collect_graph_jsons(args.file, args.dir, args.project)
+        train_idxs, test_idxs = get_train_test_index_split(len(project_names), args.train_split_ratio)
 
-    def get_split(idxs):
-        names = [project_names[i] for i in idxs]
-        graph_jsons = [project_graph_jsons[i] for i in idxs]
-        return names, graph_jsons
+        def get_split(idxs):
+            names = [project_names[i] for i in idxs]
+            graph_jsons = [project_graph_jsons[i] for i in idxs]
+            return names, graph_jsons
 
-    train_names, train_graph_jsons = get_split(train_idxs)
-    test_names, test_graph_jsons = get_split(test_idxs)
+        train_names, train_graph_jsons = get_split(train_idxs)
+        test_names, test_graph_jsons = get_split(test_idxs)
 
-    index_maps = load_index_maps(args, utils.flatten(train_graph_jsons))
-    save_index_maps(index_maps)
-    describe_index_maps(index_maps)
+        index_maps = load_index_maps(args, utils.flatten(train_graph_jsons))
+        # save_index_maps(index_maps)
+        describe_index_maps(index_maps)
+        utils.save_data('train_test',
+                    train_names = train_names,
+                    train_graph_jsons = train_graph_jsons,
+                    test_names = test_names, 
+                    test_graph_jsons = test_graph_jsons,
+                    index_maps = index_maps
+                    )
+    else:
+        [train_names, train_graph_jsons, test_names, test_graph_jsons, index_maps] = utils.load_train_test_data('train_test')
+
+        # Can't generate variable names on the fly apparently
+        #print(list(kargv.keys()))
+        #for k, v in kargv.items():
+        #    locals()[k] = v
 
     train_graph_tuple, train_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(
         utils.flatten(train_graph_jsons),
@@ -192,7 +208,6 @@ def main() -> None:
 
     describe_dataset('train', train_names, train_graphs, train_labels)
     describe_dataset('test', test_names, test_graphs, test_labels)
-
     report_params: Optional[nn.ReportParameters] = None
 
     if args.report:
