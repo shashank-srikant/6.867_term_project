@@ -54,9 +54,10 @@ def collect_graph_jsons(files: List[str], dirs: List[str], projects: List[str]) 
     return project_names, project_graph_json
 
 def describe_dataset(dataset, names, graphs, labels):
-    utils.log('====={} set ({} nodes, {} labels): =====\n{}\n'.format(
+    utils.log('====={} set ({} nodes, {} edges, {} labels): =====\n{}\n'.format(
         dataset,
         sum(sum(g.n_node) for g in graphs),
+        sum(sum(g.n_edge) for g in graphs),
         sum(map(len, labels)),
         '\n'.join(names)
     ))
