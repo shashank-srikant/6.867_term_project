@@ -12,6 +12,10 @@ function is_assign_op(op) {
     }
 }
 exports.is_assign_op = is_assign_op;
+function nodekind2str(path) {
+    return path.map(function (val) { return ts.SyntaxKind[parseInt(val)]; });
+}
+exports.nodekind2str = nodekind2str;
 function get_node(node, varname) {
     var node_list = [];
     var id_nodes = node.filter(function (n) { return n.kind === ts.SyntaxKind.Identifier; });
@@ -23,6 +27,18 @@ function get_node(node, varname) {
     return node_list;
 }
 exports.get_node = get_node;
+function get_common_path(path1, path2) {
+    // Assuming defines happen before usages
+    console.log(nodekind2str(path1));
+    console.log(nodekind2str(path2));
+    for (var i = 0; i < Math.min(path1.length, path2.length); i++) {
+        if (path1[i] !== path2[i]) {
+            return nodekind2str(path1.slice(i - 1, path1.length).reverse().concat(path2.slice(i, path2.length)));
+        }
+    }
+    return ["UNK"];
+}
+exports.get_common_path = get_common_path;
 function get_by_value(map, searchValue) {
     console.log(searchValue);
     for (var _i = 0, _a = Array.from(map.entries()); _i < _a.length; _i++) {

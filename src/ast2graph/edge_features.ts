@@ -1,10 +1,10 @@
 import * as ts from 'typescript';
 import { GraphEdge } from "./interfaces";
-import { get_node, getNodes, get_block_identifiers, pass_null_check, is_assign_op, get_by_value} from "./utils"
+import { get_node, getNodes, get_block_identifiers, pass_null_check, is_assign_op, get_common_path} from "./utils"
 
 export class EdgeFeatures{
-    protected var_last_use: Map<string, number>;
-    protected var_last_define: Map<string, number>;
+    protected var_last_use: Map<string, string[]>;
+    protected var_last_define: Map<string, string[]>;
     
     constructor(){
         this.var_last_define = new Map();
@@ -16,19 +16,21 @@ export class EdgeFeatures{
         node_map: Map<ts.Node, number>,
         use_use: GraphEdge[], 
         use_def: GraphEdge[],
-        feature_map: Map<string, number>
+        feature_map: Map<number, string[]>,
+        node_path: string[]
     ){
         let visited_block = false;
         // console.log("***\n"+ts.SyntaxKind[node.kind]+"::"+(node).getText()+"\n***");
         let curr_node_id = node_map.get(node);
+        node_path = node_path.concat(node.kind.toString());
 
         let visitIdentifier = (name: ts.Node) => {
             if (name.kind === ts.SyntaxKind.Identifier) {
-                this.var_last_define.set((<ts.Identifier> name).escapedText.toString(), curr_node_id);
+                this.var_last_define.set((<ts.Identifier> name).escapedText.toString(), node_path);
                 visited_block = true;
             }
         };
-
+        
         switch(node.kind){
             case ts.SyntaxKind.VariableDeclaration: {
                 visitIdentifier((<ts.VariableDeclaration> node).name);
@@ -60,27 +62,27 @@ export class EdgeFeatures{
                     curr_node_id = node_map.get(curr_node[0]);
                     // Use-Use edge
                     if(pass_null_check(this.var_last_use.get(var_names_use[i]))){
-                        let e1 = get_by_value(node_map, this.var_last_use.get(var_names_use[i]));
-                        let e2 = get_by_value(node_map, curr_node_id);
-                        console.log("heyasd there");
-                        console.log(this.var_last_use.get(var_names_use[i]));
-                        console.log(e1);
-                        console.log(e2);
-                        process.exit(0);
+                        // Currently not implemented
+                        //process.exit(0);
                     }
 
                     // Define-use edge
                     if(pass_null_check(this.var_last_define.get(var_names_use[i]))){
-                        //this.draw_edge(this.var_last_define.get(var_names_use[i]), curr_node_id, this.use_def_type, use_def);
+                        let path = get_common_path(this.var_last_define.get(var_names_use[i]), node_path);
+                        feature_map.set(curr_node_id, path);
+                        //console.log("variable: "+var_names_use[i]);
+                        //console.log(e1);
+                        //console.log('--');
+                        
                     }
 
-                    this.var_last_use.set(var_names_use[i], curr_node_id);
+                    this.var_last_use.set(var_names_use[i], node_path);
                 }
                 // Variable defines
                 if(is_assign){
                     let var_names_define = Array.from(get_block_identifiers(left_node_arr));
                     for(let i = 0; i<var_names_define.length; i++){
-                        this.var_last_define.set(var_names_define[i], curr_node_id);
+                        this.var_last_define.set(var_names_define[i], node_path);
                     }
                 }
                 visited_block = true;
@@ -88,17 +90,21 @@ export class EdgeFeatures{
             }
         }
         if(!visited_block){
-        node.forEachChild(n => (this.visit_block(n, node_map, use_use, use_def, feature_map)));
+            var node_children = Array.from(node.getChildren());
+            for(let i = 0; i<node_children.length; i++){
+                this.visit_block(node_children[i], node_map, use_use, use_def, feature_map, node_path);
+            }
+            //node.forEachChild(n => (this.visit_block(n, node_map, use_use, use_def, feature_map, node_path)));
         }
     }
 
     public visit_tree_and_parse_features(
         node: ts.Node,
-        feature_map: Map<string, number>,
+        feature_map: Map<number, string[]>,
         parent: number,
         checker: ts.TypeChecker,
         node_map: Map<ts.Node, number>
-    ): Map<string, number>{
+    ): Map<number, string[]>{
         switch(node.kind){
             case ts.SyntaxKind.SourceFile: {
                 // All variables used in the program
@@ -114,7 +120,8 @@ export class EdgeFeatures{
                                         //this.visit_block_variables((<ts.SourceFile>node).statements[i], edge_list, node_map, var_map.get(fn_name));
                                         let use_use: GraphEdge[] = [];
                                         let use_def: GraphEdge[] = [];
-                                        this.visit_block((<ts.SourceFile>node).statements[i], node_map, use_use, use_def, feature_map);
+                                        let node_path: string[] = [];
+                                        this.visit_block((<ts.SourceFile>node).statements[i], node_map, use_use, use_def, feature_map, node_path);
                                         //edges = edges.concat(use_use);
                                         //edges = edges.concat(use_def);
                         }
@@ -122,7 +129,8 @@ export class EdgeFeatures{
                     else{
                         let use_use: GraphEdge[] = [];
                         let use_def: GraphEdge[] = [];
-                        this.visit_block(node, node_map, use_use, use_def, feature_map);
+                        let node_path: string[] = [];
+                        this.visit_block(node, node_map, use_use, use_def, feature_map, node_path);
                         //edges = edges.concat(use_use);
                         //edges = edges.concat(use_def);
                         // console.log(edges);
@@ -135,7 +143,8 @@ export class EdgeFeatures{
                 // console.log('in default')
                 let use_use: GraphEdge[] = [];
                 let use_def: GraphEdge[] = [];
-                this.visit_block(node, node_map, use_use, use_def, feature_map);
+                let node_path: string[] = [];
+                this.visit_block(node, node_map, use_use, use_def, feature_map, node_path);
                 //edges = edges.concat(use_use);
                 //edges = edges.concat(use_def);
             }
