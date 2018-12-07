@@ -2,6 +2,7 @@ import * as ts from 'typescript';
 import {GraphNode, Label, GraphEdge} from "./interfaces"
 import { get_all_labels } from "./label"
 import { Edge } from "./edge"
+import { EdgeFeatures } from "./edge_features"
 
 // Base class to convert ASTs to graphs
 export class Graph {
@@ -53,7 +54,7 @@ export class Graph {
         }
     }
 
-    public ast2feature(edge_obj: Edge) {
+    public ast2feature(edge_obj: EdgeFeatures) {
         // Currently, this is the source file's path, not AST's.
         const source_pgm = ts.createProgram({
             rootNames: [this.ast_path],
@@ -71,10 +72,10 @@ export class Graph {
 
             // Populate node counters/IDs to every node in the AST
             this.assign_node_counter(source_file);
-
+            let feature_map = new Map<string, number>();
             // Get count features
-            edge_obj.visit_tree()
-
+            feature_map = edge_obj.visit_tree_and_parse_features(source_file, feature_map, -1, checker, this.node_id_to_nodeobj_map);
+        }
     }
 
     public assign_node_counter(node: ts.Node) {

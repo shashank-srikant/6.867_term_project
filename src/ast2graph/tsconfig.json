@@ -16,6 +16,8 @@
       "interfaces.ts",
       "label.ts",
       "utils.ts",
-      "main.ts"
+      "main.ts",
+      "main_baseline.ts",
+      "edge_features.ts"
     ]
 }

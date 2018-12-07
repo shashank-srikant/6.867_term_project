@@ -24,6 +24,13 @@ export function get_node(node:ts.Node[], varname:string):ts.Node[]{
     return node_list;
 }
 
+export function get_by_value(map: Map<any, any>, searchValue: any) {
+    for (let [key, value] of map.entries()) {
+      if (value === searchValue)
+        return key;
+    }
+}  
+
 export function print_obj(obj: any, out_path:string, filename = "out.log"){
     fs.writeFileSync(path.join(out_path,filename), JSON.stringify(obj));
 }
