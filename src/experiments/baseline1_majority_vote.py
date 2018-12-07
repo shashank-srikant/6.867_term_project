@@ -5,9 +5,30 @@ import graph_construction, utils
 from typing import Dict, Tuple, Counter
 import numpy as np
 
-[_, graphs_train, _, graphs_test, index_maps] = utils.load_train_test_data('train_test_full')
+[a, graphs_train, b, graphs_test, index_maps] = utils.load_train_test_data('train_test_full')
 graphs_train, graphs_test = utils.flatten(graphs_train), utils.flatten(graphs_test)
 ast_type_index_map, edge_type_index_map, label_index_map = index_maps
+
+print(len(a))
+print(a[0])
+print(len(graphs_train))
+#print(graphs_train[0])
+print("--")
+print(len(b))
+print(b[0])
+print(len(graphs_test))
+#print(graphs_test[0])
+print('--')
+print(len(ast_type_index_map))
+print(len(edge_type_index_map))
+print('--')
+def get_edges(graph):
+    ed = 0
+    for g in graph:
+        ed += len(g['edges'])
+    return ed
+print(get_edges(graphs_train))
+print(get_edges(graphs_test))
 
 # This code is a clone of
 # a part of graph_construction.graphs_json_to_graph_tuple_and_labels
@@ -30,6 +51,12 @@ def get_labels(graph):
             g_labels[node_index_map[(g_idx, l['node'])] - offset] = label_index_map[l['label']]
         offset += n_nodes[g_idx]
         labels.append(g_labels)
+    
+    print("n_nodes: {}".format(len(n_nodes)))
+    sum_n = 0
+    for n in n_nodes:
+        sum_n += n
+    print("# nodes: {}".format(sum_n))
     return labels
 
 labels_train = get_labels(graphs_train)
@@ -49,6 +76,7 @@ majority_vote = label_counter_train.most_common(3)
 def get_accuracy(counter_obj, majority_vote):
     correct = counter_obj[majority_vote]
     total = sum(counter_obj.values())
+    print("total : {}".format(total))
     return correct, total, "{0:.0%}".format(correct/total)
 
 for i in range(len(majority_vote)):

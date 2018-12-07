@@ -24,6 +24,15 @@ export function get_node(node:ts.Node[], varname:string):ts.Node[]{
     return node_list;
 }
 
+export function get_by_value(map: Map<any, any>, searchValue: number) {
+    console.log(searchValue);
+    for (let entry of Array.from(map.entries())) {
+        console.log(entry[1]);
+        if (entry[1] === searchValue)
+            return entry[0];
+    }
+}  
+
 export function print_obj(obj: any, out_path:string, filename = "out.log"){
     fs.writeFileSync(path.join(out_path,filename), JSON.stringify(obj));
 }

@@ -1,12 +1,11 @@
 import {ArgumentParser} from 'argparse';
 import common = require('common-prefix');
-import {EdgeAST} from "./edge_ast";
-import {EdgeUseDef} from "./edge_use_def";
 import * as fs from 'fs';
 import {Graph} from "./graph";
 import * as path from 'path';
 import shell = require('shelljs');
 import {map2obj, print_obj} from "./utils";
+import { EdgeFeatures } from './edge_features';
 
 function processDir(dir: string, common_prefix_dir: string, dest: string) {
     for (let entry of fs.readdirSync(dir, {withFileTypes: true})) {
@@ -26,19 +25,8 @@ function processFile(file: string, common_prefix_dir: string, dest: string) {
     let output_file_path = path.join(file_path.dir, file_path.name + '.json');
 
     var graph_obj = new Graph(file);
-    let edge_obj_list = []
-    edge_obj_list.push(new EdgeAST());
-    edge_obj_list.push(new EdgeUseDef());
-    let [node_id_to_nodekind_map, edge_list, labels_list, label_dict] = graph_obj.ast2graph(edge_obj_list);
-
-    shell.mkdir('-p', path.join(dest, file_path.dir));
-
-    print_obj({
-	"nodes": node_id_to_nodekind_map,
-	"edges": edge_list,
-	"labels": labels_list,
-	"label_map": map2obj(label_dict)
-    }, dest, output_file_path);
+    let edge_obj = new EdgeFeatures();
+    graph_obj.ast2feature(edge_obj);
 }
 
 function get_common_directory(paths: string[]) : string {
