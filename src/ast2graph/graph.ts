@@ -53,6 +53,30 @@ export class Graph {
         }
     }
 
+    public ast2feature(edge_obj: Edge) {
+        // Currently, this is the source file's path, not AST's.
+        const source_pgm = ts.createProgram({
+            rootNames: [this.ast_path],
+            options: {}
+        });
+
+        const checker = source_pgm.getTypeChecker()
+        let source_files = source_pgm.getSourceFiles();
+
+        // For each source file provided
+        for (let source_file of source_files) {
+            if (!source_file.fileName.endsWith(this.ast_path)) {
+                continue;
+            }
+
+            // Populate node counters/IDs to every node in the AST
+            this.assign_node_counter(source_file);
+
+            // Get count features
+            edge_obj.visit_tree()
+
+    }
+
     public assign_node_counter(node: ts.Node) {
         this.max_node_count++;
         this.node_id_to_nodeobj_map.set(node, this.max_node_count);
