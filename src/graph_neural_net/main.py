@@ -153,6 +153,7 @@ def main() -> None:
     label_unk_group.add_argument('--label-nonunk-count', type=int, help='The number of labels to explicitly encode (i.e. not UNK)')
 
     args = parser.parse_args()
+    utils.log('Args: {}'.format(args))
 
     utils.set_random_seed(args.random_seed)
 
