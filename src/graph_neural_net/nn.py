@@ -95,11 +95,13 @@ class Trainer:
             [self.iteration_ensemble_weights]
         )
 
-        self.hyperparams = list(self.encoder_module.get_variables()) +\
-                             list(self.latent_module.get_variables()) +\
-                             list(self.decoder_module.get_variables()) +\
-                             [self.iteration_ensemble_weights]
-        
+        self.hyperparams = (
+            list(self.encoder_module.get_variables()) +
+            list(self.latent_module.get_variables()) +
+            list(self.decoder_module.get_variables()) +
+            [self.iteration_ensemble_weights]
+        )
+
         self.n_hyperparams = 0
         for v in self.hyperparams:
             self.n_hyperparams += np.prod(v.get_shape().as_list())
