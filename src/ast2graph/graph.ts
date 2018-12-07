@@ -72,9 +72,11 @@ export class Graph {
 
             // Populate node counters/IDs to every node in the AST
             this.assign_node_counter(source_file);
-            let feature_map = new Map<string, number>();
+            let feature_map = new Map<number, string[]>();
             // Get count features
             feature_map = edge_obj.visit_tree_and_parse_features(source_file, feature_map, -1, checker, this.node_id_to_nodeobj_map);
+            console.log(feature_map);
+            process.exit(0)
         }
     }
 

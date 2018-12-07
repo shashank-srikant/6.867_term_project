@@ -13,15 +13,33 @@ export function is_assign_op(op:ts.SyntaxKind){
     }
 }
 
-export function get_node(node:ts.Node[], varname:string):ts.Node[]{
+export function nodekind2str(path:string[]):string[] {
+    return path.map(val => ts.SyntaxKind[parseInt(val)])
+}
+
+export function get_node(node:ts.Node[], varname:string):ts.Node[] {
     let node_list:ts.Node[] = [];
     var id_nodes = node.filter(n => n.kind === ts.SyntaxKind.Identifier);
-    for(let i = 0; i<id_nodes.length; i++){
-        if((<ts.Identifier>id_nodes[i]).escapedText.toString() == varname){
+    for(let i = 0; i<id_nodes.length; i++) {
+        if((<ts.Identifier>id_nodes[i]).escapedText.toString() == varname) {
             node_list.push(id_nodes[i]);
         }
     }
     return node_list;
+}
+
+export function get_common_path(path1: string[], path2: string[]) {
+    // Assuming defines happen before usages
+    console.log(nodekind2str(path1));
+    console.log(nodekind2str(path2));
+    
+    for(let i = 0; i<Math.min(path1.length, path2.length); i++){
+        if(path1[i] !== path2[i]){
+            return nodekind2str(path1.slice(i-1,path1.length).reverse().concat(path2.slice(i,path2.length)));
+        }
+    }
+    
+    return ["UNK"];
 }
 
 export function get_by_value(map: Map<any, any>, searchValue: number) {

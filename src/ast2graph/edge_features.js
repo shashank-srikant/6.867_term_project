@@ -7,14 +7,15 @@ var EdgeFeatures = /** @class */ (function () {
         this.var_last_define = new Map();
         this.var_last_use = new Map();
     }
-    EdgeFeatures.prototype.visit_block = function (node, node_map, use_use, use_def, feature_map) {
+    EdgeFeatures.prototype.visit_block = function (node, node_map, use_use, use_def, feature_map, node_path) {
         var _this = this;
         var visited_block = false;
         // console.log("***\n"+ts.SyntaxKind[node.kind]+"::"+(node).getText()+"\n***");
         var curr_node_id = node_map.get(node);
+        node_path = node_path.concat(node.kind.toString());
         var visitIdentifier = function (name) {
             if (name.kind === ts.SyntaxKind.Identifier) {
-                _this.var_last_define.set(name.escapedText.toString(), curr_node_id);
+                _this.var_last_define.set(name.escapedText.toString(), node_path);
                 visited_block = true;
             }
         };
@@ -46,25 +47,24 @@ var EdgeFeatures = /** @class */ (function () {
                     curr_node_id = node_map.get(curr_node[0]);
                     // Use-Use edge
                     if (utils_1.pass_null_check(this.var_last_use.get(var_names_use[i]))) {
-                        var e1 = utils_1.get_by_value(node_map, this.var_last_use.get(var_names_use[i]));
-                        var e2 = utils_1.get_by_value(node_map, curr_node_id);
-                        console.log("heyasd there");
-                        console.log(this.var_last_use.get(var_names_use[i]));
-                        console.log(e1);
-                        console.log(e2);
-                        process.exit(0);
+                        // Currently not implemented
+                        //process.exit(0);
                     }
                     // Define-use edge
                     if (utils_1.pass_null_check(this.var_last_define.get(var_names_use[i]))) {
-                        //this.draw_edge(this.var_last_define.get(var_names_use[i]), curr_node_id, this.use_def_type, use_def);
+                        var path = utils_1.get_common_path(this.var_last_define.get(var_names_use[i]), node_path);
+                        feature_map.set(curr_node_id, path);
+                        //console.log("variable: "+var_names_use[i]);
+                        //console.log(e1);
+                        //console.log('--');
                     }
-                    this.var_last_use.set(var_names_use[i], curr_node_id);
+                    this.var_last_use.set(var_names_use[i], node_path);
                 }
                 // Variable defines
                 if (is_assign) {
                     var var_names_define = Array.from(utils_1.get_block_identifiers(left_node_arr));
                     for (var i = 0; i < var_names_define.length; i++) {
-                        this.var_last_define.set(var_names_define[i], curr_node_id);
+                        this.var_last_define.set(var_names_define[i], node_path);
                     }
                 }
                 visited_block = true;
@@ -72,7 +72,11 @@ var EdgeFeatures = /** @class */ (function () {
             }
         }
         if (!visited_block) {
-            node.forEachChild(function (n) { return (_this.visit_block(n, node_map, use_use, use_def, feature_map)); });
+            var node_children = Array.from(node.getChildren());
+            for (var i = 0; i < node_children.length; i++) {
+                this.visit_block(node_children[i], node_map, use_use, use_def, feature_map, node_path);
+            }
+            //node.forEachChild(n => (this.visit_block(n, node_map, use_use, use_def, feature_map, node_path)));
         }
     };
     EdgeFeatures.prototype.visit_tree_and_parse_features = function (node, feature_map, parent, checker, node_map) {
@@ -90,7 +94,8 @@ var EdgeFeatures = /** @class */ (function () {
                             //this.visit_block_variables((<ts.SourceFile>node).statements[i], edge_list, node_map, var_map.get(fn_name));
                             var use_use = [];
                             var use_def = [];
-                            this.visit_block(node.statements[i], node_map, use_use, use_def, feature_map);
+                            var node_path = [];
+                            this.visit_block(node.statements[i], node_map, use_use, use_def, feature_map, node_path);
                             //edges = edges.concat(use_use);
                             //edges = edges.concat(use_def);
                         }
@@ -98,7 +103,8 @@ var EdgeFeatures = /** @class */ (function () {
                     else {
                         var use_use = [];
                         var use_def = [];
-                        this.visit_block(node, node_map, use_use, use_def, feature_map);
+                        var node_path = [];
+                        this.visit_block(node, node_map, use_use, use_def, feature_map, node_path);
                         //edges = edges.concat(use_use);
                         //edges = edges.concat(use_def);
                         // console.log(edges);
@@ -110,7 +116,8 @@ var EdgeFeatures = /** @class */ (function () {
                 // console.log('in default')
                 var use_use = [];
                 var use_def = [];
-                this.visit_block(node, node_map, use_use, use_def, feature_map);
+                var node_path = [];
+                this.visit_block(node, node_map, use_use, use_def, feature_map, node_path);
                 //edges = edges.concat(use_use);
                 //edges = edges.concat(use_def);
             }
