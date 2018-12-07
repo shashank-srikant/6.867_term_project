@@ -60,6 +60,7 @@ def log(obj: Any) -> None:
     return write(obj, os.path.join('logs', get_time_str()), True, True)
 
 def save_data(directory: str, **kwargs):
+    os.makedirs(os.path.join(DIRNAME, directory), exist_ok=True)
     for k, v in kwargs.items():
         with open(os.path.join(DIRNAME, directory, k), 'wb') as fp:
             pkl.dump(v, fp)
@@ -70,9 +71,9 @@ def load_train_test_data(directory: str):
     for f in os.listdir(os.path.join(DIRNAME, directory)):
         with open(os.path.join(DIRNAME, directory, f), 'rb') as fp:
             kwargs[f] = pkl.load(fp)
-    
+
     return [kwargs['train_names'],
             kwargs['train_graph_jsons'],
-            kwargs['test_names'], 
+            kwargs['test_names'],
             kwargs['test_graph_jsons'],
             kwargs['index_maps']]
