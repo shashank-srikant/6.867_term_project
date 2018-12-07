@@ -11,10 +11,10 @@ export abstract class Edge {
     }
 
     abstract visit_tree(
-	node: ts.Node,
-	edges: GraphEdge[],
-	parent: number,
-	checker: ts.TypeChecker,
-	node_map: Map<ts.Node, number>
+        node: ts.Node,
+        edges: GraphEdge[],
+        parent: number,
+        checker: ts.TypeChecker,
+        node_map: Map<ts.Node, number>
     ) : GraphEdge[];
 }
