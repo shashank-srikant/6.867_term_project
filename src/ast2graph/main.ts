@@ -21,7 +21,7 @@ function processDir(dir: string, common_prefix_dir: string, dest: string) {
 function processFile(file: string, common_prefix_dir: string, dest: string) {
     let file_path = path.parse(path.relative(common_prefix_dir, file));
     if (file_path.ext !== '.ts') {
-	return;
+	    return;
     }
     let output_file_path = path.join(file_path.dir, file_path.name + '.json');
 
@@ -48,9 +48,9 @@ function get_common_directory(paths: string[]) : string {
     let common_prefix = common(paths);
     if (fs.existsSync(common_prefix) &&
 	fs.statSync(common_prefix).isDirectory()) {
-	return common_prefix;
+	    return common_prefix;
     } else {
-	return path.parse(common_prefix).dir;
+    	return path.parse(common_prefix).dir;
     }
 }
 

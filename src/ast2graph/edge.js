@@ -1,10 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-class Edge {
-    constructor(edge_type, edge_descrip) {
+exports.__esModule = true;
+var Edge = /** @class */ (function () {
+    function Edge(edge_type, edge_descrip) {
         this.edge_type = edge_type;
         this.edge_description = edge_descrip;
     }
-}
+    return Edge;
+}());
 exports.Edge = Edge;
-//# sourceMappingURL=edge.js.map

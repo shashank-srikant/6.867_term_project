@@ -8,16 +8,17 @@
     "sourceMap": true,
     "target": "es2018"
   },
-  "files": [
-      "graph.ts",
-      "edge.ts",
-      "edge_ast.ts",
-      "edge_use_def.ts",
-      "interfaces.ts",
-      "label.ts",
-      "utils.ts",
-      "main.ts",
-      "main_baseline.ts",
-      "edge_features.ts"
-    ]
+
+ "files": [
+        "graph.ts",
+        "edge.ts",
+        "edge_ast.ts",
+        "edge_use_def.ts",
+        "interfaces.ts",
+        "label.ts",
+        "utils.ts",
+        "main_baseline.ts",
+        "main.ts",
+        "edge_features.ts"
+      ]
 }

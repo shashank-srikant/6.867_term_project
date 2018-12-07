@@ -24,10 +24,12 @@ export function get_node(node:ts.Node[], varname:string):ts.Node[]{
     return node_list;
 }
 
-export function get_by_value(map: Map<any, any>, searchValue: any) {
-    for (let [key, value] of map.entries()) {
-      if (value === searchValue)
-        return key;
+export function get_by_value(map: Map<any, any>, searchValue: number) {
+    console.log(searchValue);
+    for (let entry of Array.from(map.entries())) {
+        console.log(entry[1]);
+        if (entry[1] === searchValue)
+            return entry[0];
     }
 }  
 

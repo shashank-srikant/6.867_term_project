@@ -62,8 +62,11 @@ export class EdgeFeatures{
                     if(pass_null_check(this.var_last_use.get(var_names_use[i]))){
                         let e1 = get_by_value(node_map, this.var_last_use.get(var_names_use[i]));
                         let e2 = get_by_value(node_map, curr_node_id);
+                        console.log("heyasd there");
+                        console.log(this.var_last_use.get(var_names_use[i]));
                         console.log(e1);
                         console.log(e2);
+                        process.exit(0);
                     }
 
                     // Define-use edge

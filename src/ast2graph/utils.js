@@ -1,7 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs = require("fs");
-const ts = require("typescript");
+exports.__esModule = true;
+var fs = require("fs");
+var ts = require("typescript");
+var path = require("path");
 function is_assign_op(op) {
     if (op === ts.SyntaxKind.EqualsToken || op === ts.SyntaxKind.PlusEqualsToken || op === ts.SyntaxKind.MinusEqualsToken || op === ts.SyntaxKind.AsteriskAsteriskEqualsToken || op === ts.SyntaxKind.AsteriskEqualsToken || op === ts.SyntaxKind.SlashEqualsToken || op === ts.SyntaxKind.PercentEqualsToken || op === ts.SyntaxKind.AmpersandEqualsToken || op === ts.SyntaxKind.BarEqualsToken || op === ts.SyntaxKind.CaretEqualsToken || op === ts.SyntaxKind.LessThanLessThanEqualsToken || op === ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken || op === ts.SyntaxKind.GreaterThanGreaterThanEqualsToken) {
         return true;
@@ -12,9 +13,9 @@ function is_assign_op(op) {
 }
 exports.is_assign_op = is_assign_op;
 function get_node(node, varname) {
-    let node_list = [];
-    var id_nodes = node.filter(n => n.kind === ts.SyntaxKind.Identifier);
-    for (let i = 0; i < id_nodes.length; i++) {
+    var node_list = [];
+    var id_nodes = node.filter(function (n) { return n.kind === ts.SyntaxKind.Identifier; });
+    for (var i = 0; i < id_nodes.length; i++) {
         if (id_nodes[i].escapedText.toString() == varname) {
             node_list.push(id_nodes[i]);
         }
@@ -22,12 +23,19 @@ function get_node(node, varname) {
     return node_list;
 }
 exports.get_node = get_node;
-function print_obj(obj, out_path, filename = "out.log") {
-    fs.writeFile(out_path + filename, JSON.stringify(obj), function (err) {
-        if (err) {
-            console.log(err);
-        }
-    });
+function get_by_value(map, searchValue) {
+    console.log(searchValue);
+    for (var _i = 0, _a = Array.from(map.entries()); _i < _a.length; _i++) {
+        var entry = _a[_i];
+        console.log(entry[1]);
+        if (entry[1] === searchValue)
+            return entry[0];
+    }
+}
+exports.get_by_value = get_by_value;
+function print_obj(obj, out_path, filename) {
+    if (filename === void 0) { filename = "out.log"; }
+    fs.writeFileSync(path.join(out_path, filename), JSON.stringify(obj));
 }
 exports.print_obj = print_obj;
 function pass_null_check(value) {
@@ -35,50 +43,50 @@ function pass_null_check(value) {
 }
 exports.pass_null_check = pass_null_check;
 function map2obj(aMap) {
-    const obj = {};
-    aMap.forEach((v, k) => { obj[k] = v; });
+    var obj = {};
+    aMap.forEach(function (v, k) { obj[k] = v; });
     return obj;
 }
 exports.map2obj = map2obj;
 function get_block_identifiers(node) {
-    var id_nodes = node.filter(n => n.kind === ts.SyntaxKind.Identifier);
-    var names = id_nodes.map(n => (n).escapedText.toString());
-    let names_set = new Set(names);
+    var id_nodes = node.filter(function (n) { return n.kind === ts.SyntaxKind.Identifier; });
+    var names = id_nodes.map(function (n) { return (n).escapedText.toString(); });
+    var names_set = new Set(names);
     return names_set;
 }
 exports.get_block_identifiers = get_block_identifiers;
 function get_block_variable_names_in_decl(node) {
-    var id_nodes = node.filter(n => (n.kind === ts.SyntaxKind.VariableDeclaration)).filter(n => n.name.kind === ts.SyntaxKind.Identifier);
-    var names = id_nodes.map(n => (n.name.text));
-    let names_set = new Set(names);
+    var id_nodes = node.filter(function (n) { return (n.kind === ts.SyntaxKind.VariableDeclaration); }).filter(function (n) { return n.name.kind === ts.SyntaxKind.Identifier; });
+    var names = id_nodes.map(function (n) { return (n.name.text); });
+    var names_set = new Set(names);
     return names_set;
 }
 exports.get_block_variable_names_in_decl = get_block_variable_names_in_decl;
 function get_block_variable_names_in_fn(node) {
-    let names_fn = [];
-    console.log(node);
+    var names_fn = [];
+    // console.log(node);
     process.exit(0);
-    let all_nodes = getNodes(node);
-    var fn_params = all_nodes.filter(n => (n.kind === ts.SyntaxKind.FunctionDeclaration));
-    for (let i = 0; i < fn_params.length; i++) {
-        let names2 = [];
-        let li_param = fn_params[i].parameters;
-        for (let j = 0; j < li_param.length; j++) {
+    var all_nodes = getNodes(node);
+    var fn_params = all_nodes.filter(function (n) { return (n.kind === ts.SyntaxKind.FunctionDeclaration); });
+    for (var i = 0; i < fn_params.length; i++) {
+        var names2 = [];
+        var li_param = fn_params[i].parameters;
+        for (var j = 0; j < li_param.length; j++) {
             names2.push(li_param[j].name.escapedText.toString());
         }
-        let fn_nodes = getNodes(fn_params[i]);
-        let names3 = get_block_variable_names_in_decl(fn_nodes);
+        var fn_nodes = getNodes(fn_params[i]);
+        var names3 = get_block_variable_names_in_decl(fn_nodes);
         names2 = names2.concat(Array.from(names3));
         names_fn = names_fn.concat(names2);
     }
-    let names_fn_set = new Set(names_fn);
+    var names_fn_set = new Set(names_fn);
     return names_fn_set;
 }
 exports.get_block_variable_names_in_fn = get_block_variable_names_in_fn;
 function getNodes(sf) {
     var nodes = [];
     function allNodes(n) {
-        ts.forEachChild(n, n => { nodes.push(n); allNodes(n); return false; });
+        ts.forEachChild(n, function (n) { nodes.push(n); allNodes(n); return false; });
     }
     ;
     if (sf.getChildCount() == 0) {
@@ -90,32 +98,35 @@ function getNodes(sf) {
     return nodes;
 }
 exports.getNodes = getNodes;
+// Junk function. Here to test out AST structure.
 function get_variable_names(node) {
-    let all_names = new Map();
-    var body = node.statements.filter(n => n.kind !== ts.SyntaxKind.FunctionDeclaration);
-    let names1 = [];
-    for (let i = 0; i < body.length; i++) {
-        let all_nodes = getNodes(body[i]);
-        let names_set = get_block_variable_names_in_decl(all_nodes);
+    var all_names = new Map();
+    // Get names of variables used in the script's body
+    var body = node.statements.filter(function (n) { return n.kind !== ts.SyntaxKind.FunctionDeclaration; });
+    var names1 = [];
+    for (var i = 0; i < body.length; i++) {
+        var all_nodes_1 = getNodes(body[i]);
+        var names_set = get_block_variable_names_in_decl(all_nodes_1);
         names1 = names1.concat(Array.from(names_set));
     }
     all_names.set("body", names1);
-    let all_nodes = getNodes(node);
-    var fn_params = all_nodes.filter(n => (n.kind === ts.SyntaxKind.FunctionDeclaration));
-    for (let i = 0; i < fn_params.length; i++) {
-        let names2 = [];
-        let li_param = fn_params[i].parameters;
-        for (let j = 0; j < li_param.length; j++) {
+    // Get per-function variable names
+    var all_nodes = getNodes(node);
+    var fn_params = all_nodes.filter(function (n) { return (n.kind === ts.SyntaxKind.FunctionDeclaration); });
+    for (var i = 0; i < fn_params.length; i++) {
+        var names2 = [];
+        var li_param = fn_params[i].parameters;
+        for (var j = 0; j < li_param.length; j++) {
             names2.push(li_param[j].name.escapedText.toString());
         }
-        let fn_nodes = getNodes(fn_params[i]);
-        let names3 = get_block_variable_names_in_decl(fn_nodes);
-        let names_fn = names2.concat(Array.from(names3));
-        console.log(fn_params[i].name.escapedText.toString());
+        var fn_nodes = getNodes(fn_params[i]);
+        var names3 = get_block_variable_names_in_decl(fn_nodes);
+        var names_fn = names2.concat(Array.from(names3));
+        // console.log((<ts.FunctionDeclaration>fn_params[i]).name.escapedText.toString());
         all_names.set(fn_params[i].name.escapedText.toString(), names_fn);
     }
-    console.log(all_names);
+    //let all_names = names1.concat(names2);
+    // console.log(all_names);
     return all_names;
 }
 exports.get_variable_names = get_variable_names;
-//# sourceMappingURL=utils.js.map
