@@ -21,7 +21,7 @@ function processDir(dir: string, common_prefix_dir: string, dest: string) {
 function processFile(file: string, common_prefix_dir: string, dest: string) {
     let file_path = path.parse(path.relative(common_prefix_dir, file));
     if (file_path.ext !== '.ts') {
-	return;
+	    return;
     }
     let output_file_path = path.join(file_path.dir, file_path.name + '.json');
 

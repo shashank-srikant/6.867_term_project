@@ -3,8 +3,10 @@ import random
 import time
 from tqdm import tqdm
 from typing import Any, Dict, Iterable, List, Optional, TypeVar
+import pickle as pkl
 
-DIRNAME = os.path.abspath(os.path.dirname(__file__))
+#DIRNAME = os.path.abspath(os.path.dirname(__file__))
+DIRNAME = '../../data/'
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -56,3 +58,21 @@ def write(obj: Any, fname:Optional[str]=None, fappend:bool=False, nolog:bool=Fal
 
 def log(obj: Any) -> None:
     return write(obj, os.path.join('logs', get_time_str()), True, True)
+
+def save_data(directory: str, **kwargs):
+    for k, v in kwargs.items():
+        with open(os.path.join(DIRNAME, directory, k), 'wb') as fp:
+            pkl.dump(v, fp)
+            fp.close()
+
+def load_train_test_data(directory: str):
+    kwargs = {}
+    for f in os.listdir(os.path.join(DIRNAME, directory)):
+        with open(os.path.join(DIRNAME, directory, f), 'rb') as fp:
+            kwargs[f] = pkl.load(fp)
+    
+    return [kwargs['train_names'],
+            kwargs['train_graph_jsons'],
+            kwargs['test_names'], 
+            kwargs['test_graph_jsons'],
+            kwargs['index_maps']]
