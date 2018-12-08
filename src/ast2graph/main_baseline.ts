@@ -26,7 +26,14 @@ function processFile(file: string, common_prefix_dir: string, dest: string) {
 
     var graph_obj = new Graph(file);
     let edge_obj = new EdgeFeatures();
-    graph_obj.ast2feature(edge_obj);
+    let [feature_map, labels_list] = graph_obj.ast2feature(edge_obj);
+    console.log(dest);
+    console.log(output_file_path);
+    shell.mkdir('-p', path.join(dest, file_path.dir));
+    print_obj({
+        "feat_map": map2obj(feature_map),
+        "labels": labels_list,
+        }, dest, output_file_path);
 }
 
 function get_common_directory(paths: string[]) : string {

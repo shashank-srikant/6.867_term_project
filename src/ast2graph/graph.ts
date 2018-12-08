@@ -54,7 +54,7 @@ export class Graph {
         }
     }
 
-    public ast2feature(edge_obj: EdgeFeatures) {
+    public ast2feature(edge_obj: EdgeFeatures):[Map<number, string[]>, Label[]] {
         // Currently, this is the source file's path, not AST's.
         const source_pgm = ts.createProgram({
             rootNames: [this.ast_path],
@@ -72,11 +72,20 @@ export class Graph {
 
             // Populate node counters/IDs to every node in the AST
             this.assign_node_counter(source_file);
+
+            // Populate label list for applicable node IDs
+            let labels_dict = new Map();
+            let labels_list:Label[] = [];
+            get_all_labels(labels_list, labels_dict, source_file, checker, this.node_id_to_nodeobj_map);
+ 
             let feature_map = new Map<number, string[]>();
             // Get count features
             feature_map = edge_obj.visit_tree_and_parse_features(source_file, feature_map, -1, checker, this.node_id_to_nodeobj_map);
+            
+            console.log(labels_list);
             console.log(feature_map);
-            process.exit(0)
+
+            return [feature_map, labels_list];
         }
     }
 
