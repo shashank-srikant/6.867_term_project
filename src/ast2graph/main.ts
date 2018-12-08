@@ -32,7 +32,6 @@ function processFile(file: string, common_prefix_dir: string, dest: string) {
     let [node_id_to_nodekind_map, edge_list, labels_list, label_dict] = graph_obj.ast2graph(edge_obj_list);
 
     shell.mkdir('-p', path.join(dest, file_path.dir));
-
     print_obj({
 	"nodes": node_id_to_nodekind_map,
 	"edges": edge_list,

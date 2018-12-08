@@ -54,7 +54,7 @@ export class Graph {
         }
     }
 
-    public ast2feature(edge_obj: EdgeFeatures) {
+    public ast2feature(edge_obj: EdgeFeatures):[Map<number, string[]>, Label[]] {
         // Currently, this is the source file's path, not AST's.
         const source_pgm = ts.createProgram({
             rootNames: [this.ast_path],

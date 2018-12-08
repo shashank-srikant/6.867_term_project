@@ -59,8 +59,8 @@ export function pass_null_check<T>(value: T | undefined | null): value is T {
     return <T>value !== undefined && <T>value !== null;
 }
 
-export function map2obj(aMap:Map<string, number>){
-    const obj:{[key:string]: number} = {};
+export function map2obj(aMap:Map<any, any>){
+    const obj:{[key:string]: any} = {};
     aMap.forEach ((v,k) => { obj[k] = v });
     return obj;
 }
