@@ -2,47 +2,58 @@
     "nodes": [
 	{
 	    "id": 0,
-	    "ast_type": 0
+	    "ast_type": 0,
+	    "token": "seq"
 	},
 	{
 	    "id": 1,
-	    "ast_type": 1
+	    "ast_type": 1,
+	    "token": ":="
 	},
 	{
 	    "id": 2,
-	    "ast_type": 2
+	    "ast_type": 2,
+	    "token": "x"
 	},
 	{
 	    "id": 3,
-	    "ast_type": 3
+	    "ast_type": 3,
+	    "token": "5"
 	},
 	{
 	    "id": 4,
-	    "ast_type": 4
+	    "ast_type": 4,
+	    "token": ":="
 	},
 	{
 	    "id": 5,
-	    "ast_type": 2
+	    "ast_type": 2,
+	    "token": "x"
 	},
 	{
 	    "id": 6,
-	    "ast_type": 5
+	    "ast_type": 5,
+	    "token": "+"
 	},
 	{
 	    "id": 7,
-	    "ast_type": 2
+	    "ast_type": 2,
+	    "token": "x"
 	},
 	{
 	    "id": 8,
-	    "ast_type": 3
+	    "ast_type": 3,
+	    "token": "2"
 	},
 	{
 	    "id": 9,
-	    "ast_type": 6
+	    "ast_type": 6,
+	    "token": "println"
 	},
 	{
 	    "id": 10,
-	    "ast_type": 2
+	    "ast_type": 2,
+	    "token": "x"
 	}
     ],
     "edges": [
