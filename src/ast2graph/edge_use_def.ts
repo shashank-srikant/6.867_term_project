@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
-import { GraphEdge } from "./interfaces";
+import { GraphEdge, GraphEdgeDebug } from "./interfaces";
 import { Edge } from "./edge";
-import { get_node, getNodes, get_block_identifiers, pass_null_check, is_assign_op} from "./utils"
+import { get_node, getNodes, get_block_identifiers, pass_null_check, is_assign_op, get_by_value} from "./utils"
 
 export class EdgeUseDef extends Edge {
     protected var_last_use: Map<string, number>;
@@ -41,11 +41,11 @@ export class EdgeUseDef extends Edge {
 
         switch(node.kind){
             case ts.SyntaxKind.VariableDeclaration: {
-		visitIdentifier((<ts.VariableDeclaration> node).name);
+		        visitIdentifier((<ts.VariableDeclaration> node).name);
                 break;
             }
             case ts.SyntaxKind.Parameter:{
-		visitIdentifier((<ts.ParameterDeclaration> node).name);
+		        visitIdentifier((<ts.ParameterDeclaration> node).name);
                 break;
             }
             case ts.SyntaxKind.BinaryExpression: {
@@ -70,15 +70,17 @@ export class EdgeUseDef extends Edge {
                     curr_node_id = node_map.get(curr_node[0]);
                     // Use-Use edge
                     if(pass_null_check(this.var_last_use.get(var_names_use[i]))){
+                        //console.log("use-use::"+ts.SyntaxKind[node.kind]);
                         this.draw_edge(this.var_last_use.get(var_names_use[i]), curr_node_id, this.use_use_type, use_use);
+                        this.var_last_use.set(var_names_use[i], curr_node_id);
                     }
 
                     // Define-use edge
                     if(pass_null_check(this.var_last_define.get(var_names_use[i]))){
+                        //console.log("use-def::"+ts.SyntaxKind[node.kind]);
                         this.draw_edge(this.var_last_define.get(var_names_use[i]), curr_node_id, this.use_def_type, use_def);
+                        this.var_last_use.set(var_names_use[i], curr_node_id);
                     }
-
-                    this.var_last_use.set(var_names_use[i], curr_node_id);
                 }
                 // Variable defines
                 if(is_assign){
@@ -99,10 +101,49 @@ export class EdgeUseDef extends Edge {
                 visited_block = true;
                 break;
             }
+            default: {
+                var names_set = get_block_identifiers(getNodes(node));
+                var names_arr = Array.from(names_set.values());
+                for(let i=0; i<names_arr.length; i++){
+                    //Use-use edge
+                    if(pass_null_check(this.var_last_use.get(names_arr[i]))){
+                        //console.log("use-use::"+ts.SyntaxKind[node.kind]);
+                        this.draw_edge(this.var_last_use.get(names_arr[i]), curr_node_id, this.use_use_type, use_use);
+                        this.var_last_use.set(names_arr[i], curr_node_id);
+                        visited_block = true;
+                    }
+
+                    // Define-use edge
+                    if(pass_null_check(this.var_last_define.get(names_arr[i]))){
+                        //console.log("use-def::"+ts.SyntaxKind[node.kind]);
+                        this.draw_edge(this.var_last_define.get(names_arr[i]), curr_node_id, this.use_def_type, use_def);
+                        this.var_last_use.set(names_arr[i], curr_node_id);
+                        visited_block = true;
+                    }
+                }
+                break;
+            }
         }
         if(!visited_block){
             node.forEachChild(n => (this.visit_block(n, node_map, use_use, use_def)));
         }
+    }
+
+    private reverse_edge(edge_list:GraphEdge[], node_map:Map<ts.Node, number>): GraphEdgeDebug[]{
+        function node_name(ed: number): string{
+            let st = ts.SyntaxKind[get_by_value(node_map, ed).kind];
+            return st;
+        }
+        var rev_edge_list: GraphEdgeDebug[] = [];
+        for(let i = 0; i<edge_list.length; i++) {
+            let rev_edge:GraphEdgeDebug = {
+                'src': node_name(edge_list[i]['src']),
+                'dst': node_name(edge_list[i]['dst']),
+                'edge_type': edge_list[i]['edge_type']
+            }
+            rev_edge_list.push(rev_edge);
+        }
+        return rev_edge_list;
     }
 
     public visit_tree(node: ts.Node, edges: GraphEdge[],
@@ -151,6 +192,11 @@ export class EdgeUseDef extends Edge {
                 edges = edges.concat(use_def);
             }
         }
+        //console.log(this.var_last_define);
+        //console.log(this.var_last_use);
+        //console.log(edges);
+        //console.log(this.reverse_edge(edges, node_map));
+        //process.exit(0);
         return edges
     }
 }

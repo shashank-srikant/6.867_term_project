@@ -43,9 +43,7 @@ export function get_common_path(path1: string[], path2: string[]) {
 }
 
 export function get_by_value(map: Map<any, any>, searchValue: number) {
-    console.log(searchValue);
     for (let entry of Array.from(map.entries())) {
-        console.log(entry[1]);
         if (entry[1] === searchValue)
             return entry[0];
     }
