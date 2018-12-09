@@ -1,0 +1,21 @@
+=============
+Title:
+
+Machine learning for security vulnerability detection in DSLs - A case study in Ethereum's Solidity
+
+Machine learning for security vulnerability detection in Ethereum's smart contracts
+=============
+abstract
+=============
+
+Domain specific languages (DSLs) are programming languages which cater to specific requirements of an application domain. Such specialized languages suffer from bugs and vulnerabilities unique to them. Detecting such vulnerabilities require specialized tools, and creating such tools require experts. In this work, we study Solidity - a DSL created to model \textit{Ethereum}, a popular distributed ledger. Vulnerabilties and bugs in Solidity programs, called \textit{smart contracts}, have resulted in million dollar losses. State of the art tools to detect these vulnerabilities rely on symbolic analysis and abstract interpretation. These techniques require an expert to encode a "rule" for each class of Solidity vulnerabilities seen in the wild. This poses a challenge in designing such detectors. 
+
+[[the real line to add here is something like "This poses a challenge in discovering new classes of bugs." But we dont know wehter we're able to do that ourselves.]] 
+
+We propose a data-driven way of designing such vulnerability detectors. We treat programs as high-dimensional data, and build models to predict vulnerabilities in them. We propose highly interpretable ways to represent programs which capture their syntactic and semantic information, providing a general class of features which correlate to the existence of vulnerabilities. We evaluate our proposed approach and representations on 19,023 \textit{smart contracts}. Predictive models built on just one common representation of Solidity programs are able to match the performance of symbolic analysis based tools on 6 different classes of vulnerabilities. Features selected by these models suggest these models indeed learn the inherent structure of vulnerable Solidity programs.
+
+[[the question that comes to mind on reaching this point -- what's our ground truth. And how do we really solve that problem. ]]
+
+We believe our approach demonstrates the first step in designing data-driven program analysis techniques which can scalably discover new, unseen vulnerabilities in such DSLs.
+
+==================
