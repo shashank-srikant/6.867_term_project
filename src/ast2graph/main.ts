@@ -1,6 +1,7 @@
 import {ArgumentParser} from 'argparse';
 import common = require('common-prefix');
 import {EdgeAST} from "./edge_ast";
+import {EdgeASTReverse} from "./edge_ast_reverse";
 import {EdgeUseDef} from "./edge_use_def";
 import {EdgeTokens} from "./edge_tokens";
 import * as fs from 'fs';
@@ -31,6 +32,7 @@ function processFile(file: string, common_prefix_dir: string, dest: string) {
     edge_obj_list.push(new EdgeAST());
     edge_obj_list.push(new EdgeUseDef());
     edge_obj_list.push(new EdgeTokens());
+    edge_obj_list.push(new EdgeASTReverse());
     let [node_id_to_nodekind_map, edge_list, labels_list, label_dict] = graph_obj.ast2graph(edge_obj_list);
 
     shell.mkdir('-p', path.join(dest, file_path.dir));
