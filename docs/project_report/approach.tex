@@ -1,4 +1,40 @@
 \section{Approach}
 \label{sec:approach}
-talk about our approach
 
+To solve the approximate type inference problem, we take a strong inductive bias over the types of predictors that we would expect to work on programs.
+Specifically, we take advantage of our knowledge of the important local and nonlocal interactions between various parts of programs, similar to how convolutional networks assume some strong relationship between local pixels~\cite{henaff2015deep}.
+There are three specific priors we bake into our solution:
+\begin{itemize}
+\item \textbf{Nodes near a variable in the AST reflect something about that variable's type.}
+  For instance, consider the following code snippet:
+  \begin{lstlisting}
+    let x = y * 2;
+  \end{lstlisting}
+  A human trying to infer the type of the variable \texttt{x} in the above code may decide that since the result of multiplying something by a number is almost always a number, \texttt{x} is probably a number.
+  This corresponds exactly to two types of edges that we include in our generated graph, an \texttt{AstChild} edge from parents to their child nodes in the AST, and an \texttt{AstParent} edge from children to their parent in the AST.
+
+\item \textbf{Nodes near a variable in the file reflect something about that variable's type.}
+  Consider the following code snippet:
+  \begin{lstlisting}
+    let x = 1;
+    let y = x;
+    ...
+    let x = "foo";
+  \end{lstlisting}
+  It is clear that both ordering and locality matter in determining the type of \texttt{y}: in the AST, the two statements assigning to \texttt{x} are equidistant and directionally indistinguishable, but the actual \emph{token stream} of file reflects that the first assignment to \texttt{x} precedes the assignment to \texttt{y}, meaning that it may be more likely to affect the type of \texttt{y}, and is also closer, meaning the two statements are more likely to be related.
+  Because of this, we include two more types of edges in the induced graph, a \texttt{TokenNext} edge from a token to its neighbor in the source file, and a \texttt{TokenPrev} edge which is the reverse.
+
+\item \textbf{Nodes that use or define the same variable give information about each other.}
+  Consider the following:
+  \begin{lstlisting}
+    let x = 1;
+    ...
+    let y = a + (b + (... + x));
+  \end{lstlisting}
+  Although the two statements may be arbitrarily nonlocal in both the AST and the source file, they are clearly related, in that \texttt{x}'s type probably influences \texttt{y}'s type.
+  Because of this, we include two final types of edges, a \texttt{UseDef} edge from a variable's definition to its use, and a \texttt{UseUse} edge linking any two variable usages.
+\end{itemize}
+
+%%% Local Variables:
+%%% TeX-master: "main"
+%%% End:
