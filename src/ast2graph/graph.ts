@@ -37,13 +37,13 @@ export class Graph {
             }
 
             // Populate node counters/IDs to every node in the AST
-            this.assign_node_counter(source_file, source_file);
+            this.assign_node_counter(source_file);
 
             // Populate label list for applicable node IDs
             let labels_dict = new Map();
             let labels_list:Label[] = [];
             get_all_labels(labels_list, labels_dict, source_file, checker, this.node_id_to_nodeobj_map);
-
+            
             // Populate multiple edge lists, one for every edge type.
             let all_edges:GraphEdge[] = [];
             for(let i=0; i<edge_obj_list.length; i++) {
@@ -73,13 +73,12 @@ export class Graph {
             }
 
             // Populate node counters/IDs to every node in the AST
-            this.assign_node_counter(source_file, source_file);
+            this.assign_node_counter(source_file);
 
             // Populate label list for applicable node IDs
             let labels_dict = new Map();
             let labels_list:Label[] = [];
             get_all_labels(labels_list, labels_dict, source_file, checker, this.node_id_to_nodeobj_map);
-
             let feature_map = new Map<number, string[]>();
             // Get count features
             feature_map = edge_obj.visit_tree_and_parse_features(source_file, feature_map, -1, checker, this.node_id_to_nodeobj_map);
@@ -91,19 +90,14 @@ export class Graph {
         }
     }
 
-    public assign_node_counter(node: ts.Node, sourceFile: ts.SourceFile) {
+    public assign_node_counter(node: ts.Node) {
         this.max_node_count++;
         this.node_id_to_nodeobj_map.set(node, this.max_node_count);
-
-	let tok: string;
-	if (node.getChildren().length > 0) {
-	    tok = ts.SyntaxKind[node.kind];
-	} else {
-	    tok = this.nodePrinter.printNode(ts.EmitHint.Unspecified, node, sourceFile);
-	}
-
+        var tok = ts.SyntaxKind[node.kind];
         var nodeobj:GraphNode = {'id': this.max_node_count, 'ast_type':node.kind, 'token': tok};
         this.node_id_to_nodekind_list.push(nodeobj);
-        node.forEachChild(n => (this.assign_node_counter(n, sourceFile)));
+        for(let i = 0; i<node.getChildCount(); i++){
+            this.assign_node_counter(node.getChildAt(i));
+        }
     }
 }
