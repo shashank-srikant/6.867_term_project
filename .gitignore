@@ -6,6 +6,13 @@ data/index_maps/
 data/train_test/
 data/train_test_full/
 
+# Latex related
+*.log
+*.aux
+*.synctex.gz
+*.blg
+*.bbl
+TSW*.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

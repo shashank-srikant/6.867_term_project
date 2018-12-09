@@ -1,0 +1,190 @@
+\def\year{2019}\relax
+%File: formatting-instruction.tex
+\documentclass[letterpaper]{article} %DO NOT CHANGE THIS
+
+\usepackage{aaai19}  %Required
+\usepackage{times}  %Required
+\usepackage{helvet}  %Required
+\usepackage{courier}  %Required
+\usepackage{url}  %Required
+\usepackage{graphicx}  %Required
+\frenchspacing  %Required
+\setlength{\pdfpagewidth}{8.5in}  %Required
+\setlength{\pdfpageheight}{11in}  %Required
+% packages
+\usepackage{booktabs} % For formal tables
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{todonotes}
+\usepackage{xspace}
+\usepackage{multirow}
+\usepackage{bm}
+\usepackage{paralist}
+\usepackage{makecell}
+\usepackage{xspace}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{catchfilebetweentags}
+\usepackage{enumitem}
+\usepackage{changepage}
+\usepackage{xcolor,colortbl, soul, color}
+%\usepackage[many]{tcolorbox}
+%\usepackage{tikz}
+\usepackage{listings}
+\DeclareCaptionType[fileext=ext]{program}
+\setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+\newcommand{\algoname}[1]{\textnormal{\textsc{#1}}}
+\definecolor{LightCyan}{rgb}{0.88,1,1}
+\definecolor{Gray}{gray}{0.9}
+\newcolumntype{g}{>{\columncolor{Gray}}c}
+\newcolumntype{v}{>{\columncolor{LightCyan}}c}
+%PDF Info Is Required:
+  \pdfinfo{
+/Title (Machine Learning for Security Vulnerability Detection in Ethereum's Solidity)
+/Author (Shashank Srikant)}
+\setcounter{secnumdepth}{1}  
+
+\begin{document}
+% env
+\newcommand{\loadFig}[1]{
+	\ExecuteMetaData[figures.tex]{#1}
+}
+\newcommand{\loadTbl}[1]{
+	\ExecuteMetaData[tables.tex]{#1}
+}
+\newcommand{\loadCode}[1]{
+	\ExecuteMetaData[codes.tex]{#1}
+}
+\floatstyle{plain}
+\newfloat{Grammar}{tb}{cog}
+\newcommand{\progname}[1]{{\small\texttt{#1}}\xspace}
+\newcommand{\smallname}[1]{{\small{#1}}\xspace}
+\newcommand{\prognamenox}[1]{{\small\texttt{#1}}}
+\newcommand{\ethereum}{\textit{Ethereum}\xspace}
+
+\newcommand{\mythril}{\progname{Mythril}}
+\newcommand{\oyente}{\progname{Oyente}}
+\newcommand{\manticore}{\progname{Manticore}}
+\newcommand{\smartcheck}{\progname{Smart Check}}
+\newcommand{\solgraph}{\progname{Solgraph}}
+\newcommand{\solium}{\progname{Solium}}
+\newcommand{\zeus}{\progname{Zeus}}
+
+\newcommand{\rs}{\textit{Representation stack}\xspace}
+\newcommand{\use}{\textit{use}\xspace}
+\newcommand{\define}{\textit{define}\xspace}
+\newcommand{\usedef}{\texttt{Use \& Define}\xspace}
+\newcommand{\used}{\textit{used}\xspace}
+\newcommand{\defined}{\textit{defined}\xspace}
+
+\newcommand{\My}{\textsf{M}\xspace}
+\newcommand{\Oy}{\textsf{O}\xspace}
+
+\newcommand{\Tok}{\progname{T}}
+\newcommand{\TokNoOp}{\progname{Node}}
+
+\newcommand{\UU}{\progname{U}}
+\newcommand{\UUT}{\progname{U+T}}
+\newcommand{\UUO}{\progname{U+Op}}
+
+\newcommand{\UD}{\progname{UD}}
+\newcommand{\UDT}{\progname{UD+T}}
+\newcommand{\UDO}{\progname{UD+Op}}
+
+\newcommand{\DD}{\progname{D}}
+\newcommand{\DDT}{\progname{D+T}}
+\newcommand{\DDO}{\progname{D+Op}}
+
+\newcommand{\DU}{\progname{DU}}
+\newcommand{\DUT}{\progname{DU+T}}
+\newcommand{\DUO}{\progname{DU+Op}}
+
+\newcommand{\UDU}{\progname{U+D+UD}}
+\newcommand{\UDUT}{\progname{U+D+UD+T}}
+
+\newcommand{\es}{\progname{ExceptSt}}
+\newcommand{\of}{\progname{IntOv}}
+\newcommand{\uf}{\progname{IntUn}}
+\newcommand{\ec}{\progname{ExtCall}}
+\newcommand{\mc}{\progname{MultCalls}}
+\newcommand{\sch}{\progname{StateChange}}
+\newcommand{\tod}{\progname{TOD}}
+
+\newcommand{\esbof}{\bf{\progname{ExceptSt}}}
+\newcommand{\ofbof}{\bf{\progname{IntOv}}}
+\newcommand{\ufbof}{\bf{\progname{IntUn}}}
+\newcommand{\ecbof}{\bf{\progname{ExtCall}}}
+\newcommand{\mcbof}{\bf{\progname{MultCalls}}}
+\newcommand{\schbof}{\bf{\progname{StateChange}}}
+\newcommand{\todbof}{\bf{\progname{TOD}}}
+\newcommand{\bof[1]}{\textbf{#1}}
+
+\newcommand{\calv}{$v$\xspace}
+\newcommand{\calG}{$\mathcal{G}$\xspace}
+\newcommand{\calGp}{$\mathcal{G'}$\xspace}
+\newcommand{\calP}{$\mathcal{P}$\xspace}
+\newcommand{\calS}{$\mathcal{S}$\xspace}
+\newcommand{\calT}{$\mathcal{T}$\xspace}
+
+\newcommand{\etc}{\textit{etc}.\xspace}
+\newcommand{\ie}{\textit{i.e.}\xspace}
+\newcommand{\eg}{\textit{e.g.}\xspace}
+\newcommand{\ra}{$\rightarrow$}
+
+\newcommand{\TODO}[1]{\textcolor{blue}{TODO: #1}}
+\newcommand{\FIX}[1]{\textcolor{red}{CHECK: #1}}
+\newcommand{\COMMENT}[1]{\textcolor{red}{COMMENT: #1}}
+
+\newcommand{\rarro}[1][3pt]{\mathrel{%
+		\hbox{\rule[\dimexpr\fontdimen22\textfont2-.2pt\relax]{#1}{.4pt}}%
+		\mkern-4mu\hbox{\usefont{U}{lasy}{m}{n}\symbol{41}}}}
+
+\newcommand{\rarr}{$\rarro$}
+
+\newcommand{\scl}{0.5}
+\newcommand{\wdth}{0.28}
+
+\newcommand{\colorul}[2]{\setulcolor{#1}\ul{#2}}
+\definecolor{ogreen}{rgb}{0.0, 0.8, 0.6}
+\newcommand{\bx}[2]{
+ \begin{tikzpicture}
+ \node[draw,dashed,fill={#1!10}] {{#2}};
+ \end{tikzpicture}
+}
+
+\setul{0.2ex}{0.4ex}
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+\title{Title
+}
+
+\author{authors
+\\
+CSAIL, MIT
+\\
+authors@mit.edu
+}
+\maketitle
+
+\begin{abstract}
+	\input{abstract}
+\end{abstract}
+\input{introduction}
+\input{background}
+\input{approach}
+\input{method}
+\loadFig{figUseDefCombined}
+\loadTbl{tblResults2}
+\input{experiments}
+%\loadTbl{tblResults3}
+\input{results}
+%\input{discussion}
+\input{related_work}
+\input{conclusions}
+\bibliographystyle{aaai}
+\bibliography{main}
+\end{document}

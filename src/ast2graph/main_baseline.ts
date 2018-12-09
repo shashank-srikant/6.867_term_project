@@ -27,9 +27,9 @@ function processFile(file: string, common_prefix_dir: string, dest: string) {
     var graph_obj = new Graph(file);
     let edge_obj = new EdgeFeatures();
     let [feature_map, labels_list] = graph_obj.ast2feature(edge_obj);
-    console.log(dest);
-    console.log(output_file_path);
     shell.mkdir('-p', path.join(dest, file_path.dir));
+    console.log("folder created at "+dest+"/"+file_path.dir);
+    process.exit();
     print_obj({
         "feat_map": map2obj(feature_map),
         "labels": labels_list,
@@ -81,7 +81,7 @@ function main() {
 	let src_file_stats = src_files_stats[idx];
 
 	if (src_file_stats.isDirectory()) {
-	    processDir(src_file, common_prefix_dir, args.dest);
+        processDir(src_file, common_prefix_dir, args.dest);
 	} else {
 	    processFile(src_file, common_prefix_dir, args.dest);
 	}
