@@ -129,23 +129,6 @@ export class EdgeUseDef extends Edge {
         }
     }
 
-    private reverse_edge(edge_list:GraphEdge[], node_map:Map<ts.Node, number>): GraphEdgeDebug[]{
-        function node_name(ed: number): string{
-            let st = ts.SyntaxKind[get_by_value(node_map, ed).kind];
-            return st;
-        }
-        var rev_edge_list: GraphEdgeDebug[] = [];
-        for(let i = 0; i<edge_list.length; i++) {
-            let rev_edge:GraphEdgeDebug = {
-                'src': node_name(edge_list[i]['src']),
-                'dst': node_name(edge_list[i]['dst']),
-                'edge_type': edge_list[i]['edge_type']
-            }
-            rev_edge_list.push(rev_edge);
-        }
-        return rev_edge_list;
-    }
-
     public visit_tree(node: ts.Node, edges: GraphEdge[],
                         parent: number, checker: ts.TypeChecker,
                         node_map: Map<ts.Node, number>):GraphEdge[]{
@@ -195,7 +178,7 @@ export class EdgeUseDef extends Edge {
         //console.log(this.var_last_define);
         //console.log(this.var_last_use);
         //console.log(edges);
-        //console.log(this.reverse_edge(edges, node_map));
+        //console.log(this.edge_name_list(edges, node_map));
         //process.exit(0);
         return edges
     }
