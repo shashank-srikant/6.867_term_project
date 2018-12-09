@@ -8,10 +8,10 @@ export class EdgeAST extends Edge {
     }
 
     public visit_tree(
-	node: ts.Node,
-	edges: GraphEdge[],
-	parent: number,
-	checker: ts.TypeChecker,
+        node: ts.Node,
+        edges: GraphEdge[],
+        parent: number,
+        checker: ts.TypeChecker,
         node_map: Map<ts.Node, number>
     ): GraphEdge[]{
         let curr_node_id = node_map.get(node);

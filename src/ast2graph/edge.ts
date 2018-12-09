@@ -3,7 +3,7 @@ import { GraphEdge } from "./interfaces";
 
 export abstract class Edge {
     protected edge_type: number[];
-    protected edge_description: string;
+    public edge_description: string;
 
     constructor(edge_type:number[], edge_descrip:string) {
         this.edge_type = edge_type;
