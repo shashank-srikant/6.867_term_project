@@ -178,7 +178,7 @@ export class EdgeUseDef extends Edge {
         //console.log(this.var_last_define);
         //console.log(this.var_last_use);
         //console.log(edges);
-        //console.log(this.reverse_edge(edges, node_map));
+        //console.log(this.edge_name_list(edges, node_map));
         //process.exit(0);
         return edges
     }

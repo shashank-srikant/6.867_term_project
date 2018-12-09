@@ -19,7 +19,7 @@ export abstract class Edge {
         node_map: Map<ts.Node, number>
     ) : GraphEdge[];
 
-    protected reverse_edge(edge_list:GraphEdge[], node_map:Map<ts.Node, number>): GraphEdgeDebug[]{
+    protected edge_name_list(edge_list:GraphEdge[], node_map:Map<ts.Node, number>): GraphEdgeDebug[]{
         function node_name(ed: number): string{
             if(ed == -1){
                 return "ROOT";

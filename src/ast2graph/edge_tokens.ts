@@ -30,7 +30,7 @@ export class EdgeTokens extends Edge {
             edges = this.visit_tree(node.getChildAt(i), edges, this.prev_token, checker, node_map);
         }
         // console.log(edges);
-        // console.log(this.reverse_edge(edges, node_map));
+        // console.log(this.edge_name_list(edges, node_map));
         return edges;
     }
 }
