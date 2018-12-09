@@ -16,6 +16,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{amsmath,amssymb,amsfonts}
+\usepackage{natbib}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{todonotes}
@@ -46,6 +47,10 @@
 /Title (Machine Learning for Security Vulnerability Detection in Ethereum's Solidity)
 /Author (Shashank Srikant)}
 \setcounter{secnumdepth}{1}
+
+\makeatletter
+    \renewcommand{\copyright@on}{F}
+\makeatother
 
 \begin{document}
 % env
@@ -155,7 +160,7 @@
  \end{tikzpicture}
 }
 
-\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{lightgray}{rgb}{.95,.95,.95}
 \definecolor{darkgray}{rgb}{.4,.4,.4}
 \definecolor{purple}{rgb}{0.65, 0.12, 0.82}
 
@@ -194,7 +199,7 @@
 \makeatletter
 \def\BState{\State\hskip-\ALG@thistlm}
 \makeatother
-\title{Title
+\title{Predicting Types in Typescript using Graph Neural Nets
 }
 
 \author{authors
@@ -220,6 +225,10 @@ authors@mit.edu
 %\input{discussion}
 \input{related_work}
 \input{conclusions}
-\bibliographystyle{aaai}
+
+\medskip
+
+\bibliographystyle{unsrt}
 \bibliography{main}
+
 \end{document}
