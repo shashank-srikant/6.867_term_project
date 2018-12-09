@@ -1,6 +1,7 @@
 export interface GraphNode {
     "id": number,
-    "ast_type": number
+    "ast_type": number,
+    "token": string
 }
 
 export interface GraphEdge {

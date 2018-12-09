@@ -10,12 +10,14 @@ export class Graph {
     protected node_id_to_nodekind_list: GraphNode[]
     protected node_id_to_nodeobj_map: Map<ts.Node, number>;
     private max_node_count: number;
+    private nodePrinter: ts.Printer;
 
     constructor(ast_path:string) {
         this.ast_path = ast_path;
         this.node_id_to_nodeobj_map = new Map();
-        this.node_id_to_nodekind_list = [{'id': -1, 'ast_type':-1}];
+        this.node_id_to_nodekind_list = [{'id': -1, 'ast_type':-1, "token": "root"}];
         this.max_node_count = 0;
+	this.nodePrinter = ts.createPrinter();
     }
 
     public ast2graph(edge_obj_list:Edge[]):[GraphNode[], GraphEdge[], Label[], Map <string, number>]{
@@ -35,7 +37,7 @@ export class Graph {
             }
 
             // Populate node counters/IDs to every node in the AST
-            this.assign_node_counter(source_file);
+            this.assign_node_counter(source_file, source_file);
 
             // Populate label list for applicable node IDs
             let labels_dict = new Map();
@@ -71,17 +73,17 @@ export class Graph {
             }
 
             // Populate node counters/IDs to every node in the AST
-            this.assign_node_counter(source_file);
+            this.assign_node_counter(source_file, source_file);
 
             // Populate label list for applicable node IDs
             let labels_dict = new Map();
             let labels_list:Label[] = [];
             get_all_labels(labels_list, labels_dict, source_file, checker, this.node_id_to_nodeobj_map);
- 
+
             let feature_map = new Map<number, string[]>();
             // Get count features
             feature_map = edge_obj.visit_tree_and_parse_features(source_file, feature_map, -1, checker, this.node_id_to_nodeobj_map);
-            
+
             console.log(labels_list);
             console.log(feature_map);
 
@@ -89,11 +91,19 @@ export class Graph {
         }
     }
 
-    public assign_node_counter(node: ts.Node) {
+    public assign_node_counter(node: ts.Node, sourceFile: ts.SourceFile) {
         this.max_node_count++;
         this.node_id_to_nodeobj_map.set(node, this.max_node_count);
-        var nodeobj:GraphNode = {'id': this.max_node_count, 'ast_type':node.kind};
+
+	let tok: string;
+	if (node.getChildren().length > 0) {
+	    tok = ts.SyntaxKind[node.kind];
+	} else {
+	    tok = this.nodePrinter.printNode(ts.EmitHint.Unspecified, node, sourceFile);
+	}
+
+        var nodeobj:GraphNode = {'id': this.max_node_count, 'ast_type':node.kind, 'token': tok};
         this.node_id_to_nodekind_list.push(nodeobj);
-        node.forEachChild(n => (this.assign_node_counter(n)));
+        node.forEachChild(n => (this.assign_node_counter(n, sourceFile)));
     }
 }
