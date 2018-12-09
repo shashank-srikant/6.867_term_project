@@ -9,46 +9,38 @@ import subprocess
 import sys
 import time
 from tqdm import tqdm
+import concurrent.futures
 
 _DIRNAME = os.path.abspath(os.path.dirname(__file__))
 
-def run_multiproc(q):
-    while True:
-        n = q.get()
-        if n == None:
-            return
-
-        (src, dst) = n
-        subprocess.run([
-            '/usr/bin/env',
-            'node',
-            os.path.join(_DIRNAME, 'build', 'main_baseline.js'),
-            src,
-            dst,
-        ], cwd=_DIRNAME, stdout=subprocess.DEVNULL)
+def run_multiproc(n):
+    (src, dst) = n
+    subprocess.run([
+        '/usr/bin/env',
+        'node',
+        os.path.join(_DIRNAME, 'build', 'main_baseline.js'),
+        src,
+        dst,
+    ], cwd=_DIRNAME, timeout=5, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def gen(directory, n_procs=2):
     rootdir = time.strftime('%Y-%m-%d.%H-%M-%S')
-
-    queue = multiprocessing.Queue(n_procs + 2)
-    procs = [multiprocessing.Process(target=run_multiproc, args=(queue,), daemon=True) for _ in range(n_procs)]
-    for proc in procs:
-        proc.start()
-
+    arg_list = []
     if not os.path.isdir(directory):
         raise ValueError('{} is not a known directory!'.format(directory))
 
     for dname in tqdm(os.listdir(directory)):
         src_dir = os.path.join(directory, dname)
         dst_dir = os.path.join(_DIRNAME, os.pardir, os.pardir, 'data/repo/6867/', rootdir, dname)
-        print(dst_dir)
-        sys.exit(0)
-        queue.put((src_dir, dst_dir))
+        arg_list.append((src_dir, dst_dir))
 
-    for proc in procs:
-        queue.put(None)
-        proc.join()
+    print(arg_list)
+    with concurrent.futures.ProcessPoolExecutor() as pool:
+        try:
+            out = pool.map(run_multiproc, arg_list)
+        except Exception as e:
+            print('oops. timed out')
 
 def main():
     parser = argparse.ArgumentParser()
