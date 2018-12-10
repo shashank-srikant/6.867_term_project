@@ -157,6 +157,7 @@ def main() -> None:
     parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=64)
     parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=True, action='store_true')
     parser.add_argument('--load-train-test', help='Use train-test data from a file. Calculate split otherwise.', default=False, action='store_true')
+    parser.add_argument('--train-loss-after-ep', help='FOR BO USE ONLY.', default=None, type=int)
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
     ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
@@ -236,6 +237,7 @@ def main() -> None:
                          batch_size=args.batch_size, top_k_report=args.top_k_accuracy,
                          node_latent_size=args.node_latent_size, node_hidden_size=args.node_hidden_size,
                          edge_latent_size=args.edge_latent_size, edge_hidden_size=args.edge_hidden_size,
+                         train_loss_after_epno=args.train_loss_after_epno
     )
     trainer.train(stepsize=args.step_size, load_model=args.load_model, report_params=report_params)
 
