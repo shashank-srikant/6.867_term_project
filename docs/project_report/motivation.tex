@@ -5,14 +5,14 @@
 \subsubsection{Modeling programs.} The problem of modeling source codes statistically has recently received academia's attention. The idea that programs can be treated as data-points in some high-dimensional space and using this representation to infer analysis tasks has seen modest success across different applications. These include predicting meaningful variable names \cite{}, presence of bugs and vulnerabilities \cite{}, grading programs \cite{}, etc. Each of these works models the problem as a supervised learning task, where features extracted from programs and are used to predict the property of interest. This is a seemingly lossy step, where the rich structural and semantic information present in programs is approximated via these features. A constant question which faces this community is choosing the right models which captures this rich information. Very recent work has explored using probabilistic graphical models, and graph neural networks to model problems inherently containing graph-like structures (e.g. synthesis of chemical compounds) \cite{}. This work is inspired by such an approach, and we lay out a strong argument for why this might be an appropriate modeling tool. We explore this on the problem of inferring variable types in programs.
 
 \subsubsection{Inferring types.}
-There exist deterministic algorithms like Hindley-Milner's W-algorithm (HM) to infer and check the types of variables in programs. HM assumes some known structure between how variables interact, and inductively applies type-propagation rules. This works well in practice for languages which have been designed keeping such analyses in mind. With languages like Javascript and Ruby though, implementing HM will result in poor specificity, with most types simply being inferred as \textit{any}. Such inference may not be very helpful to an end-user, and hence, warrants other techniques which may prove effective in discovering such information. 
+There exist deterministic algorithms like Hindley-Milner's W-algorithm (HM) to infer and check the types of variables in programs. HM assumes some known structure between how variables interact, and inductively applies type-propagation rules. This works well in practice for languages which have been designed keeping such analyses in mind. With languages like Javascript and Ruby though, implementing HM will result in poor specificity, with most types simply being inferred as \textit{any}. Such inference may not be very helpful to an end-user, and hence, warrants other techniques which may prove effective in discovering such information.
 
 We hence explore machine learning as a possible tool to help learn these types from. The key insight here is that the problem of inferring types involves two sub-tasks: one of finding a signal which can inform the type of a variable, and another of having a model of a structured network which can help accurately propagate this signal to other occurrences of the same variable, or variables that are similar to it.
 
-\subsubsection{Graph neural networks.} 
-Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures. Le Cun et al. published a position paper \cite{} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters. Deep Mind, with its recent position paper on inductive biases captured by graph neural networks \cite{}, has seemingly initiated a resurgence of interest in Graph neural networks (GNNs). 
+\subsubsection{Graph neural networks.}
+Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures. Le Cun et al. published a position paper \cite{} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters. Deep Mind, with its recent position paper on inductive biases captured by graph neural networks \cite{}, has seemingly initiated a resurgence of interest in Graph neural networks (GNNs).
 
-Broadly, a popular architecture for a GNN is 
+Broadly, a popular architecture for a GNN is
 
 \loadFig{gnn}
 
@@ -78,3 +78,7 @@ This argument is much easier: belief propagation, a message passing algorithm, a
 GNNs are in essence a message passing algorithm, where the messages are the result of some function learned by the GNN on the current latent state of a given node.
 By merit of being neural networks, GNNs are capable of approximating any function~\cite{hornik1989multilayer} (and storing latent state), meaning that GNNs are capable of learning belief propagation (assuming we run the message passing for enough iterations).
 Therefore, assuming that training our GNN finds its global optimum, we are guaranteed a solution at least as good as the approximate solution of belief propagation on the MRF, meaning that a GNN should be capable of solving the type inference problem.
+
+%%% Local Variables:
+%%% TeX-master: "main"
+%%% End:
