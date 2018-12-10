@@ -132,12 +132,12 @@ def main() -> None:
     parser.add_argument('--no-collapse-any-unk', help='Don\'t collapse the $any$ and UNK tokens.', default=False, action='store_true')
     parser.add_argument('--batch-size', type=int, help='File batch size for training and testing', default=16)
     parser.add_argument('--iteration-ensemble', help='Whether to run the "iteration ensemble" experiment.', default=False, action='store_true')
-    parser.add_argument('--top-k-accuracy', nargs='+', type=int, help='How many accuracies to report. Default 1.', default=[1])
-    parser.add_argument('--node-latent-size', type=int, help='Latent state vector size for nodes', default=128)
-    parser.add_argument('--node-hidden-size', type=int, help='Hidden state vector size for nodes (in 1-layer net)', default=256)
-    parser.add_argument('--edge-latent-size', type=int, help='Latent state vector size for edges', default=128)
-    parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=256)
-    parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=False, action='store_true')
+    parser.add_argument('--top-k-accuracy', nargs='+', type=int, help='How many accuracies to report. Default 1.', default=[1,2,3,4,5])
+    parser.add_argument('--node-latent-size', type=int, help='Latent state vector size for nodes', default=32)
+    parser.add_argument('--node-hidden-size', type=int, help='Hidden state vector size for nodes (in 1-layer net)', default=64)
+    parser.add_argument('--edge-latent-size', type=int, help='Latent state vector size for edges', default=32)
+    parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=64)
+    parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=True, action='store_true')
     parser.add_argument('--load-train-test', help='Use train-test data from a file. Calculate split otherwise.', default=False, action='store_true')
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
@@ -150,7 +150,7 @@ def main() -> None:
 
     label_unk_group = parser.add_mutually_exclusive_group()
     label_unk_group.add_argument('--label-nonunk-percent', type=float, help='The percentage of labels to explicitly encode (i.e. not UNK)')
-    label_unk_group.add_argument('--label-nonunk-count', type=int, help='The number of labels to explicitly encode (i.e. not UNK)')
+    label_unk_group.add_argument('--label-nonunk-count', type=int, default=100, help='The number of labels to explicitly encode (i.e. not UNK)')
 
     args = parser.parse_args()
     utils.log('Args: {}'.format(args))

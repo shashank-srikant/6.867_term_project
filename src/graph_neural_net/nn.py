@@ -284,8 +284,9 @@ class Trainer:
 
             train_batch_result = self._process_batches(sess, batched_train_graphs, batched_train_labels, train_function)
             if (time.time() - last_report_time) > REPORT_FREQ_SECS:
-                ensemble_weights = sess.run(tf.nn.softmax(self.iteration_ensemble_weights))
-                utils.log('Iteration ensemble weights:\n{}\n'.format(' '.join(map('{:.2f}'.format, ensemble_weights))))
+                if self.using_iteration_ensemble:
+                    ensemble_weights = sess.run(tf.nn.softmax(self.iteration_ensemble_weights))
+                    utils.log('Iteration ensemble weights:\n{}\n'.format(' '.join(map('{:.2f}'.format, ensemble_weights))))
                 utils.log(fmt_report_str('Train', train_batch_result))
                 if report_params:
                     self.report_rates_on_epoch('Train', epno, train_batch_result, report_params)
