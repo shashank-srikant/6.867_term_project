@@ -1,0 +1,41 @@
+graph finite_state_machine {
+    node [label="Seq"] seq;
+    node [label=":="] left_assign;
+    node [label="x"] left_x;
+    node [label="3"] left_3;
+    node [label=":="] right_assign;
+    node [label="y"] right_y;
+    node [label="x"] right_x;
+    node [label="", fixedsize=true, height=0.2, width=0.2, style="filled", fillcolor="gray"] seq_obs left_assign_obs left_x_obs left_3_obs right_assign_obs right_y_obs right_x_obs;
+    node [label="", fixedsize=true, height=0.2, width=0.2, style="filled" fillcolor="yellow"] left_x_latent y_latent right_x_latent;
+
+    seq -- seq_obs;
+    left_assign -- left_assign_obs;
+    left_x -- left_x_obs;
+    left_3 -- left_3_obs;
+    right_assign -- right_assign_obs;
+    right_y -- right_y_obs;
+    right_x -- right_x_obs;
+    left_x -- left_x_latent;
+    right_x -- right_x_latent;
+    right_y -- y_latent;
+
+    seq -- left_assign;
+    seq -- right_assign;
+    left_assign -- left_x;
+    left_assign -- left_3;
+    right_assign -- right_y;
+    right_assign -- right_x;
+
+    seq -- left_x [style="dashed"];
+    left_x -- left_assign [style="dashed"];
+    left_assign -- left_3 [style="dashed"];
+    left_3 -- right_y [style="dashed"];
+    right_y -- right_assign [style="dashed"];
+    right_assign -- right_x [style="dashed"];
+
+    left_x -- right_x [style="bold"];
+
+    {rank=same; left_assign -- right_assign [style="invis"]}
+    {rank=same; left_x -- left_3 -- right_y -- right_x [style="invis"]}
+}
