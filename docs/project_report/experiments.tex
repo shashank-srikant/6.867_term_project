@@ -9,13 +9,7 @@ Instead, we approximate the result by running fewer iterations, theoretically lo
 It is not immediately clear how we should choose the \textsc{NIter} hyperparameter though: since graph nets give no formal guarantees that the results monotonically improve with the number of iterations, we have to select the number of iterations through some hyperparameter search.
 We ran two experiments to try to select the ideal settings: a \emph{Bayesian Optimization} based approach, and what we call an \emph{Iteration Ensemble} approach.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.49\linewidth]{img/diameter}
-  \includegraphics[width=0.49\linewidth]{img/node_degree}
-  \caption{Generated graph statistics}
-  \label{fig:dataset-graph-stats}
-\end{figure}
+\loadFig{stats}
 
 \paragraph{Bayesian Optimization.}
 Our first attempt at finding the ideal number of iterations was inspired by standard approaches to hyperparameter search problems, for cases where running experiments can be prohibitively expensive (the memory and time costs of training a model means we can only search through a relatively small number of possible hyperparameters).
