@@ -137,7 +137,7 @@ def main() -> None:
     parser.add_argument('--node-hidden-size', type=int, help='Hidden state vector size for nodes (in 1-layer net)', default=64)
     parser.add_argument('--edge-latent-size', type=int, help='Latent state vector size for edges', default=32)
     parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=64)
-    parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=False, action='store_true')
+    parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=True, action='store_true')
     parser.add_argument('--load-train-test', help='Use train-test data from a file. Calculate split otherwise.', default=False, action='store_true')
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
