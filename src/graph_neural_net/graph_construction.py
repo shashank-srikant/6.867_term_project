@@ -8,8 +8,11 @@ UNK = 'UNK'
 
 class IndexMaps(NamedTuple):
     ast_type_index_map: Dict[str, int]
+    ast_type_counter: Counter[str]
     edge_type_index_map: Dict[str, int]
+    edge_type_counter: Counter[str]
     label_index_map: Dict[str, int]
+    label_type_counter: Counter[str]
 
 def construct_index_maps(graph_jsons: List[Dict[str, Any]],
                          collapse_any_unk:bool,
@@ -56,14 +59,16 @@ def construct_index_maps(graph_jsons: List[Dict[str, Any]],
     edge_type_index_map = unked_index_map(edge_type_counter, edge_nonunk_percent, edge_nonunk_count)
     label_index_map = unked_index_map(label_counter, label_nonunk_percent, label_nonunk_count)
 
-    return IndexMaps(ast_type_index_map, edge_type_index_map, label_index_map)
+    return IndexMaps(ast_type_index_map, ast_type_counter, edge_type_index_map, edge_type_counter, label_index_map, label_counter)
 
 def graphs_json_to_graph_tuple_and_labels(
         graphs: List[Dict[str, Any]],
         index_maps: IndexMaps,
         ignore_edge_types:Optional[List[int]],
 ) -> Tuple[gn.graphs.GraphsTuple, List[Dict[int, int]]]:
-    ast_type_index_map, edge_type_index_map, label_index_map = index_maps
+    ast_type_index_map = index_maps.ast_type_index_map
+    edge_type_index_map = index_maps.edge_type_index_map
+    label_index_map = index_maps.label_index_map
 
     node_index_map: Dict[Tuple[int, int], int] = {}
 
