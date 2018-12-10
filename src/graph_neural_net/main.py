@@ -237,7 +237,7 @@ def main() -> None:
                          batch_size=args.batch_size, top_k_report=args.top_k_accuracy,
                          node_latent_size=args.node_latent_size, node_hidden_size=args.node_hidden_size,
                          edge_latent_size=args.edge_latent_size, edge_hidden_size=args.edge_hidden_size,
-                         train_loss_after_epno=args.train_loss_after_epno
+                         train_loss_after_epno=args.train_loss_after_ep
     )
     trainer.train(stepsize=args.step_size, load_model=args.load_model, report_params=report_params)
 
