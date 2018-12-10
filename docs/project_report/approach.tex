@@ -5,17 +5,16 @@ Our approach to the type prediction problem is to apply a GNN to a special graph
 
 \subsection{Dataset}
 \label{sec:dataset}
+We borrowed from the dataset which the DeepTyper project worked on \cite{deeptyper}. 1000 top starred open-source projects on Github that predominantly consisted of TypeScript codes were parsed. Each project was parsed with the TypeScript compiler \textsc{tsc}, which infers type information (possibly any) for all occurrences of each identifier. A total of 90 projects, containing 5000 source codes, resulting in 650,000 labels were finally used in our experiments.
 
-\todo{Talk about TypeScript dataset construction}
+\paragraph{Train-Test split.}
 
-\paragraph{Train Test Split.}
-
-We made sure to do our train/test split on the dataset not based on the files, but also on the projects, since we are primarily interested in how this approach performs on code that it has never seen before.
+We made sure to do our train/test split on the dataset not based on files, but on projects, since we are primarily interested in how this approach performs on code that it has never seen before.
 Files within the same project do tend to have similar, even identical code snippets, so we wanted to rule out any potential false positives from memorizing such sub-graphs.
-However, this does to some extent limit the utility of our predictor within a real world system: a type predictor built into an IDE would have access to other files within the same project that the user has written, and would be able to base predictions on that.
+This is, however, a conservation model of a real world system: a type predictor built into an IDE would have access to other files within the same project that the user has written, and would be able to base predictions on that.
 Because of this, we have a separate set of weights for computing the initial node and edge embeddings, so that a model can refine its training on graphs specific to one type of project, while keeping the same node/edge embeddings and predictors, essentially performing a version of the standard NLP-style transfer learning, but for program graphs.
 
-\subsection{Graph Construction}
+\subsection{Graph construction.}
 
 Because ``graph neural nets'' are such a general framework, the inductive bias for the solution comes primarily from how the input graph is constructed.
 Specifically, we must decide on the nodes and edges of our generated graph.
@@ -71,26 +70,21 @@ With all of the above nodes and edges included, we generate (a cleaned up versio
   \label{fig:ast-graph}
 \end{figure}
 
-\subsection{Embeddings}
+\subsection{Embeddings.}
 
 In the program graph, a node's initial embedding is a one-hot vector encoding its AST type.
 Similarly, an edge's embedding is a one-hot vector encoding its edge type.
 We consolidate the bottom $10\%$ of training node types into an \textsc{Unk} token, to avoid sparsity on the bottom end of the node type distribution.
 We do not do the same with edge types, since by construction all edge types are densely populated.
 
-\subsection{Architecture}
+\subsection{Architecture.}
 
 The graph architecture we explore is fairly simple, with minimal observed effects from architecture tuning.
 The core of the architecture is the graph neural net, described in Section~\ref{sec:graph-neural-net}.
 To use this, we perform some minor pre- and post-processing on the data: we have a one-hidden-unit fully connected layer to transform the one-hot encodings into the initial node and edge embeddings, and after running the graph, we similarly have a one-hidden-unit fully connected layer to transform the final latent state into the predictions.
 These two fully connected layers are the parts held constant for the transfer learning approach mentioned above, in Section~\ref{sec:dataset}.
 
-\subsection{Implementation}
+\subsection{Implementation.}
 
 We implemented our type prediction algorithm using using DeepMind's Graph Nets framework~\cite{deepmind2018graph}, along with a significant amount of custom TensorFlow~\cite{google2015tensorflow} to collect metrics and perform experiments.
 Our implementation, along with minor extensions to the Graph Nets framework, can be found online\footnote{\url{https://github.com/shashank-srikant/6.867_term_project/blob/master/src/graph_neural_net/nn.py}}.
-
-
-%%% Local Variables:
-%%% TeX-master: "main"
-%%% End:
