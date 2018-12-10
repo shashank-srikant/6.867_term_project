@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 from igraph.drawing.text import TextDrawer
 from igraph.drawing.shapes import RectangleDrawer
 import cairo
+import numpy as np
 
 def colorize(arr, name='viridis'):
     cmap = plt.get_cmap(name)
@@ -62,11 +63,19 @@ def main():
         cidxmap[rl] = len(cs)
         cs += [rl] * len(edge_of_label(rl))
 
-    G.add_edges(proc_edges(edge_of_label(key_label)))
     dG.add_edges(proc_edges(edge_of_label(key_label)))
-    lay = G.layout(args.layout)
     for rl in rest_labels:
         dG.add_edges(proc_edges(edge_of_label(rl)))
+
+    print('{:.2f} {:.2f} {}'.format(
+        np.mean(dG.degree()),
+        dG.average_path_length(),
+        dG.diameter(),
+    ))
+    return
+
+    G.add_edges(proc_edges(edge_of_label(key_label)))
+    lay = G.layout(args.layout)
 
     dG.es['color'] = colorize(cs, args.edge_color)
 
