@@ -10,10 +10,23 @@ from matplotlib import gridspec
 
 import functools
 
-kappa = 10
+kappa = 5
 
 observed = {
+    0: 1.52,
+    1: 1.51,
+    2: 1.63,
+    3: 1.81,
+    4: 2.03,
+    5: 2.62,
+    6: 60.40,
+    7: 9317032.63,
+    8: 54501934340.98,
+    9: 950553104447.76,
+    10: 1432370346851.65,
 }
+
+observed = {k: -np.log(v) for (k, v) in observed.items() if v is not None}
 
 def function(**kwargs):
     x = kwargs['x']
