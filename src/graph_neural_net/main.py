@@ -150,7 +150,7 @@ def main() -> None:
 
     label_unk_group = parser.add_mutually_exclusive_group()
     label_unk_group.add_argument('--label-nonunk-percent', type=float, help='The percentage of labels to explicitly encode (i.e. not UNK)')
-    label_unk_group.add_argument('--label-nonunk-count', type=int, default=10, help='The number of labels to explicitly encode (i.e. not UNK)')
+    label_unk_group.add_argument('--label-nonunk-count', type=int, default=100, help='The number of labels to explicitly encode (i.e. not UNK)')
 
     args = parser.parse_args()
     utils.log('Args: {}'.format(args))
