@@ -132,7 +132,7 @@ def main() -> None:
     parser.add_argument('--no-collapse-any-unk', help='Don\'t collapse the $any$ and UNK tokens.', default=False, action='store_true')
     parser.add_argument('--batch-size', type=int, help='File batch size for training and testing', default=16)
     parser.add_argument('--iteration-ensemble', help='Whether to run the "iteration ensemble" experiment.', default=False, action='store_true')
-    parser.add_argument('--top-k-accuracy', nargs='+', type=int, help='How many accuracies to report. Default 1.', default=[1])
+    parser.add_argument('--top-k-accuracy', nargs='+', type=int, help='How many accuracies to report. Default 1.', default=[1,2,3,4,5])
     parser.add_argument('--node-latent-size', type=int, help='Latent state vector size for nodes', default=32)
     parser.add_argument('--node-hidden-size', type=int, help='Hidden state vector size for nodes (in 1-layer net)', default=64)
     parser.add_argument('--edge-latent-size', type=int, help='Latent state vector size for edges', default=32)
