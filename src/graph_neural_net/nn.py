@@ -47,6 +47,7 @@ class Trainer:
                  test_graphs: List[gn.graphs.GraphsTuple],
                  test_labels: List[Dict[int, int]],
                  label_index_map: Dict[str, int],
+                 train_loss_after_epno: Optional[int],
                  *,
                  niter: int=10, iteration_ensemble: bool = False, batch_size: int=16,
                  top_k_report: Sequence[int]=[1],
@@ -62,6 +63,7 @@ class Trainer:
         self.niter = niter
         self.batch_size = batch_size
         self.top_k_report = top_k_report
+        self.train_loss_after_epno = train_loss_after_epno
 
         # grab a random representative graph of the node/edge feature lengths
         rep_graph = train_graphs[0]
@@ -283,7 +285,7 @@ class Trainer:
             batched_train_graphs, batched_train_labels = self._batch_graphs(graphs, labels)
 
             train_batch_result = self._process_batches(sess, batched_train_graphs, batched_train_labels, train_function)
-            if (time.time() - last_report_time) > REPORT_FREQ_SECS:
+            if not self.train_loss_after_epno and ((time.time() - last_report_time) > REPORT_FREQ_SECS):
                 if self.using_iteration_ensemble:
                     ensemble_weights = sess.run(tf.nn.softmax(self.iteration_ensemble_weights))
                     utils.log('Iteration ensemble weights:\n{}\n'.format(' '.join(map('{:.2f}'.format, ensemble_weights))))
@@ -294,6 +296,11 @@ class Trainer:
 
                 self.save(sess)
                 last_report_time = time.time()
+            elif epno == self.train_loss_after_epno:
+                if self.using_iteration_ensemble:
+                    ensemble_weights = sess.run(tf.nn.softmax(self.iteration_ensemble_weights))
+                    utils.log('Iteration ensemble weights:\n{}\n'.format(' '.join(map('{:.2f}'.format, ensemble_weights))))
+                utils.log('Loss: {:.2f}\n'.format(train_batch_result.sum_loss / train_batch_result.total_weight))
 
         report_test_loss(nepoch)
 

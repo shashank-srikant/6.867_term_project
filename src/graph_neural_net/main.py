@@ -116,6 +116,24 @@ def report_label_distribution(name: str, labels: List[Dict[int, int]], label_nam
 
     utils.write(report, logname)
 
+def print_top_k_accuracies(train_labels: List[Dict[int, int]], test_labels: List[Dict[int, int]], top_k_accuracy: List[int], label: str) -> None:
+    pred_freq_counter = Counter[int](utils.flatten(l.values() for l in train_labels))
+    pred_vec = [lab for (lab, count) in pred_freq_counter.most_common()]
+
+    total_labs = sum(map(len, test_labels))
+    unk_labs = sum(1 for labs in test_labels for lab in labs.values() if lab == 0)
+
+    for k in top_k_accuracy:
+        k_preds = set(pred_vec[:k])
+        corr = sum(1 for labs in test_labels for lab in labs.values() if lab in k_preds)
+        utils.log('{}: top {} accuracy: {:.2f} ({:.2f} w/out UNK)'.format(
+            label,
+            k,
+            corr / total_labs,
+            corr / (total_labs - unk_labs),
+        ))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Train and test using the Deepmind GNN framework.')
     parser.add_argument('--file', '-f', nargs='+', help='Individual graph files to process', default=[])
@@ -139,6 +157,7 @@ def main() -> None:
     parser.add_argument('--edge-hidden-size', type=int, help='Hidden state vector size for edges (in 1-layer net)', default=64)
     parser.add_argument('--train-without-unk', help='Whether to remove all UNK from the training data.', default=True, action='store_true')
     parser.add_argument('--load-train-test', help='Use train-test data from a file. Calculate split otherwise.', default=False, action='store_true')
+    parser.add_argument('--train-loss-after-ep', help='FOR BO USE ONLY.', default=None, type=int)
 
     ast_type_unk_group = parser.add_mutually_exclusive_group()
     ast_type_unk_group.add_argument('--ast-nonunk-percent', type=float, help='The percentage of AST types to explicitly encode (i.e. not UNK)')
@@ -150,7 +169,7 @@ def main() -> None:
 
     label_unk_group = parser.add_mutually_exclusive_group()
     label_unk_group.add_argument('--label-nonunk-percent', type=float, help='The percentage of labels to explicitly encode (i.e. not UNK)')
-    label_unk_group.add_argument('--label-nonunk-count', type=int, default=100, help='The number of labels to explicitly encode (i.e. not UNK)')
+    label_unk_group.add_argument('--label-nonunk-count', type=int, default=20, help='The number of labels to explicitly encode (i.e. not UNK)')
 
     args = parser.parse_args()
     utils.log('Args: {}'.format(args))
@@ -182,11 +201,6 @@ def main() -> None:
     else:
         [train_names, train_graph_jsons, test_names, test_graph_jsons, index_maps] = utils.load_train_test_data('train_test_full')
 
-        # Can't generate variable names on the fly apparently
-        #print(list(kargv.keys()))
-        #for k, v in kargv.items():
-        #    locals()[k] = v
-
     train_graph_tuple, train_labels = graph_construction.graphs_json_to_graph_tuple_and_labels(
         utils.flatten(train_graph_jsons),
         index_maps,
@@ -210,6 +224,9 @@ def main() -> None:
     describe_dataset('train', train_names, train_graphs, train_labels)
     describe_dataset('test', test_names, test_graphs, test_labels)
 
+    print_top_k_accuracies(train_labels, train_labels, args.top_k_accuracy, 'Train')
+    print_top_k_accuracies(train_labels, test_labels, args.top_k_accuracy, 'Test')
+
     label_name_map = utils.invert_bijective_dict(index_maps.label_index_map)
     report_label_distribution('train', train_labels, label_name_map, args.report_count)
     report_label_distribution('test', test_labels, label_name_map, args.report_count)
@@ -220,6 +237,7 @@ def main() -> None:
                          batch_size=args.batch_size, top_k_report=args.top_k_accuracy,
                          node_latent_size=args.node_latent_size, node_hidden_size=args.node_hidden_size,
                          edge_latent_size=args.edge_latent_size, edge_hidden_size=args.edge_hidden_size,
+                         train_loss_after_epno=args.train_loss_after_ep
     )
     trainer.train(stepsize=args.step_size, load_model=args.load_model, report_params=report_params)
 

@@ -1,23 +1,31 @@
 \section{Experiments}
 \label{sec:experiments}
-In this work, we investigate the following research questions
-\begin{itemize}
-	\item How
-	\item How
-	\item Do features selected by models trained on complex representations provide a rich qualitative understanding?
-\end{itemize}
 
-We built a balanced set of roughly $66$k functions and used blah blah
+\subsection{Number of Iterations}
+One of the major flaws in the graph net framework is the issue of determining how many iterations to run.
+In theory, because of the universal approximation properties of neural nets, the optimal number of iterations is any number larger than the diameter of the graph, so that each node can make a fully informed decision knowing the entire graph topology.
+However, this is not realistic: as shown in Figure~\ref{fig:dataset-graph-stats}, the maximum diameter of a given graph
 
-The dataset pertaining to each label was split into a training and test set in the ratio $66\%$-$33\%$. The dataset for each label was balanced - with roughly the same number of positive and negative samples, and stratified to ensure that the distribution of function types was similar in the train and test set. 
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{img/diameter}
+  \includegraphics[width=\linewidth]{img/node_degree}
+  \includegraphics[width=\linewidth]{img/path_length}
+  \caption{Foo}
+  \label{fig:dataset-graph-stats}
+\end{figure}
 
-Our models
-\begin{itemize}[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt]
-	\item \textbf{Model1, \progname{Tr}.} Oh boy.
-	
-	\item \textbf{Model2, \TokNoOp.} We use 
-	
-\end{itemize}
 
-For models trained on our representations, we also analyze the highest contributing features. These two analyses help answer the three research questions we pose.
+Graph nets do not have the same guarantee as other approximation
 
+\paragraph{Iteration Ensemble.}
+
+\paragraph{Bayesian Optimization.}
+
+\subsection{Edge Ablation}
+
+\todo{Experiments, Results}
+
+%%% Local Variables:
+%%% TeX-master: "main"
+%%% End:
