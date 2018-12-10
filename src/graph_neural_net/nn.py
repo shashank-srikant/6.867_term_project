@@ -72,6 +72,9 @@ class Trainer:
 
         self.num_labels = 1 + max(l for lab_dict in train_labels for l in lab_dict.values())
 
+        self.using_iteration_ensemble = iteration_ensemble
+        self.iteration_ensemble_weights = tf.get_variable('iteration_ensemble_weights', [niter + 1], trainable=True, dtype=tf.float64)
+
         self.encoder_module = gn.modules.InteractionNetwork(
             edge_model_fn=lambda: snt.nets.MLP([edge_features_len, edge_latent_size]),
             node_model_fn=lambda: snt.nets.MLP([node_features_len, node_latent_size]),
@@ -84,8 +87,6 @@ class Trainer:
             edge_model_fn=lambda: snt.nets.MLP([edge_latent_size, edge_latent_size]),
             node_model_fn=lambda: snt.nets.MLP([node_latent_size, self.num_labels]),
         )
-        self.using_iteration_ensemble = iteration_ensemble
-        self.iteration_ensemble_weights = tf.get_variable('iteration_ensemble_weights', [niter + 1], trainable=True, dtype=tf.float64)
 
         self.loss_placeholder, self.batch_input = self._construct_loss_placeholder_and_batch_input()
         self.batched_test_graphs, self.batched_test_labels = self._batch_graphs(test_graphs, test_labels)
@@ -126,6 +127,7 @@ class Trainer:
         iter_graphs = [init_graph]
         for _ in range(self.niter):
             iter_graphs.append(self.latent_module(iter_graphs[-1]))
+        _ = self.latent_module(iter_graphs[-1]) # throw away
         decoded_graphs = list(map(self.decoder_module, iter_graphs))
 
         if self.using_iteration_ensemble:
@@ -216,7 +218,8 @@ class Trainer:
             for (pred, weight, label) in zip(batch_result.prediction_vec, weights_arr, labels_arr):
                 weighted_true_preds[label] += weight * (pred == label)
                 weighted_n_labs[label] += weight
-                weighted_n_preds[pred] += weight
+                if label > 0:
+                    weighted_n_preds[pred] += weight
 
             batch_result_acc = batch_result_acc._replace(
                 total_weight=total_weight,
@@ -301,6 +304,7 @@ class Trainer:
                     ensemble_weights = sess.run(tf.nn.softmax(self.iteration_ensemble_weights))
                     utils.log('Iteration ensemble weights:\n{}\n'.format(' '.join(map('{:.2f}'.format, ensemble_weights))))
                 utils.log('Loss: {:.2f}\n'.format(train_batch_result.sum_loss / train_batch_result.total_weight))
+                return
 
         report_test_loss(nepoch)
 
