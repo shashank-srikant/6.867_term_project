@@ -19,7 +19,7 @@ Our representation is based on the Abstract Syntax Tree (AST) of a program, whic
 For example, the AST of an expression \texttt{1 + 2} might have the binary operator \texttt{+} at the root, with \texttt{1} and \texttt{2} as its left and right children respectively.
 The AST of a program concisely represents many of the locality properties we would desire in a program representation: for instance, in the sequence of statements \mbox{\texttt{x := 1 + 2; y := 3}}, the \texttt{2} would be closer to the \texttt{x} in the AST than it would be to the \texttt{y} (despite the layout of the source code).
 
-\subsubsection{Inferring types.}
+\paragraph{Type inference.}
 The statistical type inference problem we solve in this paper is not the only type inference algorithm.
 There exist deterministic algorithms like Hindley-Milner's W-algorithm (HM) to infer and check the types of variables in programs.
 HM assumes some known structure between how variables interact, and inductively applies type-propagation rules.
@@ -34,7 +34,7 @@ The key insight is that the problem of inferring types involves two sub-tasks:
 \item modeling a structured network which can help propagate this signal to other occurrences of the same variable, or variables that are similar to it.
 \end{enumerate*}
 
-\subsubsection{Graph neural networks.}
+\paragraph{Graph neural networks.}
 Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures.
 LeCun~\textit{et al.} published a position paper~\cite{henaff2015deep} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters.
 DeepMind, with its recent position paper on inductive biases captured by graph neural networks~\cite{deepmind2018graph}, has seemingly initiated a resurgence of interest in Graph Neural Networks (GNNs).
@@ -55,7 +55,7 @@ The generality of the framework leaves it open to many valid interpretations.
 Having introduced the problem of type inference, and graph neural networks, we lay out a justification in this section for why such a network is the right form of inductive bias to be modeling programs.
 
 A Markov Random Field (MRF) is an undirected graphical model with the Markov assumption that a node is conditionally independent from all other nodes given its neighbors~\cite{kinderman80markov}.
-If we were to construct a Markov Random Field with an unobserved latent variable for each of our AST nodes, adding the various (undirected) edges described above, tag each node with an additional variable (the observed variable representing its AST type), and tag each variable with an additional variable representing its type, we would get a graph that looks roughly like Figure~\ref{fig:mrf-graph}.
+If we were to construct a Markov Random Field with an unobserved latent variable for each of our AST nodes, adding the various (undirected) edges described in Section~\ref{sec:graph-neural-net}, tag each node in the graph with an additional random variable (the observed variable representing its AST type), and tag each program variable with an additional random variable representing its type, we would get a graph that looks roughly like Figure~\ref{fig:mrf-graph}.
 We could then perform posterior inference on the type nodes of this graph using belief propagation~\cite{pearl2009causality}, which gives an approximate solution to the true posterior~\cite{weiss2000correctness}, giving our desired type predictions.
 \loadFig{mrf}
 
@@ -65,8 +65,8 @@ We specifically argue the following two points:
 	\item the graph neural network performs posterior inference on this network.
 \end{enumerate*}
 
-For point (i), we believe that the three classes of edges (AST edges, source file adjacency edges, and variable use edges) roughly capture the extent of conditional dependence in the model, in that the latent state of a variable (that predicts its type) is roughly conditionally independent from all others given its neighbors along those edges.
-This is best argued through locality: the types of variables in a given region of code (e.g. inside of a function) are conditionally independent from the types of variables in a distance region of code (e.g. in a different function) given any variables that are shared or passed between them (the nonlocal \textsc{VariableUse} edges we add).
+For point (i), we believe that the classes of edges we use roughly capture the extent of conditional dependence in the model, in that the latent state of a variable (that predicts its type) is roughly conditionally independent from all others given its neighbors along those edges.
+This full justification is left to Section~\ref{sec:graph-neural-net}, but it is summarized by saying that we add between nodes if those nodes are local in some sense (whether that means they're colocated in the code, or deal with similar variables).
 Some edges we added may be spurious, and while this may make it harder to perform inference (whether in the real MRF or our graph net), the MRF with too many edges can just be viewed as a refinement of the MRF with too few edges.
 This is also the case with the undirectedness assumption, where it's likely that some of the edges would ideally be represented as directed edges.
 However, this is also the case in using MRFs for images or other applications, and while the assumption can be shown to be at least somewhat incorrect there, MRFs still prove to be useful models~\cite{rangarajan95markov}.
