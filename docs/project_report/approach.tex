@@ -74,7 +74,7 @@ With all of the above nodes and edges included, we generate (a cleaned up versio
 
 In the program graph, a node's initial embedding is a one-hot vector encoding its AST type.
 Similarly, an edge's embedding is a one-hot vector encoding its edge type.
-We keep the top 60 node types, and consolidate the rest into an \textsc{Unk} token, to avoid sparsity on the bottom end of the node type distribution (the distribution of AST node types in our dataset can be seen in Figure~\ref{fig:ast-cdf}; the top 60 node types correspond to roughly \todo{HWAHT?})
+We keep the top 60 node types, and consolidate the rest into an \textsc{Unk} token, to avoid sparsity on the bottom end of the node type distribution (the distribution of AST node types in our dataset can be seen in Figure~\ref{fig:ast-cdf}; the top 60 node types correspond to $95\%$ of all ndoes).
 We do not do the same with edge types, since by construction all edge types are densely populated.
 
 \subsection{Architecture.}
