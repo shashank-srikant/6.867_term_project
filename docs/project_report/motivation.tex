@@ -26,12 +26,7 @@ Having introduced the problem of type inference, and graph neural networks, we l
 A Markov Random Field (MRF) is an undirected graphical model with the Markov assumption, that a node is conditionally independent from all other nodes given its neighbors~\cite{kinderman80markov}.
 If we were to construct a Markov Random Field with an unobserved latent variable for each of our AST nodes, adding the various (undirected) edges described above, tag each node with an additional variable (the observed variable representing its AST type), and tag each variable with an additional variable representing its type, we would get a graph that looks roughly like Figure~\ref{fig:mrf-graph}.
 We could then perform posterior inference on the type nodes of this graph using belief propagation~\cite{pearl2009causality}, which gives an approximate solution to the true posterior~\cite{weiss2000correctness}, giving our desired type predictions.
-\begin{figure}
-	\centering
-	\includegraphics[width=\linewidth]{img/mrf_graph}
-	\caption{Markov Random Field for an example program. Shaded nodes are observed, highlighted are posteriors}
-	\label{fig:mrf-graph}
-\end{figure}
+\loadFig{mrf}
 
 We specifically argue the following two points:
 \begin{enumerate*}[label=(\roman*)]
