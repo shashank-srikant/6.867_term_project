@@ -9,7 +9,15 @@ We propose the following experiments and hypotheses in this work, and set up our
 \end{itemize}
 
 \subsubsection{Experiment 1. Representation using GNN.}
-\subsubsection{Experiment 2. Edge Ablation study.}
+
+\subsubsection{Experiment 2. Edge information - Ablation study.}
+To determine whether our graph structure (nodes and edges) was chosen correctly, we performed a set of ablation studies.
+Specifically, we ran experiments using the optimally chosen hyperparameters where we entirely deleted each class of edges (AST edges, Token edges, and Variable edges) from the graph, and compared performance to the original.
+The results of these studies can be seen in Tables~\ref{tab:results:ast}, \ref{tab:results:variable}, and \ref{tab:results:token}.
+These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
+We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
+While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
+
 \subsubsection{Experiment 3. Number of iterations.}
 A shortcoming in the graph net framework is the issue of determining how many iterations to run.
 In theory, because of the universal approximation properties of neural nets, the optimal number of iterations is any number larger than the diameter of the graph, so that each node can make a fully informed decision knowing the entire graph topology.
@@ -42,12 +50,3 @@ The linear combination weight vector changed only marginally from its initial va
 We believe this happened for one primary reason: one or two iterations were good enough, as shown by the Bayesian Optimization approach.
 Any iterations beyond that did not refine the search, and since we did not penalize their existence through any regularization (only the wrongness of their predictions), they stayed around as unnecessary artifacts that did not get pruned.
 \loadFig{gpDiagram}
-
-
-\subsection{Edge Ablation}
-To determine whether our graph structure (nodes and edges) was chosen correctly, we performed a set of ablation studies.
-Specifically, we ran experiments using the optimally chosen hyperparameters where we entirely deleted each class of edges (AST edges, Token edges, and Variable edges) from the graph, and compared performance to the original.
-The results of these studies can be seen in Tables~\ref{tab:results:ast}, \ref{tab:results:variable}, and \ref{tab:results:token}.
-These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
-We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
-While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
