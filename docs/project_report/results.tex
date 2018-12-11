@@ -1,50 +1,67 @@
 \section{Results and Discussion}
 \label{sec:results}
-The test-set classification accuracies of the different models we evaluated are tabulated in Table \ref{tbl:results_acc}.
-
-MLE Baseline:
-\begin{tabular}{c|ccccc}
-  & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
-  \hline
-  Train & 0.37 & 0.67 & 0.74 & 0.79 & 0.83 \\
-  Test & 0.31 & 0.72 & 0.82 & 0.85 & 0.87
-\end{tabular}
-
-(Top results after 50 epochs)
-
-Our best results niter=2:
-\begin{tabular}{c|ccccc}
-  & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
-  \hline
-  Train & 0.69 & 0.85 & 0.91 & 0.94 & 0.96 \\
-  Test & 0.66 & 0.83 & 0.91 & 0.94 & 0.96
-\end{tabular}
-
-No AST Edges:
-\begin{tabular}{c|ccccc}
-  & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
-  \hline
-  Train & 0.58 & 0.77 & 0.85 & 0.89 & 0.92 \\
-  Test & 0.55 & 0.76 & 0.86 & 0.91 & 0.93
-\end{tabular}
-
-No Variable Connections:
-\begin{tabular}{c|ccccc}
-  & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
-  \hline
-  Train & 0.64 & 0.82 & 0.88 & 0.92 & 0.94 \\
-  Test & 0.61 & 0.80 & 0.86 & 0.89 & 0.92
-\end{tabular}
-
-No Token Edges:
-\begin{tabular}{c|ccccc}
-  & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
-  \hline
-  Train & 0.50 & 0.73 & 0.83 & 0.88 & 0.92 \\
-  Test & 0.43 & 0.74 & 0.97 & 0.92 & 0.94
-\end{tabular}
 
 
-%%% Local Variables:
-%%% TeX-master: "main"
-%%% End:
+The test-set classification accuracies of the different models we evaluated are tabulated in Table~\ref{tab:results}. But also look at Table~\ref{tab:results:token}.
+
+
+\begin{table}
+  \centering
+  \begin{subfigure}{\linewidth}
+    \centering
+    \begin{tabular}{c|ccccc}
+      & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
+      \hline
+      Train & 0.37 & 0.67 & 0.74 & 0.79 & 0.83 \\
+      Test & 0.31 & 0.72 & 0.82 & 0.85 & 0.87
+    \end{tabular}
+    \caption{Baseline: MLE}\label{tab:results:mle}
+  \end{subfigure}
+
+  \begin{subfigure}{\linewidth}
+    \centering
+    \begin{tabular}{c|ccccc}
+      & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
+      \hline
+      Train & 0.69 & 0.85 & 0.91 & 0.94 & 0.96 \\
+      Test & 0.66 & 0.83 & 0.91 & 0.94 & 0.96
+    \end{tabular}
+    \caption{Our best results (\textsc{NIter}=2)}\label{tab:results:pure}
+  \end{subfigure}
+
+  \begin{subfigure}{\linewidth}
+    \centering
+    \begin{tabular}{c|ccccc}
+      & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
+      \hline
+      Train & 0.58 & 0.77 & 0.85 & 0.89 & 0.92 \\
+      Test & 0.55 & 0.76 & 0.86 & 0.91 & 0.93
+    \end{tabular}
+    \caption{Ablation: no AST Edges}\label{tab:results:ast}
+  \end{subfigure}
+
+
+  \begin{subfigure}{\linewidth}
+    \centering
+    \begin{tabular}{c|ccccc}
+      & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
+      \hline
+      Train & 0.64 & 0.82 & 0.88 & 0.92 & 0.94 \\
+      Test & 0.61 & 0.80 & 0.86 & 0.89 & 0.92
+    \end{tabular}
+    \caption{Ablation: no Variable Connections}\label{tab:results:variable}
+  \end{subfigure}
+
+  \begin{subfigure}{\linewidth}
+    \centering
+    \begin{tabular}{c|ccccc}
+      & Top 1 & Top 2 & Top3 & Top4 & Top 5 \\
+      \hline
+      Train & 0.50 & 0.73 & 0.83 & 0.88 & 0.92 \\
+      Test & 0.43 & 0.74 & 0.97 & 0.92 & 0.94
+      \end{tabular}
+      \caption{Ablation: No Token Edges}\label{tab:results:token}
+  \end{subfigure}
+  \caption{Top 5 train and test accuracies}
+  \label{tab:results}.
+\end{table}
