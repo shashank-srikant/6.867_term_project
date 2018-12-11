@@ -8,7 +8,7 @@ These results show that the graph neural net framework, along with the assumptio
 Further, the false positive and negative analysis in Table~\ref{tab:test-fps} shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
 Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
 
-\subsubsection{Experiment 2.} The results of these studies can be seen in Tables~\ref{tab:results:ast}, \ref{tab:results:variable}, and \ref{tab:results:token}.
+\subsubsection{Experiment 2.} The results of these studies can be seen in Table \ref{tab:results:ablations}.
 These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
 We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
 While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
@@ -54,8 +54,9 @@ While it is somewhat surprising that the \textsc{Variable} edges are the least i
 
 \begin{table}
   \centering
+  {\renewcommand{\arraystretch}{1.3}% for the vertical padding
   \begin{tabular}{lrrr}
-    \textbf{Label} & \textbf{\#Correct} & \textbf{\#Missed} & \textbf{\#Falsely Predicted} \\
+    \textbf{Label} & \textbf{\#Correct} & \textbf{\#Missed} & \textbf{\#FP} \\
     \hline
     \texttt{string} & 6374 & 1021 & 4216 \\
     \texttt{number} & 5501 & 4006 & 881 \\
@@ -67,6 +68,7 @@ While it is somewhat surprising that the \textsc{Variable} edges are the least i
     \texttt{undefined} & 37 & 58 & 179 \\
     \texttt{() => string} & 91 & 112 & 111
   \end{tabular}
+   }
   \caption{Top 10 test labels (23551 total predictions)}\label{tab:test-fps}
 \end{table}
 
