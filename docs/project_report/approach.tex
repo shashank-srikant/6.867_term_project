@@ -5,7 +5,7 @@ Our approach to the type prediction problem is to apply a GNN to a special graph
 
 \subsection{Dataset}
 \label{sec:dataset}
-We borrowed from the dataset which the DeepTyper project worked on \cite{hellendoorn2018deep}. 1000 top starred open-source projects on Github that predominantly consisted of TypeScript codes were parsed. Each project was parsed with the TypeScript compiler \textsc{tsc}, which infers type information (possibly any) for all occurrences of each identifier. A total of 90 projects, containing 5000 source codes, resulting in 650,000 labels were finally used in our experiments.
+We train and evaluate on the dataset from the DeepTyper project \cite{hellendoorn2018deep}. 1000 top starred open-source projects on Github that predominantly consisted of TypeScript codes were parsed. Each project was parsed with the TypeScript compiler \textsc{tsc}, which infers type information (including the type \textit{any}) for all occurrences of each identifier. A total of 90 projects, containing 5000 source codes, resulting in 650,000 labels were finally used in our experiments.
 For our prediction problem, to avoid the sparsity problems that come with such a large label set, we throw out all labels that are not in the top 20 most common labels, which combined counts for roughly $50\%$ of the total labels in the training dataset.
 The CDF of label frequencies can be seen in Figure~\ref{fig:lab-cdf}, showing the long tail of infrequent labels.
 To give a better idea of the type labels that we predict, the top 5 most common types in the training set are: \texttt{string}, \texttt{number}, \texttt{boolean}, \texttt{any[]}, and \texttt{string[]}.
