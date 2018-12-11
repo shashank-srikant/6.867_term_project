@@ -11,9 +11,9 @@ We propose the following experiments and hypotheses in this work, and set up our
 \subsubsection{Experiment 1. Representation using GNN.}
 We investigate whether the inductive bias captured in the structure of graph neural networks help in prediction tasks on graph-like modalities. To determine this, we model the task of predicting types of variables using GNN. To ascertain whether the architecture naturally captures this prediction task, we set up a number of baselines to compare against. We investigated the following models -
 \begin{itemize}[noitemsep,topsep=0pt]
-	\item \textbf{Our model. GNN.}
-	\item \textbf{Baseline 1. Naive.}
-	\item \textbf{Baseline 2. Intermediate.}
+	\item \textbf{Our model. GNN.} We model the type inference problem using GNNs. Each node represents a node in the program's AST. We infer the types on those nodes which pertain to a variable. This is the model we compare all other baselines against.
+	\item \textbf{Baseline 1. Naive.} We choose a naive baseline to compare performance. In this model, we perform a majority vote on the label distribution in our train-set, and use the most frequently occurring label as the type predicted for any unseen variable. This provides a maximum likelihood estimate.
+	\item \textbf{Baseline 2. Intermediate.} Increasing the complexity of our baseline models, we evaluate a naive approximation of a graph net. In this model, 
 	\item \textbf{Baseline 3. Aggressive.}
 \end{itemize}
 To get a baseline expectation of performance (since our dataset diverges slightly from that in the reference DeepTyper~\cite{hellendoorn2018deep} paper), we ran a variety of baselines on the dataset.
