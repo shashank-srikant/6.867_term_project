@@ -35,11 +35,19 @@ The key insight is that the problem of inferring types involves two sub-tasks:
 \end{enumerate*}
 
 \subsubsection{Graph neural networks.}
-Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures. Le Cun \textit{et al.} published a position paper \cite{henaff2015deep} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters. Deep Mind, with its recent position paper on inductive biases captured by graph neural networks \cite{deepmind2018graph}, has seemingly initiated a resurgence of interest in Graph Neural Networks (GNNs).
+Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures.
+LeCun~\textit{et al.} published a position paper~\cite{henaff2015deep} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters.
+DeepMind, with its recent position paper on inductive biases captured by graph neural networks~\cite{deepmind2018graph}, has seemingly initiated a resurgence of interest in Graph Neural Networks (GNNs).
 
-Broadly, a GNN is set up in the following way - every node in a graph has an associated embedding which is learned. Additionally, every edge also has an associated trainable embedding. Weights on the edges decide the contribution of one node connected to another. There also exists a set of weights associated with each node which aggregates information received from multiple other connected nodes. Figure \ref{fig:gnn} illustrates this architecture.
+Broadly, a GNN is set up as follows: each node and edge in the graph has an associated learned embedding as its initial state.
+Hidden layers connect nodes to edges, and vice versa.
+A GNN is run for a number of iterations, similar to a recurrent neural network.
+Each iteration of the GNN then follows a message passing algorithm: an edge from node $A$ to $B$ computes its new hidden state s a function of the edge's old state, and the state at node $A$.
+Next, each node computes its new embedding as a function of its old embedding and the aggregated embedding of each incoming edge.
+Figure \ref{fig:gnn} illustrates this architecture.
 
-This general idea is cast in multiple ways - Le Cun's way of CNNs with non-Euclidean filters, Deep Mind's way of an auto-encoder model over graphs, Microsoft's way of a gated recurrent network, etc.
+This general idea is cast in multiple ways: LeCun's portrays GNNs as CNNs with non-Euclidean filters; DeepMind's portrays them as auto-encoder model over graphs; Microsoft portrays them as gated recurrent networks.
+The generality of the framework leaves it open to many valid interpretations.
 
 \loadFig{gnn}
 
