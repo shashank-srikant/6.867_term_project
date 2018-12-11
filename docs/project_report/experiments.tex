@@ -24,14 +24,16 @@ We investigated the following models:
 \item \textbf{Baseline 2: Intermediate.}
   Increasing the complexity of our baseline models, we evaluate a na\"ive approximation of a graph net.
   Here, we construct a logistic regression model over a feature vector involving \textit{counts} of various dependency and node information of a program.
-  Specifically, for each variable $v$ in a program, and for all variables $v_c$ in the program, where $v_c \neq v$, and where a direct edge (those as described in Section \ref{sec:graph-neural-net}) between $v$ and $v_c$ exists, we concatenate the following vectors:
+  Specifically, for each definition of a variable \texttt{v := expr}, we concatenate the following feature vectors:
   \begin{itemize}[noitemsep,topsep=0pt]
-  \item A one-hot vector representing the presence of each distinct `path' along the AST from $v$ to $v_c$. `path' is defined as the string of AST node types encountered in the walk along an edge.
-  \item A one-hot vector representing each unique AST node type appearing in expressions containing $v$ and $v_c$.
+  \item Consider each variable $x$ used in \texttt{expr}.
+    Define the `path' from $v$ to $x$ to be the string of AST node types encountered in a walk along the AST from $v$ to $x$.
+    The first feature vector component is the sum of the one-hot vector keyed on `path' for each variable $x$ used in \texttt{expr}.
+  \item A multi-hot vector representing each unique AST node type appearing in \texttt{expr}.
   \end{itemize}
   We enumerated 6183 unique paths and 89 unique AST nodes in the training set.
   This resulted in a $524507 \times (6183+89)$ data matrix, which was used to learn a regularized Logistic Regression model.
-  This baseline captures a \textit{bi-gram dependency model}, where only the dependency effect of immediate connected nodes are considered, without the full dependency information flow provided by GNNs.
+  This baseline captures a \textit{bigram variable dependene model}, where only the dependency effect of immediately connected nodes are considered, without the full dependency information flow provided by GNNs.
 \item \textbf{Baseline 3: Aggressive.}
   We use the bi-directional neural network architecture designed by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}.
   Their architecture does not utilize any of the graphical properties of a program, and instead relies on signals obtained by just token information.
