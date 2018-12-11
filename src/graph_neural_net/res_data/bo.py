@@ -57,7 +57,7 @@ def plot_gp(optimizer, x, y):
         'Gaussian Process and Utility Function After {} Steps'.format(steps),
         size=32,
     )
-
+    plt.rcParams.update({'font.size': 16})
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
     axis = plt.subplot(gs[0])
     acq = plt.subplot(gs[1])
@@ -68,7 +68,7 @@ def plot_gp(optimizer, x, y):
     mu, sigma = posterior(optimizer, x_obs, y_obs, x)
     if y is not None:
         axis.plot(x, y, linewidth=3, label='Target')
-    axis.plot(x_obs.flatten(), y_obs, 'D', markersize=8, label=u'Observations', color='r')
+    axis.plot(x_obs.flatten(), y_obs, 'D', markersize=14, label=u'Observations', color='r')
     axis.plot(x, mu, '--', color='k', label='Prediction')
 
     axis.fill(np.concatenate([x, x[::-1]]),
@@ -78,21 +78,22 @@ def plot_gp(optimizer, x, y):
     axis.set_xlim((0, 10))
     axis.set_ylim((None, None))
     axis.set_ylabel('1/log(loss)', fontdict={'size':20})
-    axis.set_xlabel('#Iter', fontdict={'size':20})
 
     utility = utility_function.utility(x, optimizer._gp, 0)
     utility_int = utility_function.utility(x_int, optimizer._gp, 0)
 
     acq.plot(x, utility, label='Utility Function', color='purple')
-    acq.plot(x_int[np.argmax(utility_int)], np.max(utility_int), '*', markersize=15,
+    acq.plot(x_int[np.argmax(utility_int)], np.max(utility_int), '*', markersize=24,
              label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
     acq.set_xlim((0, 10))
     acq.set_ylim((0, np.max(utility) + 0.5))
     acq.set_ylabel('Utility', fontdict={'size':20})
-    acq.set_xlabel('#Iter', fontdict={'size':20})
 
-    axis.legend(loc=2, bbox_to_anchor=(0.85, 1), borderaxespad=0.)
-    acq.legend(loc=2, bbox_to_anchor=(0.887, 1), borderaxespad=0.)
+    axis.set_xlabel('NIter', fontdict={'size':20})
+    acq.set_xlabel('NIter', fontdict={'size':20})
+
+    axis.legend(loc=1, borderaxespad=0.)
+    acq.legend(loc=1, borderaxespad=0.)
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
