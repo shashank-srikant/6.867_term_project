@@ -12,11 +12,11 @@ There exist deterministic algorithms like Hindley-Milner's W-algorithm (HM) to i
 We hence explore machine learning as a possible tool to help learn these types from. The key insight here is that the problem of inferring types involves two sub-tasks: one of finding a signal which can inform the type of a variable, and another of having a model of a structured network which can help accurately propagate this signal to other occurrences of the same variable, or variables that are similar to it.
 
 \subsubsection{Graph neural networks.}
-Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures. Le Cun et al. published a position paper \cite{} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters. Deep Mind, with its recent position paper on inductive biases captured by graph neural networks \cite{}, has seemingly initiated a resurgence of interest in Graph neural networks (GNNs).
+Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures. Le Cun \textit{et al.} published a position paper \cite{} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters. Deep Mind, with its recent position paper on inductive biases captured by graph neural networks \cite{}, has seemingly initiated a resurgence of interest in Graph neural networks (GNNs).
 
 Broadly, a GNN is setup in the following way - every node in a graph has an associated embedding which is learnt. Additionally, every edge also has a trainable embedding associated. Weights on the edges decide the contribution of one node connected to on another. There also exist a set of weights associated with each node which aggregate information received from multiple other nodes is connected to. Figure \ref{fig:gnn} illustrates this architecture.
 
-This general idea is cast in multiple ways - Le Cun's way of CNNs with non-Euclidean filters, Deep Mind's way of an auto-encoder model over graphs, Microsoft's way of a gated recurrent network, etc. 
+This general idea is cast in multiple ways - Le Cun's way of CNNs with non-Euclidean filters, Deep Mind's way of an auto-encoder model over graphs, Microsoft's way of a gated recurrent network, etc.
 
 \loadFig{gnn}
 
