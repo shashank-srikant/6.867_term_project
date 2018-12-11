@@ -19,7 +19,9 @@ Selecting the best performing number of iterations in this metric gave us confid
 The results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
 After 5 interactions with the Gaussian process, we were confident that $n=1$ iteration gave the best training loss after 3 epochs, although we used $n=2$ in our experiments, since it seemed to do marginally better on the validation set.
 
-\todo{some discussion on why we think the number of iterations is so low -- perhaps something about vanishing gradients, or just it makes a more complex loss landscape?}
+We were slightly surprised by the relatively low number of iterations found as ideal by the Bayesian Optimization.
+Ultimately, we believe that this is probably an issue with the amount of time that we trained for: since a message passing graph net unfurls to look similar to a RNN, it encounters the same vanishing gradient problem, magnified by the large fanout of each node (Figure~\ref{fig:dataset-graph-stats} shows an average node degree above 5).
+Were we to train for significantly longer, we may be able to deal with the smaller gradients and the more complex loss landscape of a larger network, but unfortunately training the larger \textsc{NIter} networks for longer on our machines was computationally infeasible -- we leave this deeper parameter exploration to future work.
 
 \paragraph{Iteration Ensemble.}
 Our second attempt at hyperparameter search followed a more optimization based approach.
