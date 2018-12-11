@@ -55,7 +55,7 @@ It has a P@1 accuracy of 50.6\%, 16\% lower than the GNN's performance.
 
 These results confirm that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
 
-\textbf{GNN model diagnosis.}
+\paragraph{GNN model diagnosis.}
 We also include a sampling of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}.
 It shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
 Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
