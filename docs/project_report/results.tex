@@ -1,5 +1,6 @@
 \section{Results and Discussion}
 \label{sec:results}
+\subsubsection{Experiment 1.}
 The results of this can be seen in Table~\ref{tab:results:mle}.
 The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges, can be seen in Table~\ref{tab:results:ast}.
 We also include an analysis of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}.
@@ -7,7 +8,10 @@ These results show that the graph neural net framework, along with the assumptio
 Further, the false positive and negative analysis in Table~\ref{tab:test-fps} shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
 Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
 
-\todo{any more overall reflection to do about results?}
+\subsubsection{Experiment 2.} The results of these studies can be seen in Tables~\ref{tab:results:ast}, \ref{tab:results:variable}, and \ref{tab:results:token}.
+These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
+We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
+While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
 
 \begin{table}
   \centering
@@ -95,8 +99,8 @@ Given that some of the most common operators on numbers and strings are syntacti
   \caption{Top 10 test labels (23551 total predictions)}\label{tab:test-fps}
 \end{table}
 
-
-\paragraph{Bayesian Optimization.}
+\subsubsection{Experiment 3.}
+\textbf{Bayesian Optimization.}
 The metric we chose to optimize over was the train loss after 3 epochs.
 Selecting the best performing number of iterations in this metric gave us confidence that the network had actually made progress in learning significant features of the dataset, while also being sure not to overfit to our validation set.
 The results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
@@ -105,8 +109,8 @@ After 5 interactions with the Gaussian process, we were confident that $n=1$ ite
 We were slightly surprised by the relatively low number of iterations found as ideal by the Bayesian Optimization.
 Ultimately, we believe that this is probably an issue with the amount of time that we trained for: since a message passing graph net unfurls to look similar to a RNN, it encounters the same vanishing gradient problem, magnified by the large fanout of each node (Figure~\ref{fig:dataset-graph-stats} shows an average node degree above 5).
 Were we to train for significantly longer, we may be able to deal with the smaller gradients and the more complex loss landscape of a larger network, but unfortunately training the larger \textsc{NIter} networks for longer on our machines was computationally infeasible -- we leave this deeper parameter exploration to future work.
-
-\paragraph{Iteration Ensemble.}
+\\~\\
+\textbf{Iteration Ensemble.}
 Ultimately, this did not work as well as we hoped, and our best results were achieved by just using a single number of iterations learned through the Bayesian Optimization approach.
 The linear combination weight vector changed only marginally from its initial value, and the prediction quality was no better than that of using a fixed number of iterations.
 We believe this happened for one primary reason: one or two iterations were good enough, as shown by the Bayesian Optimization approach.
