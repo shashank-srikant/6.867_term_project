@@ -15,22 +15,34 @@ with open(sys.argv[1], 'r') as f:
         avg_path_len.append(float(p))
         diam.append(int(di))
 
-def plot(arr, xlabel):
+def histify(arr):
     arr = np.array(arr, dtype=np.float32)
     hist, bin_edges = np.histogram(arr)
     hist = hist.astype(np.float32)
     hist /= np.sum(hist)
     hist = np.array([0] + list(hist))
     hist = np.cumsum(hist)
-    fig = plt.figure()
-    ax = plt.gca()
-    ax.plot(bin_edges, hist)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel('Cumulative Density')
-    ax.set_title('CDF of {} Across Random Subset of Files'.format(xlabel))
+    return hist, bin_edges
 
-plot(avg_deg, 'Average Node Degree')
-plot(avg_path_len, 'Average Path Length')
-plot(diam, 'Graph Diameter')
+xlabel = 'Average Node Degree'
+hist, bin_edges = histify(avg_deg)
+fig = plt.figure()
+ax = plt.gca()
+ax.plot(bin_edges, hist)
+ax.set_xlabel(xlabel)
+ax.set_ylabel('Cumulative Density')
+ax.set_title('CDF of {} Across Files'.format(xlabel))
+
+
+fig = plt.figure()
+ax = plt.gca()
+apl_hist, apl_bin_edges = histify(avg_path_len)
+d_hist, d_bin_edges = histify(diam)
+ax.plot(d_bin_edges, d_hist, label='Max of All Paths')
+ax.plot(list(apl_bin_edges) + [d_bin_edges[-1]], list(apl_hist) + [1], label='Average of All Paths')
+ax.legend()
+ax.set_xlabel('Path Length')
+ax.set_ylabel('Cumulative Density')
+ax.set_title('CDF of Diameter and Average Path Length Across Files'.format(xlabel))
 
 plt.show()
