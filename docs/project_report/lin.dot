@@ -1,0 +1,36 @@
+digraph foo {
+    node [label="x", style="filled", fillcolor="grey"] left_x;
+    node [label=":="] left_assign;
+    node [label="3"] left_3;
+    node [label=";"] semicolon;
+    node [label="y"] right_y;
+    node [label=":="] right_assign;
+    node [label="x"] right_x;
+
+    node [label="", fillcolor="white"] left_assign_hidden left_x_hidden left_3_hidden semicolon_hidden right_y_hidden right_assign_hidden right_x_hidden;
+
+    left_x -> left_assign;
+    left_assign -> left_3;
+    left_3 -> semicolon;
+    semicolon -> right_y;
+    right_y -> right_assign;
+    right_assign -> right_x;
+
+    left_x_hidden -> left_assign_hidden;
+    left_assign_hidden -> left_3_hidden;
+    left_3_hidden -> semicolon_hidden;
+    semicolon_hidden -> right_y_hidden;
+    right_y_hidden -> right_assign_hidden;
+    right_assign_hidden -> right_x_hidden;
+
+    left_x_hidden -> left_x;
+    left_assign_hidden -> left_assign;
+    left_3_hidden -> left_3;
+    semicolon_hidden -> semicolon;
+    right_y_hidden -> right_y;
+    right_assign_hidden -> right_assign;
+    right_x_hidden -> right_x;
+
+    {rank = same; left_x_hidden -> left_assign_hidden -> left_3_hidden -> semicolon_hidden -> right_y_hidden -> right_assign_hidden -> right_x_hidden [style="invis"]}
+    {rank = same; left_x -> left_assign -> left_3 -> semicolon -> right_y -> right_assign -> right_x [style="invis"]}
+}
