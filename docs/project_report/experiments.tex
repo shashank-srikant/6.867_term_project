@@ -3,11 +3,14 @@
 We propose the following experiments and hypotheses in this work, and set up our experiments to answer them.
 
 \begin{itemize}[noitemsep,topsep=0pt]
-	\item \textbf{E1.} Do GNNs capture the inductive bias in representing prediction tasks with a graph-like structure?
-	\item \textbf{E2.} What structural information in the graph network affects its predictability in the specific task of predicting types?
+	\item \textbf{E1.} Do GNNs capture well the inductive bias in representing prediction tasks with a graph-like structure?
+	\item \textbf{E2.} How does the nature of structural information passed along the edges in a GNN affect its predictability?
 	\item \textbf{E3.} How can the number of iterations, a critical hyperparameter which controls message passing in graph networks, be determined automatically, as against the current way of setting them apriori?
 \end{itemize}
-\subsection{Number of Iterations}
+
+\subsubsection{Experiment 1. Representation using GNN.}
+\subsubsection{Experiment 2. Edge Ablation study.}
+\subsubsection{Experiment 3. Number of iterations.}
 A shortcoming in the graph net framework is the issue of determining how many iterations to run.
 In theory, because of the universal approximation properties of neural nets, the optimal number of iterations is any number larger than the diameter of the graph, so that each node can make a fully informed decision knowing the entire graph topology.
 However, this is not realistic: as shown in Figure~\ref{fig:dataset-graph-stats}, the maximum diameter of any of the graphs is above 200, meaning that we would have to run the graph neural net for an intractable number of iterations to be able to get the ``full'' result.
