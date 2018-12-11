@@ -5,11 +5,14 @@ Our approach to the type prediction problem is to apply a GNN to a special graph
 
 \subsection{Dataset}
 \label{sec:dataset}
-We train and evaluate on the dataset from the DeepTyper project \cite{hellendoorn2018deep}. 1000 top starred open-source projects on Github that predominantly consisted of TypeScript codes were parsed. Each project was parsed with the TypeScript compiler \textsc{tsc}, which infers type information (including the type \textit{any}) for all occurrences of each identifier. A total of 90 projects, containing 5000 source codes, resulting in 650,000 labels were finally used in our experiments.
-For our prediction problem, to avoid the sparsity problems that come with such a large label set, we throw out all labels that are not in the top 20 most common labels, which combined counts for roughly $50\%$ of the total labels in the training dataset.
-The CDF of label frequencies can be seen in Figure~\ref{fig:dataset-graph-stats}, showing the long tail of infrequent labels.
+We train and evaluate on the dataset from the DeepTyper project~\cite{hellendoorn2018deep}, which contains 1000 popular open-source TypeSript projects from GitHub.
+Each project was parsed with the TypeScript compiler~\textsc{tsc}, which infers type information (including the all-encompassing \textit{any} type as a fallback) for all occurrences of each identifier.
+To make learning tractable, we randomly sampled a total of 90 projects, containing 5000 source files, resulting in a total of 650,000 labeled variables.
+For our prediction problem, to avoid the sparsity problems that come with such a large label set, we throw out all labels that are not in the top 20 most common labels, leaving us with roughly $50\%$ of the total labels in the training dataset.
+The CDF of label frequencies can be seen in Figure~\ref{fig:label-distribution}, showing the long tail of infrequent labels.
 To give a better idea of the type labels that we predict, the top 5 most common types in the training set are: \texttt{string}, \texttt{number}, \texttt{boolean}, \texttt{any[]}, and \texttt{string[]}.
-\loadFig{stats}
+
+\loadFig{labelDistribution}
 
 \paragraph{Train-Test split.}
 
@@ -20,7 +23,7 @@ Because of this, we have a separate set of weights for computing the initial nod
 
 \subsection{Graph construction.}
 \label{sec:graph-neural-net}
-Because ``graph neural nets'' are such a general framework, the inductive bias for the solution comes primarily from how the input graph is constructed.
+Because ``graph neural nets'' are such a general framework, the inductive bias for our solution comes primarily from how the input graph is constructed.
 Specifically, we must decide on the nodes and edges of our generated graph.
 We choose to include the full set of nodes in each program's AST as the nodes in the input graph, using the node's syntactic token type as its embedding.
 This allows us to include all potentially relevant structure: we have not only the source level tokens in the source file, but also the abstract structures that those tokens form.
@@ -46,7 +49,7 @@ This corresponds exactly to two types of edges that we include in our generated 
   ...
   let x = "foo";
 \end{lstlisting}
-It is clear that both ordering and locality matter in determining the type of \texttt{y}: in the AST, the two statements assigning to \texttt{x} are equidistant and directionally indistinguishable, but the actual \emph{token stream} of file reflects that the first assignment to \texttt{x} precedes the assignment to \texttt{y}, meaning that it may be more likely to affect the type of \texttt{y}, and is also closer, meaning the two statements are more likely to be related.
+It is clear that both ordering and locality matter in determining the type of \texttt{y}: in the AST, the two statements assigning to \texttt{x} are equidistant and directionally indistinguishable, but the actual \emph{token stream} of the file reflects that the first assignment to \texttt{x} precedes the assignment to \texttt{y}, meaning that it may be more likely to affect the type of \texttt{y}, and is also closer, meaning the two statements are more likely to be related.
 Because of this, we include two more types of edges in the induced graph, a \texttt{TokenNext} edge from a token to its neighbor in the source file, and a \texttt{TokenPrev} edge which is the reverse.
 
 \paragraph{Nodes that use or define the same variable give information about each other.}
@@ -57,10 +60,10 @@ Because of this, we include two more types of edges in the induced graph, a \tex
   let y = a + (b + (... + x));
 \end{lstlisting}
 Although the two statements may be arbitrarily nonlocal in both the AST and the source file, they are clearly related, in that \texttt{x}'s type probably influences \texttt{y}'s type.
-Because of this, we include one final types of edge, a \texttt{Variable} edge, between any of a variable's use and definition.
+Because of this, we include one final type of edge, a \texttt{Variable} edge, between any usages of the same variable.
 
 \paragraph{Example.}
-With all of the above nodes and edges included, we generate (a cleaned up version of) the graph shown in Figure~\ref{fig:ast-graph} for the following problem:
+With all of the above nodes and edges included, we generate (a cleaned up version of) the graph shown in Figure~\ref{fig:ast-graph} for the following code:
 \begin{lstlisting}
   let x := 5;
   x = x + 2;
@@ -72,8 +75,10 @@ With all of the above nodes and edges included, we generate (a cleaned up versio
 
 In the program graph, a node's initial embedding is a one-hot vector encoding its AST type.
 Similarly, an edge's embedding is a one-hot vector encoding its edge type.
-We keep the top 60 node types, and consolidate the rest into an \textsc{Unk} token, to avoid sparsity on the bottom end of the node type distribution (the distribution of AST node types in our dataset can be seen in Figure~\ref{fig:dataset-graph-stats}; the top 60 node types correspond to $95\%$ of all nodes).
+We keep the top 60 node types, and consolidate the rest into an \textsc{Unk} token, to avoid sparsity on the bottom end of the node type distribution (the distribution of AST node types in our dataset can be seen in Figure~\ref{fig:ast-distribution}; the top 60 node types correspond to $95\%$ of all nodes).
 We do not do the same with edge types, since by construction all edge types are densely populated.
+
+\loadFig{astDistribution}
 
 \subsection{Architecture.}
 
