@@ -1,25 +1,6 @@
 \section{Results and Discussion}
 \label{sec:results}
 
-\subsubsection{Experiment 1.}
-The results of this can be seen in Table~\ref{tab:results:baselines}.
-The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges had P@1 and P@5 accuracies of 66\% and 96\% respectively.
-
-Regarding baselines, we see that the \textit{intermediate} baseline performs as expected.
-It predicts \textit{number} and \textit{string} types well, and fails at predicting any other type accurately.
-Analyzing the model's selected features reveals node types like $+$ are highly weighted, which correspond to operations specific to \textit{number}s and \textit{string}s.
-We leave a detailed analysis of these learned features to future work.
-
-The \textit{aggressive} bi-directional RNN baseline, which was the best model trained by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}, performs in the ballpark reported in their work (slightly better than~\cite{hellendoorn2018deep}, where the variance is explained by the smaller size of our dataset).
-It has a P@1 accuracy of 50.6\%, 16\% lower than the GNN's performance.
-
-These results confirm that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
-
-\textbf{GNN model diagnosis.}
-We also include a sampling of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}.
-It shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
-Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
-
 
 \begin{table*}
 	\begin{minipage}{.5\linewidth}
@@ -60,6 +41,25 @@ Given that some of the most common operators on numbers and strings are syntacti
 	\end{minipage}
 \end{table*}
 
+\subsubsection{Experiment 1.}
+The results of this can be seen in Table~\ref{tab:results:baselines}.
+The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges had P@1 and P@5 accuracies of 66\% and 96\% respectively.
+
+Regarding baselines, we see that the \textit{intermediate} baseline performs as expected.
+It predicts \textit{number} and \textit{string} types well, and fails at predicting any other type accurately.
+Analyzing the model's selected features reveals node types like $+$ are highly weighted, which correspond to operations specific to \textit{number}s and \textit{string}s.
+We leave a detailed analysis of these learned features to future work.
+
+The \textit{aggressive} bi-directional RNN baseline, which was the best model trained by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}, performs in the ballpark reported in their work (slightly better than~\cite{hellendoorn2018deep}, where the variance is explained by the smaller size of our dataset).
+It has a P@1 accuracy of 50.6\%, 16\% lower than the GNN's performance.
+
+These results confirm that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
+
+\textbf{GNN model diagnosis.}
+We also include a sampling of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}.
+It shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
+Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
+
 \subsubsection{Experiment 2.}
 The results of the studies can be seen in Table \ref{tab:results:ablations}.
 These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
@@ -96,10 +96,10 @@ After 5 interactions with the Gaussian process, we were confident that $n=1$ ite
 We were slightly surprised by the relatively low number of iterations found as ideal by the Bayesian Optimization.
 Ultimately, we believe that this is probably an issue with the amount of time that we trained for: since a message passing graph net unfurls to look similar to a RNN, it encounters the same vanishing gradient problem, magnified by the large fanout of each node (Figure~\ref{fig:dataset-graph-stats} shows an average node degree above 5).
 Were we to train for significantly longer, we may be able to deal with the smaller gradients and the more complex loss landscape of a larger network, but unfortunately training the larger \textsc{NIter} networks for longer on our machines was computationally infeasible -- we leave this deeper parameter exploration to future work.
-\\~\\
-\textbf{Iteration Ensemble.}
+\loadFig{gpDiagram}
+
+\paragraph{Iteration Ensemble.}
 Ultimately, this did not work as well as we hoped, and our best results were achieved by just using a single number of iterations learned through the Bayesian Optimization approach.
 The linear combination weight vector changed only marginally from its initial value, and the prediction quality was no better than that of using a fixed number of iterations.
 We believe this happened for one primary reason: one or two iterations were good enough, as shown by the Bayesian Optimization approach.
 Any iterations beyond that did not refine the search, and since we did not penalize their existence through any regularization (only the wrongness of their predictions), they stayed around as unnecessary artifacts that did not get pruned.
-\loadFig{gpDiagram}
