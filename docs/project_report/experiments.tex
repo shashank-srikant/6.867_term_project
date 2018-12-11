@@ -23,15 +23,14 @@ We investigated the following models:
   This provides a maximum likelihood estimate.
 \item \textbf{Baseline 2: Intermediate.}
   Increasing the complexity of our baseline models, we evaluate a na\"ive approximation of a graph net.
-  In this model, we construct a logistic regression model over a feature vector involving \textit{counts} of various dependency and node information of a program.
+  Here, we construct a logistic regression model over a feature vector involving \textit{counts} of various dependency and node information of a program.
   Specifically, for each variable $v$ in a program, we concatenate the following vectors:
   \begin{itemize}[noitemsep,topsep=0pt]
-  \item A histogram representing the frequency of each distinct ``path'' along the AST from $v$ to each other variable $v_c \neq v$, where a ``path'' is defined as the string of AST node types encountered in the walk along the edges.
-    along the AST edges from the variable $v$ to each other variable $v_c \neq v$ in the program graph.
-  \item A histogram representing the frequency of each AST node types encountered along the AST path from $v$ to each other node.
+  \item A one-hot vector representing the presence of each distinct `path' along the AST from $v$ to each other variable $v_c$, where $v_c \neq v$, and where a direct edge (those as described in Section \ref{sec:graph-neural-net}) between $v$ and $v_c$ exists. `path' is defined as the string of AST node types encountered in the walk along an edge.
+  \item A one-hot vector representing the each unique node type appearing in the expression containing $v$ and those containing $v_c$.
   \end{itemize}
   We enumerated 6183 unique paths and 89 unique AST nodes in the training set.
-  This resulted in a $524507 \cdot (6183+89)$ data matrix, which was used to learn a regularized Logistic Regression model.
+  This resulted in a $524507 \times (6183+89)$ data matrix, which was used to learn a regularized Logistic Regression model.
   This baseline captures a \textit{bi-gram dependency model}, where only the dependency effect of immediate connected nodes are considered, without the full dependency information flow provided by GNNs.
 \item \textbf{Baseline 3: Aggressive.}
   We use the bi-directional neural network architecture designed by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}.
