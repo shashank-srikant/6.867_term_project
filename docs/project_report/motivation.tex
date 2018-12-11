@@ -20,9 +20,19 @@ For example, the AST of an expression \texttt{1 + 2} might have the binary opera
 The AST of a program concisely represents many of the locality properties we would desire in a program representation: for instance, in the sequence of statements \mbox{\texttt{x := 1 + 2; y := 3}}, the \texttt{2} would be closer to the \texttt{x} in the AST than it would be to the \texttt{y} (despite the layout of the source code).
 
 \subsubsection{Inferring types.}
-There exist deterministic algorithms like Hindley-Milner's W-algorithm (HM) to infer and check the types of variables in programs. HM assumes some known structure between how variables interact, and inductively applies type-propagation rules. This works well in practice for languages which have been designed keeping such analyses in mind. With languages like Javascript and Ruby though, implementing HM will result in poor specificity, with most types simply being inferred as \textit{any}. Such inference may not be very helpful to an end-user, and hence, warrants other techniques which may prove effective in discovering such information.
+The statistical type inference problem we solve in this paper is not the only type inference algorithm.
+There exist deterministic algorithms like Hindley-Milner's W-algorithm (HM) to infer and check the types of variables in programs.
+HM assumes some known structure between how variables interact, and inductively applies type-propagation rules.
+This works well in practice for languages which have been designed keeping such analyses in mind, like OCaml.
+With languages like Javascript and Ruby though, implementing HM will result in poor specificity, with most types simply being inferred as \textit{any} (i.e. undeterminable).
+Such inference is not helpful to an end-user, and hence, warrants other techniques which may prove effective in discovering such information.
 
-We hence explore machine learning as a possible tool to help learn these types from. The key insight here is that the problem of inferring types involves two sub-tasks: one of finding a signal which can inform the type of a variable, and another of having a model of a structured network which can help accurately propagate this signal to other occurrences of the same variable, or variables that are similar to it.
+We therefore explore machine learning as a tool to help learn these types.
+The key insight is that the problem of inferring types involves two sub-tasks:
+\begin{enumerate*}[label=(\roman*)]
+\item finding a signal which can inform the type of a variable, and
+\item modeling a structured network which can help propagate this signal to other occurrences of the same variable, or variables that are similar to it.
+\end{enumerate*}
 
 \subsubsection{Graph neural networks.}
 Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures. Le Cun \textit{et al.} published a position paper \cite{henaff2015deep} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters. Deep Mind, with its recent position paper on inductive biases captured by graph neural networks \cite{deepmind2018graph}, has seemingly initiated a resurgence of interest in Graph Neural Networks (GNNs).
