@@ -5,13 +5,19 @@
 The results of this can be seen in Table~\ref{tab:results:baselines}.
 The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges had P@1 and P@5 accuracies of 66\% and 96\% respectively.
 
-Regarding baselines, we see that the \textit{intermediate} baseline performs as expected. It predicts \textit{number} and \textit{string} types well, and fails at predicting any other type accurately. Analyzing the model's selected features reveals nodes like $+$ and $=$ being prominently weighted. They seem to be correspond to operations specific to \textit{number}s and \textit{string}s. We delegate a detailed analysis of these features to future work.
+Regarding baselines, we see that the \textit{intermediate} baseline performs as expected.
+It predicts \textit{number} and \textit{string} types well, and fails at predicting any other type accurately.
+Analyzing the model's selected features reveals node types like $+$ are highly weighted, which correspond to operations specific to \textit{number}s and \textit{string}s.
+We leave a detailed analysis of these learned features to future work.
 
-The \textit{aggressive} bi-directional RNN baseline, which was the best model trained by Allamanis \textit{et al.} \cite{hellendoorn2018deep}, performs in the ballpark reported in their work. The difference is justifiable since we train on a subset of the dataset used by them. We see that it has a P@1 accuracy of 50.6\%, 16\% lower than GNN's performance.
+The \textit{aggressive} bi-directional RNN baseline, which was the best model trained by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}, performs in the ballpark reported in their work (slightly better than~\cite{hellendoorn2018deep}, where the variance is explained by the smaller size of our dataset).
+It has a P@1 accuracy of 50.6\%, 16\% lower than the GNN's performance.
 
-These results show that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
+These results confirm that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
 
-\textbf{GNN model diagnosis.} We also include an analysis of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}. It shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
+\textbf{GNN model diagnosis.}
+We also include a sampling of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}.
+It shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
 Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
 
 
@@ -24,14 +30,14 @@ Given that some of the most common operators on numbers and strings are syntacti
 				\hline
 				Our model & \textbf{GNN} & 0.66 & 0.96 \\
 				\hline
-				~ & \textbf{Naive} & 0.31 & 0.87 \\
+				~ & \textbf{Na\"ive} & 0.31 & 0.87 \\
 				~	 & (Majority vote) & ~ & ~ \\
 				\cline{2-4}
 				Baselines & \textbf{Intermediate} & 0.44 & 0.93 \\
 				~	 & (Dependency counts) & ~ & ~ \\
 				\cline{2-4}
 				~	 & \textbf{Aggressive} & 0.50 & * \\
-				~	 & (Bi-direc RNN) & ~ & ~ \\
+				~	 & (Bi-directional RNN) & ~ & ~ \\
 			\end{tabular}
 		}
 		\caption{Results of model comparison against various baselines, ordered by their model complexity. These are results on the test-set, on the top 20 most frequent labels in the train-set. P@1, P@5 correspond to the accuracy of top-1 and top-5 predictions matching the exact label.}
@@ -54,7 +60,8 @@ Given that some of the most common operators on numbers and strings are syntacti
 	\end{minipage}
 \end{table*}
 
-\subsubsection{Experiment 2.} The results of these studies can be seen in Table \ref{tab:results:ablations}.
+\subsubsection{Experiment 2.}
+The results of the studies can be seen in Table \ref{tab:results:ablations}.
 These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
 We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
 While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
@@ -82,8 +89,8 @@ While it is somewhat surprising that the \textsc{Variable} edges are the least i
 \subsubsection{Experiment 3.}
 \textbf{Bayesian Optimization.}
 The metric we chose to optimize over was the train loss after 3 epochs.
-Selecting the best performing number of iterations in this metric gave us confidence that the network had actually made progress in learning significant features of the dataset, while also being sure not to overfit to our validation set.
-The results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
+Selecting the best performing number of iterations with this particular metric gave us confidence that the network had actually made progress in learning significant features of the dataset, while also being sure not to overfit to our validation set.
+Partial results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
 After 5 interactions with the Gaussian process, we were confident that $n=1$ iteration gave the best training loss after 3 epochs, although we used $n=2$ in our experiments, since it seemed to do marginally better on the validation set.
 
 We were slightly surprised by the relatively low number of iterations found as ideal by the Bayesian Optimization.
