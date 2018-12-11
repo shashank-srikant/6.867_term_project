@@ -9,6 +9,19 @@ We propose the following experiments and hypotheses in this work, and set up our
 \end{itemize}
 
 \subsubsection{Experiment 1. Representation using GNN.}
+We investigate whether the inductive bias captured in the structure of graph neural networks help in prediction tasks on graph-like modalities. To determine this, we model the task of predicting types of variables using GNN. To ascertain whether the architecture naturally captures this prediction task, we set up a number of baselines to compare against. We investigated the following models -
+\begin{itemize}[noitemsep,topsep=0pt]
+	\item \textbf{Our model. GNN.}
+	\item \textbf{Baseline 1. Naive.}
+	\item \textbf{Baseline 2. Intermediate.}
+	\item \textbf{Baseline 3. Aggressive.}
+\end{itemize}
+To get a baseline expectation of performance (since our dataset diverges slightly from that in the reference DeepTyper~\cite{hellendoorn2018deep} paper), we ran a variety of baselines on the dataset.
+The first is a simple MLE predictor, which generates a prediction vector with the top $k$ labels corresponding to the top $k$ most frequent training labels.
+The results of this can be seen in Table~\ref{tab:results:mle}.
+This baseline should be considered equivalent to random guessing.
+
+We also implemented more advanced baselines inspired by DeepTyper, including \todo{WHAT DID WE DO}.
 
 \subsubsection{Experiment 2. Edge information - Ablation study.}
 To determine whether our graph structure (nodes and edges) was chosen correctly, we performed a set of ablation studies.

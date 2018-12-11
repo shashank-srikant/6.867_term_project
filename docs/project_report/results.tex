@@ -1,13 +1,5 @@
 \section{Results and Discussion}
 \label{sec:results}
-
-To get a baseline expectation of performance (since our dataset diverges slightly from that in the reference DeepTyper~\cite{hellendoorn2018deep} paper), we ran a variety of baselines on the dataset.
-The first is a simple MLE predictor, which generates a prediction vector with the top $k$ labels corresponding to the top $k$ most frequent training labels.
-The results of this can be seen in Table~\ref{tab:results:mle}.
-This baseline should be considered equivalent to random guessing.
-
-We also implemented more advanced baselines inspired by DeepTyper, including \todo{WHAT DID WE DO}.
-
 The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges, can be seen in Table~\ref{tab:results:ast}.
 We also include an analysis of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}.
 These results show that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
