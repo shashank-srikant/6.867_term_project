@@ -36,10 +36,7 @@ Any iterations beyond that did not refine the search, and since we did not penal
 \subsection{Edge Ablation}
 To determine whether our graph structure (nodes and edges) was chosen correctly, we performed a set of ablation studies.
 Specifically, we ran experiments using the optimally chosen hyperparameters where we entirely deleted each class of edges (AST edges, Token edges, and Variable edges) from the graph, and compared performance to the original.
-The results of these studies can be seen in Table~\ref{table:results}.
-\todo{talk about results, also actually include them}
-
-
-%%% Local Variables:
-%%% TeX-master: "main"
-%%% End:
+The results of these studies can be seen in Tables~\ref{tab:results:ast}, \ref{tab:results:variable}, and \ref{tab:results:token}.
+These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
+We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
+While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
