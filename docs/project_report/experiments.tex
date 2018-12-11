@@ -12,22 +12,17 @@ We investigate the following questions in this work, and set up experiments to a
 We investigate whether the inductive bias captured in the structure of graph neural networks help in prediction tasks on graph-like modalities. To determine this, we model the task of predicting types of variables using GNN. To ascertain whether the architecture naturally captures this prediction task, we set up a number of baselines to compare against. We investigated the following models -
 \begin{itemize}[noitemsep,topsep=0pt]
 	\item \textbf{Our model. GNN.} We model the type inference problem using GNNs. Each node represents a node in the program's AST. We infer the types on those nodes which pertain to a variable. This is the model we compare all other baselines against.
-	\item \textbf{Baseline 1. Naive.} We choose a naive baseline to compare performance. In this model, we perform a majority vote on the label distribution in our train-set, and use the most frequently occurring label as the type predicted for any unseen variable. This provides a maximum likelihood estimate.
+	\item \textbf{Baseline 1. Naive.} We design a naive baseline to compare performance. In this model, we perform a majority vote on the label distribution in our train-set, and use the most frequently occurring label as the type predicted for any unseen variable. This provides a maximum likelihood estimate.
 	\item \textbf{Baseline 2. Intermediate.} Increasing the complexity of our baseline models, we evaluate a naive approximation of a graph net. In this model, we construct a logistic regression model over a feature vector involving \textit{counts} of various dependency and node information of a program. Specifically, for each program in the corpus, we enumerate the following counts
 	\begin{itemize}[noitemsep,topsep=0pt]
 		\item Edges between every \textsc{VariableUse} and \textsc{VariableDefine}, as described in Section \ref{sec:approach}. This forms a \textit{count}-hot vector of all such unique edge-dependencies that appear in the training corpus.
 		\item A  \textit{count}-hot encoding of the AST node types that appear in a program.
 	\end{itemize}
 	We enumerated XX different edge types and YY unique AST nodes in the training set. This resulted in a AAxBB feature matrix, which was used to learn a Logistic Regression model. This baseline captures a \textit{bag-of-dependencies}, without the structural/directional information provided by GNNs.
-	\item \textbf{Baseline 3. Aggressive.} We 
+	\item \textbf{Baseline 3. Aggressive.} We use the bi-directional neural network architecture designed by Allamanis et al \cite{hellendoorn2018deep}. Their architecture does not utilize any of the graphical-properties of a program, and instead rely on signals obtained just by the token information. Their approach is typical of sequence prediction tasks in NLP. Figure \ref{fig:birnn} describes their architecture.
 \end{itemize}
-To get a baseline expectation of performance (since our dataset diverges slightly from that in the reference DeepTyper~\cite{hellendoorn2018deep} paper), we ran a variety of baselines on the dataset.
-The first is a simple MLE predictor, which generates a prediction vector with the top $k$ labels corresponding to the top $k$ most frequent training labels.
-The results of this can be seen in Table~\ref{tab:results:mle}.
-This baseline should be considered equivalent to random guessing.
-
-We also implemented more advanced baselines inspired by DeepTyper, including \todo{WHAT DID WE DO}.
-
+this is 
+\loadFig{baseline}
 \subsubsection{Experiment 2. Edge information - Ablation study.}
 To determine whether our graph structure (nodes and edges) was chosen correctly, we performed a set of ablation studies.
 Specifically, we ran experiments using the optimally chosen hyperparameters where we entirely deleted each class of edges (AST edges, Token edges, and Variable edges) from the graph, and compared performance to the original.
