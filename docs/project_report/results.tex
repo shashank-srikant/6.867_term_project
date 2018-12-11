@@ -2,7 +2,12 @@
 \label{sec:results}
 \subsubsection{Experiment 1.}
 The results of this can be seen in Table~\ref{tab:results:baselines}.
-The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges had P@1 and P@5 accuracies of 66\% and 96\% respectively. Regarding baselines, we see that the \textit{Intermediate} baseline performs as expected. It predicts \textit{number} and \textit{string} types well, and fails at predicting any other type. On analyzing the model's top selected features reveals nodes like 
+The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges had P@1 and P@5 accuracies of 66\% and 96\% respectively.
+
+Regarding baselines, we see that the \textit{intermediate} baseline performs as expected. It predicts \textit{number} and \textit{string} types well, and fails at predicting any other type accurately. Analyzing the model's selected features reveals nodes like $+$ and $=$ being prominently weighted. They seem to be correspond to operations specific to \textit{number}s and \textit{string}s. We delegate a detailed analysis of these features to future work. 
+
+The \textit{aggressive} bi-directional RNN baseline, which was the best model trained by Allamanis et al. \cite{hellendoorn2018deep}, performs in the ballpark reported in their work. The difference is justifiable since we train on a subset of the dataset used by them. We see that it has a P@1 accuracy of 50.6\%, a good 15\% lower than GNN's performance.
+
 These results show that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
 
 \textbf{GNN model diagnosis.} We also include an analysis of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}. It shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type. 

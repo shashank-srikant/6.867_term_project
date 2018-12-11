@@ -18,7 +18,7 @@ We investigate whether the inductive bias captured in the structure of graph neu
 		\item For each variable $v_c (v_c\not=v)$ in the program which has an edge to $v$, the path formed by AST nodes present along that edge is counted. This forms a \textit{count}-hot vector of all such unique paths (string of AST nodes) that connect a variable $v$.
 		\item A \textit{count}-hot encoding of the AST node present in the line of code containing $v$, and the line of code containing $v_c$.
 	\end{itemize}
-	We enumerated 6183 unique paths and 89 unique AST nodes in the training set. This resulted in a 524507$\times$(6183+89) data matrix, which was used to learn a regularized Logistic Regression model. This baseline captures a \textit{bag-of-dependencies}, without the structural/directional information provided by GNNs. Being a linear model, we achieve interpretability on what features get selected.
+	We enumerated 6183 unique paths and 89 unique AST nodes in the training set. This resulted in a 524507$\times$(6183+89) data matrix, which was used to learn a regularized Logistic Regression model. This baseline captures a \textit{bag-of-dependencies}, without the dependency information flow provided by GNNs. Being a linear model, we also achieve interpretability on what features get selected.
 	\item \textbf{Baseline 3. Aggressive.} We use the bi-directional neural network architecture designed by Allamanis et al \cite{hellendoorn2018deep}. Their architecture does not utilize any of the graphical-properties of a program, and instead rely on signals obtained just by the token information. Their approach is typical of sequence prediction tasks in NLP. Figure \ref{fig:birnn} describes their architecture.
 \end{itemize}
 \loadFig{baseline}
