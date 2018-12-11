@@ -17,7 +17,7 @@ In particular we were inspired by \cite{snoek2012practical}, which suggests usin
 The metric we chose to optimize over was the train loss after 3 epochs.
 Selecting the best performing number of iterations in this metric gave us confidence that the network had actually made progress in learning significant features of the dataset, while also being sure not to overfit to our validation set.
 The results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
-\todo{what parameter did this say we should use}
+After 5 interactions with the Gaussian process, we were confident that $n=1$ iteration gave the best training loss after 3 epochs, although we used $n=2$ in our experiments, since it seemed to do marginally better on the validation set.
 
 \paragraph{Iteration Ensemble.}
 Our second attempt at hyperparameter search followed a more optimization based approach.
@@ -30,13 +30,14 @@ Ultimately, this did not work as well as we hoped, and our best results were ach
 The linear combination weight vector changed only marginally from its initial value, and the prediction quality was no better than that of using a fixed number of iterations.
 We believe this happened for one primary reason: one or two iterations were good enough, as shown by the Bayesian Optimization approach.
 Any iterations beyond that did not refine the search, and since we did not penalize their existence through any regularization (only the wrongness of their predictions), they stayed around as unnecessary artifacts that did not get pruned.
+\loadFig{gpDiagram}
 
 
 \subsection{Edge Ablation}
 To determine whether our graph structure (nodes and edges) was chosen correctly, we performed a set of ablation studies.
 Specifically, we ran experiments using the optimally chosen hyperparameters where we entirely deleted each class of edges (AST edges, Token edges, and Variable edges) from the graph, and compared performance to the original.
 The results of these studies can be seen in Table~\ref{table:results}.
-\todo{does this validate our construction? say we went over the top? TBD!}
+\todo{talk about results, also actually include them}
 
 
 %%% Local Variables:
