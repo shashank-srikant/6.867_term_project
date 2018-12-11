@@ -26,7 +26,7 @@ observed = {
     10: 1432370346851.65,
 }
 
-observed = {k: -np.log(v) for (k, v) in observed.items() if v is not None}
+observed = {k: 1/np.log(v) for (k, v) in observed.items() if v is not None}
 
 def function(**kwargs):
     x = kwargs['x']
@@ -52,9 +52,10 @@ def posterior(optimizer, x_obs, y_obs, grid):
 def plot_gp(optimizer, x, y):
     fig = plt.figure(figsize=(16, 10))
     steps = len(optimizer.space)
+
     fig.suptitle(
         'Gaussian Process and Utility Function After {} Steps'.format(steps),
-        fontdict={'size':30}
+        size=32,
     )
 
     gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
@@ -74,10 +75,10 @@ def plot_gp(optimizer, x, y):
               np.concatenate([mu - 1.9600 * sigma, (mu + 1.9600 * sigma)[::-1]]),
         alpha=.6, fc='c', ec='None', label='95% confidence interval')
 
-    axis.set_xlim((-2, 10))
+    axis.set_xlim((0, 10))
     axis.set_ylim((None, None))
-    axis.set_ylabel('f(x)', fontdict={'size':20})
-    axis.set_xlabel('x', fontdict={'size':20})
+    axis.set_ylabel('1/log(loss)', fontdict={'size':20})
+    axis.set_xlabel('#Iter', fontdict={'size':20})
 
     utility = utility_function.utility(x, optimizer._gp, 0)
     utility_int = utility_function.utility(x_int, optimizer._gp, 0)
@@ -85,13 +86,15 @@ def plot_gp(optimizer, x, y):
     acq.plot(x, utility, label='Utility Function', color='purple')
     acq.plot(x_int[np.argmax(utility_int)], np.max(utility_int), '*', markersize=15,
              label=u'Next Best Guess', markerfacecolor='gold', markeredgecolor='k', markeredgewidth=1)
-    acq.set_xlim((-2, 10))
+    acq.set_xlim((0, 10))
     acq.set_ylim((0, np.max(utility) + 0.5))
     acq.set_ylabel('Utility', fontdict={'size':20})
-    acq.set_xlabel('x', fontdict={'size':20})
+    acq.set_xlabel('#Iter', fontdict={'size':20})
 
     axis.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
     acq.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
+
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 optimizer.probe({'x': 5}, lazy=False)
 
