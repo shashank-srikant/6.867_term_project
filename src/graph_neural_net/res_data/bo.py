@@ -91,18 +91,26 @@ def plot_gp(optimizer, x, y):
     acq.set_ylabel('Utility', fontdict={'size':20})
     acq.set_xlabel('#Iter', fontdict={'size':20})
 
-    axis.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
-    acq.legend(loc=2, bbox_to_anchor=(1.01, 1), borderaxespad=0.)
+    axis.legend(loc=2, bbox_to_anchor=(0.85, 1), borderaxespad=0.)
+    acq.legend(loc=2, bbox_to_anchor=(0.887, 1), borderaxespad=0.)
 
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
+def refit():
+    x_obs = np.array([[res["params"]["x"]] for res in optimizer.res])
+    y_obs = np.array([res["target"] for res in optimizer.res])
+    optimizer._gp.fit(x_obs, y_obs)
+
 optimizer.probe({'x': 5}, lazy=False)
 
-prev_probe = 5
-next_probe = None
+prev_probe = None
+next_probe = 5
 while prev_probe != next_probe:
-    plot_gp(optimizer, x, y=None)
-    plt.show()
+    refit()
+    if prev_probe == 1:
+        plot_gp(optimizer, x, y=None)
+        plt.show()
+    refit()
     utility_int = utility_function.utility(x_int, optimizer._gp, 0)
     prev_probe = next_probe
     next_probe = np.argmax(utility_int)
