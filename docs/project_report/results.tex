@@ -94,3 +94,21 @@ Given that some of the most common operators on numbers and strings are syntacti
   \end{tabular}
   \caption{Top 10 test labels (23551 total predictions)}\label{tab:test-fps}
 \end{table}
+
+
+\paragraph{Bayesian Optimization.}
+The metric we chose to optimize over was the train loss after 3 epochs.
+Selecting the best performing number of iterations in this metric gave us confidence that the network had actually made progress in learning significant features of the dataset, while also being sure not to overfit to our validation set.
+The results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
+After 5 interactions with the Gaussian process, we were confident that $n=1$ iteration gave the best training loss after 3 epochs, although we used $n=2$ in our experiments, since it seemed to do marginally better on the validation set.
+
+We were slightly surprised by the relatively low number of iterations found as ideal by the Bayesian Optimization.
+Ultimately, we believe that this is probably an issue with the amount of time that we trained for: since a message passing graph net unfurls to look similar to a RNN, it encounters the same vanishing gradient problem, magnified by the large fanout of each node (Figure~\ref{fig:dataset-graph-stats} shows an average node degree above 5).
+Were we to train for significantly longer, we may be able to deal with the smaller gradients and the more complex loss landscape of a larger network, but unfortunately training the larger \textsc{NIter} networks for longer on our machines was computationally infeasible -- we leave this deeper parameter exploration to future work.
+
+\paragraph{Iteration Ensemble.}
+Ultimately, this did not work as well as we hoped, and our best results were achieved by just using a single number of iterations learned through the Bayesian Optimization approach.
+The linear combination weight vector changed only marginally from its initial value, and the prediction quality was no better than that of using a fixed number of iterations.
+We believe this happened for one primary reason: one or two iterations were good enough, as shown by the Bayesian Optimization approach.
+Any iterations beyond that did not refine the search, and since we did not penalize their existence through any regularization (only the wrongness of their predictions), they stayed around as unnecessary artifacts that did not get pruned.
+\loadFig{gpDiagram}

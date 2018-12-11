@@ -21,7 +21,6 @@ We investigate whether the inductive bias captured in the structure of graph neu
 	We enumerated XX different edge types and YY unique AST nodes in the training set. This resulted in a AAxBB feature matrix, which was used to learn a Logistic Regression model. This baseline captures a \textit{bag-of-dependencies}, without the structural/directional information provided by GNNs.
 	\item \textbf{Baseline 3. Aggressive.} We use the bi-directional neural network architecture designed by Allamanis et al \cite{hellendoorn2018deep}. Their architecture does not utilize any of the graphical-properties of a program, and instead rely on signals obtained just by the token information. Their approach is typical of sequence prediction tasks in NLP. Figure \ref{fig:birnn} describes their architecture.
 \end{itemize}
-this is 
 \loadFig{baseline}
 \subsubsection{Experiment 2. Edge information - Ablation study.}
 To determine whether our graph structure (nodes and edges) was chosen correctly, we performed a set of ablation studies.
@@ -37,29 +36,12 @@ In theory, because of the universal approximation properties of neural nets, the
 However, this is not realistic: as shown in Figure~\ref{fig:dataset-graph-stats}, the maximum diameter of any of the graphs is above 200, meaning that we would have to run the graph neural net for an intractable number of iterations to be able to get the ``full'' result.
 Instead, we approximate the result by running fewer iterations, theoretically losing out on certain classes of decisions (although further enforcing our inductive bias, since we believe that local nodes should be the primary ones that matter).
 It is not immediately clear how we should choose the \textsc{NIter} hyperparameter though: since graph nets give no formal guarantees that the results monotonically improve with the number of iterations, we have to select the number of iterations through some hyperparameter search.
-We ran two experiments to try to select the ideal settings: a \emph{Bayesian Optimization} based approach, and what we call an \emph{Iteration Ensemble} approach.
-
-\paragraph{Bayesian Optimization.}
-Our first attempt at finding the ideal number of iterations was inspired by standard approaches to hyperparameter search problems, for cases where running experiments can be prohibitively expensive (the memory and time costs of training a model means we can only search through a relatively small number of possible hyperparameters).
-In particular we were inspired by \cite{snoek2012practical}, which suggests using a Bayesian Optimization based approach with an underlying Gaussian Process to pick hyperparameters, using the expected improvement metric (expectation of the decrease in the desired metric over the current best known hyperparameter) to explore the hyperparameter space.
-The metric we chose to optimize over was the train loss after 3 epochs.
-Selecting the best performing number of iterations in this metric gave us confidence that the network had actually made progress in learning significant features of the dataset, while also being sure not to overfit to our validation set.
-The results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
-After 5 interactions with the Gaussian process, we were confident that $n=1$ iteration gave the best training loss after 3 epochs, although we used $n=2$ in our experiments, since it seemed to do marginally better on the validation set.
-
-We were slightly surprised by the relatively low number of iterations found as ideal by the Bayesian Optimization.
-Ultimately, we believe that this is probably an issue with the amount of time that we trained for: since a message passing graph net unfurls to look similar to a RNN, it encounters the same vanishing gradient problem, magnified by the large fanout of each node (Figure~\ref{fig:dataset-graph-stats} shows an average node degree above 5).
-Were we to train for significantly longer, we may be able to deal with the smaller gradients and the more complex loss landscape of a larger network, but unfortunately training the larger \textsc{NIter} networks for longer on our machines was computationally infeasible -- we leave this deeper parameter exploration to future work.
-
-\paragraph{Iteration Ensemble.}
-Our second attempt at hyperparameter search followed a more optimization based approach.
-Rather than trying to pick one specific ideal number of iterations, we ran an ensemble over several choices of iteration counts, using a learned weighting to linearly combine all of their predictions in the last step to produce the final result.
-Importantly, we ran this iteration ensemble on \emph{one single graph net}; that is, we combined each of the intermediate predictions of running a single graph neural net.
-We took this approach for two reasons: primarily, it was more computationally efficient (running large ensembles of graph nets was not possible on the machines we had access to), but it also enforced one of the inductive biases we hoped to see in a solution: intermediate steps of the graph net message passing algorithm should roughly correspond to finer and finer approximations of the posterior prediction, meaning all steps should be valid (if unrefined) predictions.
-We also hoped to see situations where some weights on the upper or lower end would drop away, signifying that we should shift the number of iterations that comprise the ensemble.
-
-Ultimately, this did not work as well as we hoped, and our best results were achieved by just using a single number of iterations learned through the Bayesian Optimization approach.
-The linear combination weight vector changed only marginally from its initial value, and the prediction quality was no better than that of using a fixed number of iterations.
-We believe this happened for one primary reason: one or two iterations were good enough, as shown by the Bayesian Optimization approach.
-Any iterations beyond that did not refine the search, and since we did not penalize their existence through any regularization (only the wrongness of their predictions), they stayed around as unnecessary artifacts that did not get pruned.
-\loadFig{gpDiagram}
+We ran two experiments to try to select the ideal settings: 
+\begin{itemize}
+	\item \textbf{\emph{Bayesian Optimization} based approach.} 
+	We were inspired by approaches to hyperparameter search problems, for cases where running experiments can be prohibitively expensive. In particular we were inspired by \cite{snoek2012practical}, which suggests using a Bayesian Optimization based approach with an underlying Gaussian Process to pick hyperparameters from, using the expected improvement metric (expectation of the decrease in the desired metric over the current best known hyperparameter) to explore the hyperparameter space.
+	\item \textbf{\emph{Iteration Ensemble} approach.} Our second attempt at hyperparameter search followed a more optimization based approach.
+	Rather than trying to pick one specific ideal number of iterations, we ran an ensemble over several choices of iteration counts, using a learned weighting to linearly combine all of their predictions in the last step to produce the final result.
+	Importantly, we ran this iteration ensemble on \emph{one single graph net}; that is, we combined each of the intermediate predictions of running a single graph neural net.
+	We considered this for two reasons: primarily, it was more computationally efficient (running large ensembles of graph nets was not possible on the machines we had access to), but it also enforced one of the inductive biases we hoped to see in a solution: intermediate steps of the graph net message passing algorithm should roughly correspond to finer approximations of the posterior prediction, meaning all steps should be valid (if unrefined) predictions. We also hoped to see situations where some weights on the upper or lower end would drop away, signifying that we should shift the number of iterations that comprise the ensemble.
+\end{itemize}
