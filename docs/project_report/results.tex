@@ -1,5 +1,6 @@
 \section{Results and Discussion}
 \label{sec:results}
+
 \subsubsection{Experiment 1.}
 The results of this can be seen in Table~\ref{tab:results:baselines}.
 The best results we achieved, using the graph neural net with $\textsc{NIter}=2$ and including all AST, \textsc{Variable}, and \textsc{Token} edges had P@1 and P@5 accuracies of 66\% and 96\% respectively.
@@ -13,49 +14,50 @@ These results show that the graph neural net framework, along with the assumptio
 \textbf{GNN model diagnosis.} We also include an analysis of the false positive and negative rates on the test set in Table~\ref{tab:test-fps}. It shows only two significant outliers, the number of false predictions on the \texttt{string} type and the number of missed predictions of the \texttt{number} type.
 Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
 
+
+\begin{table*}
+	\begin{minipage}{.5\linewidth}
+		\centering
+		{\renewcommand{\arraystretch}{1.3}% for the vertical padding
+			\begin{tabular}{c|lcc}
+				~ & \textbf{Model} & \textbf{P@1} & \textbf{P@5} \\
+				\hline
+				Our model & \textbf{GNN} & 0.66 & 0.96 \\
+				\hline
+				~ & \textbf{Naive} & 0.31 & 0.87 \\
+				~	 & (Majority vote) & ~ & ~ \\
+				\cline{2-4}
+				Baselines & \textbf{Intermediate} & 0.44 & 0.93 \\
+				~	 & (Dependency counts) & ~ & ~ \\
+				\cline{2-4}
+				~	 & \textbf{Aggressive} & 0.50 & * \\
+				~	 & (Bi-direc RNN) & ~ & ~ \\
+			\end{tabular}
+		}
+		\caption{Results of model comparison against various baselines, ordered by their model complexity. These are results on the test-set, on the top 20 most frequent labels in the train-set. P@1, P@5 correspond to the accuracy of top-1 and top-5 predictions matching the exact label.}
+		\label{tab:results:baselines}
+	\end{minipage}
+	\begin{minipage}{.5\linewidth}
+		\centering
+		{\renewcommand{\arraystretch}{1.3}% for the vertical padding
+			\begin{tabular}{l|cc}
+				\textbf{Ablated Model} & \textbf{P@1} & \textbf{P@5} \\
+				\hline
+				Full GNN model & 0.66 & 0.96 \\
+				AST edges removed &  0.55 & 0.93 \\
+				Token edges removed & 0.43 & 0.94 \\
+				Use-Define edges removed & 0.61 & 0.92 \\
+			\end{tabular}
+		}
+		\caption{Results of our ablation study.}
+		\label{tab:results:ablations}
+	\end{minipage}
+\end{table*}
+
 \subsubsection{Experiment 2.} The results of these studies can be seen in Table \ref{tab:results:ablations}.
 These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
 We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
 While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
-
-\begin{table}
- \centering
- {\renewcommand{\arraystretch}{1.3}% for the vertical padding
- \begin{tabular}{c|lcc}
- 	 ~ & \textbf{Model} & \textbf{P@1} & \textbf{P@5} \\
- 	\hline
- 	Our model & \textbf{GNN} & 0.66 & 0.96 \\
- 	\hline
- 	 ~ & \textbf{Naive} & 0.31 & 0.87 \\
- 	 ~	 & (Majority vote) & ~ & ~ \\
-	\cline{2-4}
-	 Baselines & \textbf{Intermediate} & 0.44 & 0.93 \\
- 	 ~	 & (Dependency counts) & ~ & ~ \\
- 	\cline{2-4}
-	 ~	 & \textbf{Aggressive} & 0.50 & * \\
- 	 ~	 & (Bi-direc RNN) & ~ & ~ \\
- \end{tabular}
-}
- \caption{Results of model comparison against various baselines, ordered by their model complexity. These are results on the test-set, on the top 20 most frequent labels in the train-set. P@1, P@5 correspond to the accuracy of top-1 and top-5 predictions matching the exact label.}
- \label{tab:results:baselines}
-\end{table}
-
-\begin{table}
-	\centering
-	 {\renewcommand{\arraystretch}{1.3}% for the vertical padding
-	 	\begin{tabular}{l|cc}
-	 		\textbf{Ablated Model} & \textbf{P@1} & \textbf{P@5} \\
-	 		\hline
-	 		Full GNN model & 0.66 & 0.96 \\
-	 		AST edges removed &  0.55 & 0.93 \\
-			Token edges removed & 0.43 & 0.94 \\
-			Use-Define edges removed & 0.61 & 0.92 \\
-	 	\end{tabular}
-	 }
-	  \caption{Results of our ablation study.}
-	  \label{tab:results:ablations}
-\end{table}
-
 
 \begin{table}
   \centering
