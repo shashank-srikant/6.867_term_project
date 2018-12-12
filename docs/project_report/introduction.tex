@@ -1,8 +1,8 @@
 \section{Introduction}
 \label{sec:introduction}
 Inferring properties of computer programs is a task central to the programming languages (PL) community.
-Although most challenges like figuring out whether a program terminates, or finding a test case which crashes a program are undecidable, the program analysis community has designed algorithms and techniques which approximate solutions to such undecidable problems.
-These problems have been explored to an extent that working solutions have been shipped in real-time, commercial products.
+Although many challenges in the field are undecidable, like figuring out whether a program terminates or finding a test case which crashes a program, the program analysis community has designed algorithms and techniques that approximate solutions to such undecidable problems.
+These techniques have been explored to an extent that working solutions have been shipped in real-time, commercial products.
 
 One such property of interest is ascertaining the types of variables used in programs.
 Static, strongly-typed languages provide considerable guarantees at compile time, enabling programmers to write more correct and interpretable code.
@@ -17,7 +17,7 @@ This enables established type-inference algorithms to determine types of other v
 Another approach, which is the subject of this work, is to infer types statistically.
 The problem of inferring types can be cast as a supervised learning problem, where a model can be trained on a corpus of programs with identified types in order to be able to infer types of unseen variables in unseen programs.
 
-This broader approach has been validated with a modest degree of success in previous work~\cite{hellendoorn2018deep}.
+This statistical approach has been validated with a modest degree of success in previous work~\cite{hellendoorn2018deep}.
 Allamanis \textit{et al.} modeled the problem as a sequence translation task, and trained bi-directional RNNs to predict types (see Section~\ref{sec:approach}).
 In this work, we ask whether there are inductive biases which are unique to this input space, computer programs, and how they can be exploited in such a prediction task.
 We motivate this problem as an inference task over a probabilistic graphical model, and approximate it using a graph-based neural network.
