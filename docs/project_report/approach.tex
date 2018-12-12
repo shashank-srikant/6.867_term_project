@@ -1,54 +1,55 @@
 \section{Approach}
 \label{sec:approach}
 
-Our approach to the type prediction problem is to apply a GNN to a special graph constructed from each TypeScript program, where the graph encodes much of the information that may be relevant in trying to predict a given variable's type.
+Our approach to the type prediction problem is to apply a GNN to a graph constructed from each TypeScript program, where the graph encodes much of the information that may be relevant in trying to predict a given variable's type.
 
 \subsection{Dataset}
 \label{sec:dataset}
 We train and evaluate on the dataset from the DeepTyper project~\cite{hellendoorn2018deep}, which contains 1000 popular open-source TypeSript projects from GitHub.
- Each project was parsed with the TypeScript compiler~\textsc{tsc}, which infers type information (including the all-encompassing \textit{any} type as a fallback) for all occurrences of each identifier.
- To make learning tractable, we randomly sampled a total of 90 projects, containing 5000 source files, resulting in a total of 650,000 labeled variables.
- For our prediction task, to avoid the sparsity problems that come with such a large label set, we throw out all labels that are not in the top 20 most common labels, leaving us with roughly $50\%$ of the total labels in the training dataset.
- The CDF of label frequencies can be seen in Figure~\ref{fig:label-distribution}, showing the long tail of infrequent labels.
+Each project was parsed with the TypeScript compiler, which infers type information (including the all-encompassing \texttt{any} type as a fallback) for all occurrences of each identifier.
+To make learning tractable, we randomly sampled a total of 90 projects from the dataset.
+Dataset statistics can be seen in Table~\ref{tab:dataset}.
+For our prediction task, to avoid the sparsity problems that come with such a large label set, we throw out all labels that are not in the top 20 most common labels, leaving us with roughly $50\%$ of the total labels in the training dataset.
+The CDF of label frequencies can be seen in Figure~\ref{fig:label-distribution}, showing the long tail of infrequent labels.
 To give a better idea of the type labels that we predict, the top 5 most common types in the training set are: \texttt{string}, \texttt{number}, \texttt{boolean}, \texttt{any[]}, and \texttt{string[]}.
+
+\begin{table}
+  \centering
+  {\renewcommand{\arraystretch}{1.15}% for the vertical padding
+    \begin{tabular}{l|rrr}
+      \textbf{~} & \textbf{Total} & \textbf{Train} & \textbf{Test} \\
+      \hline
+      \# TS projects & 90 & 72 & 18 \\
+      \# Source files & 3,990 & 3,025 & 965 \\
+      \# Unique types & 20 & 20 & 20 \\
+      \# Unique AST nodes & 60 & 60 & 60 \\
+      \# Unique edge types & 4 & 4 & 4 \\
+      \# Graph nodes & 2,551,821 & 1,981,292 & 570,529 \\
+      \# Graph edges & 7,071,122 & 5,448,259 & 1,622,863 \\
+      \# Labels  & 184,265 & 90,321 & 93,944 \\
+    \end{tabular}
+  }
+  \caption{A summary of our dataset.}
+  \label{tab:dataset}
+\end{table}
 
 \loadFig{labelDistribution}
 
-\begin{table}
-	\centering
-	{\renewcommand{\arraystretch}{1.15}% for the vertical padding
-		\begin{tabular}{l|rrr}
-                  \textbf{~} & \textbf{Total} & \textbf{Train} & \textbf{Test} \\
-                  \hline
-                  \# TS projects & 90 & 72 & 18 \\
-                  \# source files & 3990 & 3025 & 965 \\
-                  \# unique types & 20 & 20 & 20 \\
-                  \# unique AST nodes & 60 & 60 & 60 \\
-                  \# unique edge types & 4 & 4 & 4 \\
-                  \# graph nodes & 2551821 & 1981292 & 570529 \\
-                  \# graph edges & 7071122 & 5448259 & 1622863 \\
-                  \# labels  & 17265 & 90321 & 93944 \\
-		\end{tabular}
-	}
-	\caption{A summary of our dataset.}
-	\label{tab:dataset_sumamry}
-\end{table}
-
 \paragraph{Train-Test split.}
-We made sure to do our train/test split on the dataset not based on files, but on projects, since we are primarily interested in how this approach performs on code that it has never seen before.
+We made sure to do our train/test split on the dataset not based on file graphs, but on entire source projects, since we are primarily interested in how this approach performs on code that it has never seen before.
 Files within the same project do tend to have similar, even identical code snippets, so we wanted to rule out any potential false positives from memorizing such sub-graphs.
-This is, however, a conservation model of a real world system: a type predictor built into an IDE would have access to other files within the same project that the user has written, and would be able to base predictions on that.
+This is, however, a conservative model of a real world system: a type predictor built into an IDE would have access to other files within the same project that the user has written, and would be able to base predictions on that.
 Because of this, we have a separate set of weights for computing the initial node and edge embeddings, so that a model can refine its training on graphs specific to one type of project, while keeping the same node/edge embeddings and predictors, essentially performing a version of the standard NLP-style transfer learning, but for program graphs.
 
 \subsection{Graph construction.}
 \label{sec:graph-neural-net}
 Because ``graph neural nets'' are such a general framework, the inductive bias for our solution comes primarily from how the input graph is constructed.
-Specifically, we must decide on the nodes and edges of our generated graph.
+Specifically, we must decide on the nodes and edges that comprise our generated graph.
 We choose to include the full set of nodes in each program's AST as the nodes in the input graph, using the node's syntactic token type as its embedding.
 This allows us to include all potentially relevant structure: we have not only the source level tokens in the source file, but also the abstract structures that those tokens form.
 
 Graph edges are significantly more complicated.
-We want to take advantage of all of the important connections that we know about in the program, while also trying to avoid creating as many useless edges as possible, both to help with computation and to induce a stronger prior over the solutions we think might be valid.
+We want to take advantage of all of the important structure that we know about in the program, while also trying to avoid creating as many useless edges as possible, both to help with computation and to induce a stronger prior over the solutions we think might be valid.
 Specifically, we take advantage of our knowledge of the important local and nonlocal interactions between various parts of programs, similar to how convolutional networks assume some strong relationship between local pixels~\cite{henaff2015deep}.
 There are three specific priors we incorporate into the edges in our generated graph:
 
@@ -68,7 +69,8 @@ This corresponds exactly to two types of edges that we include in our generated 
   ...
   let x = "foo";
 \end{lstlisting}
-It is clear that both ordering and locality matter in determining the type of \texttt{y}: in the AST, the two statements assigning to \texttt{x} are equidistant and directionally indistinguishable, but the actual \emph{token stream} of the file reflects that the first assignment to \texttt{x} precedes the assignment to \texttt{y}, meaning that it may be more likely to affect the type of \texttt{y}, and is also closer, meaning the two statements are more likely to be related.
+It is clear that both ordering and locality matter in determining the type of \texttt{y}: in the AST, the two statements assigning to \texttt{x} are equidistant and directionally indistinguishable, but the actual \emph{token stream} of the file reflects that the first assignment to \texttt{x} precedes the assignment to \texttt{y}, meaning that it is more likely to affect the type of \texttt{y}.
+It is also closer, meaning the two statements are even more likely to be related.
 Because of this, we include two more types of edges in the induced graph, a \texttt{TokenNext} edge from a token to its neighbor in the source file, and a \texttt{TokenPrev} edge which is the reverse.
 
 \paragraph{Nodes that use or define the same variable give information about each other.}
@@ -78,11 +80,11 @@ Because of this, we include two more types of edges in the induced graph, a \tex
   ...
   let y = a + (b + (... + x));
 \end{lstlisting}
-Although the two statements may be arbitrarily nonlocal in both the AST and the source file, they are clearly related, in that \texttt{x}'s type probably influences \texttt{y}'s type.
+Although the two statements may be arbitrarily distant in both the AST and the source file, they are clearly related, in that \texttt{x}'s type influences \texttt{y}'s type.
 Because of this, we include one final type of edge, a \texttt{Variable} edge, between any usages of the same variable.
 
 \paragraph{Example.}
-With all of the above nodes and edges included, we generate (a cleaned up version of) the graph shown in Figure~\ref{fig:ast-graph} for the following code:
+With all of the above nodes and edges included, we generate something like the graph shown in Figure~\ref{fig:ast-graph} for the following code:
 \begin{lstlisting}
   let x := 5;
   x = x + 2;
@@ -95,7 +97,7 @@ Some high level statistics about the graphs we generate (which we will refer to 
 
 \subsection{Embeddings.}
 
-In the program graph, a node's initial embedding is a one-hot vector encoding its AST type.
+In the program graph, a node's initial embedding is a one-hot vector encoding its syntactic AST type (e.g. \textsc{PlusOperator}, \textsc{ArrayAccess}).
 Similarly, an edge's embedding is a one-hot vector encoding its edge type.
 We keep the top 60 node types, and consolidate the rest into an \textsc{Unk} token, to avoid sparsity on the bottom end of the node type distribution (the distribution of AST node types in our dataset can be seen in Figure~\ref{fig:ast-distribution}; the top 60 node types correspond to $95\%$ of all nodes).
 We do not do the same with edge types, since by construction all edge types are densely populated.
