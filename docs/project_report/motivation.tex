@@ -3,8 +3,8 @@
 \loadFig{figPipeline}
 
 \paragraph{Modeling programs.}
-With the advent of large public software repositories like GitHub, and better performing machine learning tools like deep neural networks, the problem of determining good statistical models has recently become an active research area.
-This problem primarily consists of determining some latent representation of a program, and then using that representation to perform any sort of analysis of the program.
+With the advent of large public software repositories like GitHub, and better performing machine learning tools like deep neural networks, the problem of determining good statistical models for programs has recently become an active research area.
+This problem primarily consists of determining some latent representation of a program, and then using that representation to perform some sort of analysis of the program.
 Several inference tasks in this domain have seen moderate success.
 These include predicting meaningful variable names~\cite{bigcode}, detecting bugs and vulnerabilities~\cite{bugs}, grading programs~\cite{ss}, and others.
 Each of these approaches models the problem as a supervised learning task, where features are extracted from programs and are used to predict the property of interest.
@@ -24,8 +24,8 @@ The statistical type inference problem we solve in this paper is not the only ty
 There exist deterministic algorithms like Hindley-Milner's W-algorithm (HM) to infer and check the types of variables in programs.
 HM assumes some known structure between how variables interact, and inductively applies type-propagation rules.
 This works well in practice for languages which have been designed keeping such analyses in mind, like OCaml.
-With languages like Javascript and Ruby though, implementing HM will result in poor specificity, with most types simply being inferred as \textit{any} (i.e. undeterminable).
-Such inference is not helpful to an end-user, and hence, warrants other techniques which may prove effective in discovering such information.
+With languages like JavaScript and Ruby though, implementing HM will result in poor specificity, with most types simply being inferred as \textit{any} (i.e. undeterminable).
+Such inference is not helpful to an end-user, and hence warrants other techniques which may prove effective in discovering a more specific type.
 
 We therefore explore machine learning as a tool to help learn these types.
 The key insight is that the problem of inferring types involves two sub-tasks:
@@ -36,27 +36,27 @@ The key insight is that the problem of inferring types involves two sub-tasks:
 
 \paragraph{Graph neural networks.}
 Graph-structured input modalities to machine learning problems have been explored over the last decade in light of deep neural network architectures.
-LeCun~\textit{et al.} published a position paper~\cite{henaff2015deep} which described learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters.
-DeepMind, with its recent position paper on inductive biases captured by graph neural networks~\cite{deepmind2018graph}, has seemingly initiated a resurgence of interest in Graph Neural Networks (GNNs).
+LeCun~\textit{et al.} published a position paper~\cite{henaff2015deep} which describes learning on graph-structured input modalities as a convolutional neural network learning non-Euclidean filters.
+DeepMind, with its recent position paper on inductive biases captured by graph neural networks~\cite{deepmind2018graph}, has initiated a resurgence of interest in Graph Neural Networks (GNNs).
 
 Broadly, a GNN is set up as follows: each node and edge in the graph has an associated learned embedding as its initial state.
 Hidden layers connect nodes to edges, and vice versa.
 A GNN is run for a number of iterations, similar to a recurrent neural network.
-Each iteration of the GNN then follows a message passing algorithm: an edge from node $A$ to $B$ computes its new hidden state s a function of the edge's old state, and the state at node $A$.
+Each iteration of the GNN follows a message passing algorithm: an edge from node $A$ to $B$ computes its new hidden state as a function of the edge's old state, and the state at node $A$.
 Next, each node computes its new embedding as a function of its old embedding and the aggregated embedding of each incoming edge.
 Figure \ref{fig:gnn} illustrates this architecture.
 
-This general idea is cast in multiple ways: LeCun's portrays GNNs as CNNs with non-Euclidean filters; DeepMind's portrays them as auto-encoder model over graphs; Microsoft portrays them as gated recurrent networks.
+This general idea is cast in multiple ways: LeCun portrays GNNs as CNNs with non-Euclidean filters; DeepMind's portrays them as auto-encoder model over graphs; Microsoft portrays them as gated recurrent networks.
 The generality of the framework leaves it open to many valid interpretations.
 
 \loadFig{gnn}
 
 \paragraph{Probabilistic interpretation.}
-Having introduced the problem of type inference, and graph neural networks, we lay out a justification in this section for why such a network is the right form of inductive bias to be modeling programs.
+Having introduced the problem of type inference, and graph neural networks, we lay out a justification in this section for why such a network is the right form of inductive bias to model programs.
 
 A Markov Random Field (MRF) is an undirected graphical model with the Markov assumption that a node is conditionally independent from all other nodes given its neighbors~\cite{kinderman80markov}.
-If we were to construct a Markov Random Field with an unobserved latent variable for each of our AST nodes, adding the various (undirected) edges described in Section~\ref{sec:graph-neural-net}, tag each node in the graph with an additional random variable (the observed variable representing its AST type), and tag each program variable with an additional random variable representing its type, we would get a graph that looks roughly like Figure~\ref{fig:mrf-graph}.
-We could then perform posterior inference on the type nodes of this graph using belief propagation~\cite{pearl2009causality}, which gives an approximate solution to the true posterior~\cite{weiss2000correctness}, giving our desired type predictions.
+If we were to construct a Markov Random Field with an unobserved latent variable for each of our AST nodes, add the various (undirected) edges described in Section~\ref{sec:graph-neural-net}, tag each node in the graph with an additional random variable (the observed value representing the node's AST type), and tag each program variable with an additional random variable representing its type, we would get a graph that looks roughly like the one in Figure~\ref{fig:mrf-graph}.
+We could then perform posterior inference on the type of the program variable nodes of this graph using belief propagation~\cite{pearl2009causality}, which gives an approximate solution to the true posterior~\cite{weiss2000correctness}, giving our desired type predictions.
 \loadFig{mrf}
 
 We specifically argue the following two points:
@@ -66,14 +66,14 @@ We specifically argue the following two points:
 \end{enumerate*}
 
 For point (i), we believe that the classes of edges we use roughly capture the extent of conditional dependence in the model, in that the latent state of a variable (that predicts its type) is roughly conditionally independent from all others given its neighbors along those edges.
-This full justification is left to Section~\ref{sec:graph-neural-net}, but it is summarized by saying that we add between nodes if those nodes are local in some sense (whether that means they're colocated in the code, or deal with similar variables).
-Some edges we added may be spurious, and while this may make it harder to perform inference (whether in the real MRF or our graph net), the MRF with too many edges can just be viewed as a refinement of the MRF with too few edges.
+This full justification is left to Section~\ref{sec:graph-neural-net}, but it is summarized by saying that we add edges between nodes if those nodes are local in some sense (whether that means they are colocated in the code, or deal with similar variables).
+Some edges we added may be spurious, and while this may make it harder to perform inference, the MRF with too many edges can just be viewed as a refinement of the MRF with too few edges.
 This is also the case with the undirectedness assumption, where it's likely that some of the edges would ideally be represented as directed edges.
-However, this is also the case in using MRFs for images or other applications, and while the assumption can be shown to be at least somewhat incorrect there, MRFs still prove to be useful models~\cite{rangarajan95markov}.
+However, these violated assumptions are also present when using MRFs for images or other applications, and while the assumptions can be shown to be incorrect, MRFs in those domains still prove to be useful models~\cite{rangarajan95markov}.
 
-Point (ii) requires arguing that our network architecture roughly performs posterior inference on the network.
+Point (ii) requires arguing that our graph neural network architecture approximates posterior inference on the network.
 This argument is much easier: belief propagation, a message passing algorithm, approximates the correct posterior on graphs with loops~\cite{weiss2000correctness}.
-GNNs are in essence a message passing algorithm, where the messages are the result of some function learned by the GNN on the current latent state of a given node.
+GNNs are essentially a message passing algorithm, where the messages are the result of some function learned by the GNN on the current latent state of a given node.
 By merit of being neural networks, GNNs are capable of approximating any function~\cite{hornik1989multilayer} (and storing latent state), meaning that GNNs are capable of learning belief propagation (assuming we run the message passing for enough iterations).
 Therefore, assuming that training our GNN finds its global optimum, we are guaranteed a solution at least as good as the approximate solution of belief propagation on the MRF, meaning that a GNN should be capable of solving the type inference problem.
 

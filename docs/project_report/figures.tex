@@ -4,7 +4,7 @@
 	\scalebox{0.9}{
 		\includegraphics[width=\textwidth]{img/architecture.png}
 	}
-	\caption{\textbf{Summary of our work.} We motivate the problem of modeling programs as Markov Random Fields. We argue that a Graph neural network approximates inference tasks over an MRF. Specifically, we investigate the problem of inferring types in Javascript programs. This problem formulation was first put forward by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}, which we explore further into.}
+	\caption{\textbf{Summary of our work.} We motivate the problem of modeling programs as Markov Random Fields. We argue that a graph neural network approximates inference over a MRF. Specifically, we investigate the problem of inferring types in JavaScript programs. This problem formulation was first put forward by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}.}
 	\label{fig:pipeline}
 \end{figure*}
 %</figPipeline>
@@ -15,7 +15,7 @@
 	\scalebox{0.7}{
 		\includegraphics[width=\linewidth]{img/birnn.png}
 	}
-	\caption{Aggressive baseline - A bi-directional RNN designed by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}. It models type inference as a sequence prediction task in NLP.}
+	\caption{Aggressive baseline: A bi-directional RNN designed by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}. It models type inference as a sequence prediction task in NLP.}
 	\label{fig:birnn}
 \end{figure}
 %</baseline>
@@ -58,7 +58,7 @@
 		\includegraphics[width=\textwidth]{img/node_degree}
 		\label{fig:g2}
 	\end{subfigure}
-	\caption{A summary of key dataset statistics, showing the CDFs of the average path length, and the average node degrees of the graphs in the dataset. }
+	\caption{A summary of key dataset statistics, showing the CDFs of the average path length, the diameter of the graphs, and the average node degrees of the graphs in the dataset. }
 	\label{fig:dataset-graph-stats}
 \end{figure}
 %</stats>
@@ -77,7 +77,7 @@
 %<*graph>
 \begin{figure}
 	\centering
-	\scalebox{0.7}{
+	\scalebox{0.8}{
 		\includegraphics[width=\linewidth]{img/gen_graph}
 	}
 	\caption{Generated graph for a simple example}
@@ -91,7 +91,7 @@
 	\scalebox{0.7}{
 		\includegraphics[width=\linewidth]{img/mrf_graph}
 	}
-	\caption{Markov Random Field for an example program: \mbox{\texttt{x := 3; y := x;}} Shaded nodes are observed, highlighted are desired posteriors}
+	\caption{Constructed Markov Random Field for an example program: \mbox{\texttt{x := 3; y := x;}} Shaded nodes are observed, highlighted are desired posteriors}
 	\label{fig:mrf-graph}
 \end{figure}
 %</mrf>

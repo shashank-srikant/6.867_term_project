@@ -50,7 +50,7 @@ It predicts \textit{number} and \textit{string} types well, and fails at predict
 Analyzing the model's selected features reveals node types like $+$ are highly weighted, which correspond to operations specific to \textit{number}s and \textit{string}s.
 We leave a detailed analysis of these learned features to future work.
 
-The \textit{aggressive} bi-directional RNN baseline, which was the best model trained by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}, performs in the ballpark reported in their work (slightly better than~\cite{hellendoorn2018deep}, where the variance is explained by the smaller size of our dataset).
+The \textit{aggressive} bi-directional RNN baseline, which was the best model trained by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}, performs in the ballpark reported in their work (slightly worse than~\cite{hellendoorn2018deep}, where the variance is explained by the smaller size of our dataset).
 It has a P@1 accuracy of 50.6\%, 16\% lower than the GNN's performance.
 
 These results confirm that the graph neural net framework, along with the assumptions we made about the graph structure, work well to model the problem: our solution roughly halves the error rate from random guessing, and significantly outperforms all other baselines.
@@ -61,7 +61,7 @@ It shows only two significant outliers, the number of false predictions on the \
 Given that some of the most common operators on numbers and strings are syntactically identical in TypeScript ($+$ adds numbers and concatenates strings), it is unsurprising that numbers would get interpreted as strings, especially considering that the MLE guess when the two are syntactically indistinguishable would be \texttt{string}; this intuition has been confirmed by checking that the majority of missed \texttt{number} predictions are predicted as \texttt{string}s.
 
 \subsubsection{Experiment 2.}
-The results of the studies can be seen in Table \ref{tab:results:ablations}.
+The results of the ablation studies can be seen in Table~\ref{tab:results:ablations}.
 These experiments confirm our assumptions, that each of the types of edges we selected help in solving the type inference problem.
 We can additionally see the relative benefit of each of the edge types: the syntactic locality induced by the \textsc{Token} edges seems to matter more than the AST edges, which in turn matter more than the \textsc{Variable} edges.
 While it is somewhat surprising that the \textsc{Variable} edges are the least important, since type inference is based in part on variable usage, this can be explained in part by the relatively small number of message passing iterations: there is no immediate information gained from a linked variable, only from that linked variable's neighbors, so more iterations would likely be needed to see as much benefit from the \textsc{Variable} edges.
@@ -90,7 +90,8 @@ While it is somewhat surprising that the \textsc{Variable} edges are the least i
 \textbf{Bayesian Optimization.}
 The metric we chose to optimize over was the train loss after 3 epochs.
 Selecting the best performing number of iterations with this particular metric gave us confidence that the network had actually made progress in learning significant features of the dataset, while also being sure not to overfit to our validation set.
-Partial results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$, which gave us a satisfactory coverage of the average path length seen in Figure~\ref{fig:dataset-graph-stats}, while still being computationally tractable to train.
+Partial results of this experiment can be seen in Figure~\ref{fig:gp-diagram}, which shows the confidence bounds on the number of iterations to use in the range $[0, 10]$.
+These bounds gave us a satisfactory coverage of enough message passing to propagate through the average path in the graph (c.f.~Figure~\ref{fig:dataset-graph-stats}), while still being computationally tractable to train.
 After 5 interactions with the Gaussian process, we were confident that $n=1$ iteration gave the best training loss after 3 epochs, although we used $n=2$ in our experiments, since it seemed to do marginally better on the validation set.
 
 We were slightly surprised by the relatively low number of iterations found as ideal by the Bayesian Optimization.
@@ -99,7 +100,7 @@ Were we to train for significantly longer, we may be able to deal with the small
 \loadFig{gpDiagram}
 
 \paragraph{Iteration Ensemble.}
-Ultimately, this did not work as well as we hoped, and our best results were achieved by just using a single number of iterations learned through the Bayesian Optimization approach.
+Ultimately, this experiment did not work as well as we hoped, and our best results were achieved by just using a single number of iterations learned through the Bayesian Optimization approach.
 The linear combination weight vector changed only marginally from its initial value, and the prediction quality was no better than that of using a fixed number of iterations.
 We believe this happened for one primary reason: one or two iterations were good enough, as shown by the Bayesian Optimization approach.
 Any iterations beyond that did not refine the search, and since we did not penalize their existence through any regularization (only the wrongness of their predictions), they stayed around as unnecessary artifacts that did not get pruned.
