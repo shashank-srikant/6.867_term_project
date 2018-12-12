@@ -1,6 +1,6 @@
 We explore the problem of modeling computer programs to infer their properties.
-We argue that programs can be modeled as Markov Random Fields, where the latent random variable is the property of interest.
+We argue that programs can be modeled as Markov Random Fields, where the latent random variables in the graph represent the properties of interest.
 We approximate inference over such a graphical model via graph neural networks (GNN), a neural network architecture which captures graph-like structural information.
-As a case study, we work on the problem of inferring variable types in programs.
-We show that modeling this task using GNNs provides a 10-15\% improvement in accuracy in type prediction, when compared to a bi-directional RNN which uses token information.
-Via ablation studies, we also investigate the benefits of various model assumptions we make in our GNN construction.
+As a case study, we work on the problem of inferring variable types in JavaScript programs.
+We show that modeling this task using GNNs provides a 10-15\% improvement in accuracy of type prediction when compared to a bi-directional RNN baseline.
+Via ablation studies, we also investigate the benefits of various modeling assumptions we make in our GNN construction.
