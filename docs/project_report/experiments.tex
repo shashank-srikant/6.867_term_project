@@ -2,8 +2,8 @@
 \label{sec:experiments}
 We investigate the following questions:
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \textbf{Q1.} How well do GNNs capture the inductive bias in tasks which have a graph-like structure?
-\item \textbf{Q2.} How does the nature of structural information passed along the edges in a GNN affect its performance?
+\item \textbf{Q1.} How well does encoding our inductive bias as a GNN perform in tasks which have a graph-like structure?
+\item \textbf{Q2.} How does the nature of structural information passed along the edges of a GNN affect its performance?
 \item \textbf{Q3.} How can the number of message passing iterations be learned from data, rather than tuned manually?
 \end{itemize}
 
@@ -23,17 +23,17 @@ We investigated the following models:
   This provides a maximum likelihood estimate.
 \item \textbf{Baseline 2: Intermediate.}
   Increasing the complexity of our baseline models, we evaluate a na\"ive approximation of a graph net.
-  Here, we construct a logistic regression model over a feature vector involving \textit{counts} of various dependency and node information of a program.
-  Specifically, for each definition of a variable \texttt{v := expr}, we concatenate the following feature vectors:
+  Here, we construct a logistic regression model over a feature vector encoding information about the other variables used in any given variable's definition.
+  Specifically, for each definition of a variable \mbox{\lstinline{let v = expr}}, we concatenate the following feature vectors:
   \begin{itemize}[noitemsep,topsep=0pt]
   \item Consider each variable $x$ used in \texttt{expr}.
     Define the `path' from $v$ to $x$ to be the string of AST node types encountered in a walk along the AST from $v$ to $x$.
-    The first feature vector component is the sum of the one-hot vector keyed on `path' for each variable $x$ used in \texttt{expr}.
+    We construct a feature vector with the sum of the one-hot vectors keyed on `path' for each variable $x$ used in \texttt{expr}.
   \item A multi-hot vector representing each unique AST node type appearing in \texttt{expr}.
   \end{itemize}
-  We enumerated 6183 unique paths and 89 unique AST nodes in the training set.
+  We enumerated 6183 unique paths and 89 unique AST node types in the training set.
   This resulted in a $524507 \times (6183+89)$ data matrix, which was used to learn a regularized Logistic Regression model.
-  This baseline captures a \textit{bigram variable dependene model}, where only the dependency effect of immediately connected nodes are considered, without the full dependency information flow provided by GNNs.
+  This baseline captures a \textit{bigram variable dependence model}, where only the dependency effect of other variables used in a given variable's definition are considered, without the full dependency information flow provided by GNNs.
 \item \textbf{Baseline 3: Aggressive.}
   We use the bi-directional neural network architecture designed by Allamanis \textit{et al.}~\cite{hellendoorn2018deep}.
   Their architecture does not utilize any of the graphical properties of a program, and instead relies on signals obtained by just token information.
@@ -48,20 +48,20 @@ A \textsc{P@}$k$ accuracy corresponds to percentage of the model's top $k$ predi
 This is a standard accuracy measure used in classification tasks.
 
 \subsubsection{Experiment 2: Edge ablation.}
-To determine whether our graph structure (nodes and edges) was chosen correctly, we also performed a set of ablation studies.
+To determine whether our graph structure was chosen correctly, we also performed a set of ablation studies.
 Specifically, we ran experiments using the optimally chosen hyperparameters where we entirely deleted each class of edges (AST edges, \textsc{Token} edges, and \textsc{Variable} edges) from the graph, and compared performance to the original.
 
 \subsubsection{Experiment 3: Number of iterations.}
 A major shortcoming in the graph net framework is the issue of determining how many iterations of message passing to run.
 In theory, because of the universal approximation properties of neural nets, the optimal number of iterations is any number larger than the diameter of the graph (length of the longest path in the minimum spanning tree), so that each node can make a fully informed decision knowing the entire graph topology.
 However, this is not realistic: as shown in Figure~\ref{fig:dataset-graph-stats}, the maximum diameter of any of the graphs is above 200, meaning that we would have to run the graph neural net for an intractable number of iterations to be able to get this idealized result.
-Instead, we approximate the result by running fewer iterations, theoretically losing out on certain classes of decisions, although in doing so further enforcing our inductive bias by effective ruling out all nonlocal communication between nodes.
+Instead, we approximate the result by running fewer iterations, theoretically losing out on certain classes of decisions, although in doing so further enforcing our inductive bias by effectively ruling out all distant communication between nodes.
 It is not immediately clear how we should choose the \textsc{NIter} hyperparameter though: since graph nets give no formal guarantees that the results monotonically improve with the number of iterations, we have to select the number of iterations through some hyperparameter search.
 We ran two experiments to try to select the ideal settings:
 \begin{itemize}
 \item \textbf{\emph{Bayesian Optimization} based approach.}
   We were inspired by data-driven approaches to hyperparameter search problems, for cases where running experiments can be prohibitively expensive.
-  In particular we were inspired by \cite{snoek2012practical}, which suggests using a Bayesian Optimization based approach with an underlying Gaussian Process to pick hyperparameters from, using the expected improvement metric (expectation of the decrease in the desired metric over the current best known hyperparameter) to explore the hyperparameter space.
+  In particular we were inspired by \cite{snoek2012practical}, which suggests using a Bayesian Optimization based approach with an underlying Gaussian Process to pick hyperparameters, using the expected improvement metric (expectation of the decrease in the desired metric over the current best known hyperparameter) to explore the hyperparameter space.
 \item \textbf{\emph{Iteration Ensemble} approach.}
   Our second attempt at a hyperparameter search followed a more directly optimization based approach.
   Rather than trying to pick one specific ideal number of iterations, we ran an ensemble over several choices of iteration counts, using a learned weighting to linearly combine all of their predictions in the last step to produce the final result.
