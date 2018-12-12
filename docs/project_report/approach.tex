@@ -55,7 +55,7 @@ There are three specific priors we incorporate into the edges in our generated g
 
 \paragraph{Nodes near a variable in the AST reflect something about that variable's type.}\
 \ % need a space after paragraph
-\begin{lstlisting}
+\begin{lstlisting}[backgroundcolor = \color{white}, frame = single]
   let x = y * 2;
 \end{lstlisting}
 A human trying to infer the type of the variable \texttt{x} in the above code may decide that since the result of multiplying something by a number is almost always a number, \texttt{x} is probably a number.
@@ -63,7 +63,7 @@ This corresponds exactly to two types of edges that we include in our generated 
 
 \par\paragraph{Nodes near a variable in the file reflect something about that variable's type.}
 \ % need a space after paragraph
-\begin{lstlisting}
+\begin{lstlisting}[backgroundcolor = \color{white}, frame = single]
   let x = 1;
   let y = x;
   ...
@@ -75,7 +75,7 @@ Because of this, we include two more types of edges in the induced graph, a \tex
 
 \paragraph{Nodes that use or define the same variable give information about each other.}
 \ % need a space after paragraph
-\begin{lstlisting}
+\begin{lstlisting}[backgroundcolor = \color{white}, frame = single]
   let x = 1;
   ...
   let y = a + (b + (... + x));
@@ -85,7 +85,7 @@ Because of this, we include one final type of edge, a \texttt{Variable} edge, be
 
 \paragraph{Example.}
 With all of the above nodes and edges included, we generate something like the graph shown in Figure~\ref{fig:ast-graph} for the following code:
-\begin{lstlisting}
+\begin{lstlisting}[backgroundcolor = \color{white}, frame = single]
   let x := 5;
   x = x + 2;
   console.log(x);
